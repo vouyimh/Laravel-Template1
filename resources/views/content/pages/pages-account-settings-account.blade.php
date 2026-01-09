@@ -10,7 +10,7 @@
 @section('content')
 <div class="row">
     <div class="col-md-12">
-        <div class="nav-align-top">
+        <!-- <div class="nav-align-top">
             <ul class="nav nav-pills flex-column flex-md-row mb-6 gap-md-0 gap-2">
                 <li class="nav-item">
                     <a class="nav-link active" href="javascript:void(0);"><i class="icon-base bx bx-user icon-sm me-1_5"></i> Account</a>
@@ -22,7 +22,7 @@
                     <a class="nav-link" href="{{ url('pages/account-settings-connections') }}"><i class="icon-base bx bx-link-alt icon-sm me-1_5"></i> Connections</a>
                 </li>
             </ul>
-        </div>
+        </div> -->
         <div class="card mb-6">
             <!-- Account -->
             <div class="card-body">
@@ -164,7 +164,7 @@
             </div>
             <!-- /Account -->
         </div>
-        <div class="card">
+        <!-- <div class="card">
             <h5 class="card-header">Delete Account</h5>
             <div class="card-body">
                 <div class="mb-6 col-12 mb-0">
@@ -181,7 +181,7 @@
                     <button type="submit" class="btn btn-danger deactivate-account">Deactivate Account</button>
                 </form>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>
 @endsection

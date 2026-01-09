@@ -1,4 +1,4 @@
-@extends('layouts/contentNavbarLayout')
+<!-- @extends('layouts/contentNavbarLayout')
 
 @section('title', 'Perfect Scrollbar - Extended UI')
 
@@ -16,7 +16,7 @@
 
 @section('content')
 <div class="row gy-6">
-    <!-- Vertical Scrollbar -->
+  
     <div class="col-md-6 col-sm-12">
         <div class="card overflow-hidden" style="height: 300px;">
             <h5 class="card-header">Vertical Scrollbar</h5>
@@ -48,9 +48,7 @@
             </div>
         </div>
     </div>
-    <!--/ Vertical Scrollbar -->
-
-    <!-- Horizontal Scrollbar -->
+ 
     <div class="col-md-6 col-sm-12">
         <div class="card overflow-hidden" style="height: 300px;">
             <h5 class="card-header">Horizontal Scrollbar</h5>
@@ -59,9 +57,7 @@
             </div>
         </div>
     </div>
-    <!--/ Horizontal Scrollbar -->
-
-    <!-- Vertical & Horizontal Scrollbars -->
+ 
     <div class="col-12">
         <div class="card overflow-hidden" style="height: 500px;">
             <h5 class="card-header">Vertical & Horizontal Scrollbars</h5>
@@ -70,6 +66,6 @@
             </div>
         </div>
     </div>
-    <!--/ Vertical & Horizontal Scrollbars -->
+
 </div>
-@endsection
+@endsection -->
