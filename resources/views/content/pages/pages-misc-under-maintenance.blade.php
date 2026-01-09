@@ -1,14 +1,12 @@
-@extends('layouts/blankLayout')
+<!-- @extends('layouts/blankLayout')
 
 @section('title', 'Under Maintenance - Pages')
 
 @section('page-style')
-<!-- Page -->
 @vite(['resources/assets/vendor/scss/pages/page-misc.scss'])
 @endsection
 
 @section('content')
-<!--Under Maintenance -->
 <div class="container-xxl container-p-y">
     <div class="misc-wrapper">
         <h3 class="mb-2 mx-2">Under Maintenance! 🚧</h3>
@@ -19,5 +17,4 @@
         </div>
     </div>
 </div>
-<!-- /Under Maintenance -->
-@endsection
+@endsection -->
