@@ -1,0 +1,73 @@
+{
+  "menu": [
+    {
+      "url": "/",
+      "name": "Dashboards",
+      "icon": "menu-icon icon-base bx bx-home-smile",
+      "slug": "dashboard",
+      "badge": [
+        "danger",
+        "1"
+      ],
+    "submenu": [
+      {
+        "url": "/dashboard/total-booking",
+        "name": "Total booking",
+        "slug": "dashboard-total-booking"
+      }
+    ]
+    },
+        {
+      "name": "Authentications",
+      "icon": "menu-icon icon-base bx bx-lock-open-alt",
+      "slug": "auth",
+      "submenu": [
+        {
+          "url": "auth/login-basic",
+          "name": "Login",
+          "slug": "auth-login-basic",
+          "target": "_blank"
+        }
+      ]
+    },
+    {
+      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/calendar",
+      "name": "Calendar",
+      "icon": "menu-icon icon-base bx bx-calendar",
+      "slug": "app-calendar",
+      "target": "_blank"
+    },
+    {
+      "name": "Client",
+      "icon": "menu-icon icon-base bx bxl-php",
+      "slug": "laravel-example-user-management",
+      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/laravel/user-management"
+    },
+    {
+      "name": "Staff",
+      "icon": "menu-icon icon-base bx bxl-php",
+      "slug": "laravel-example-user-management",
+      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/laravel/user-management"
+    },
+    {
+      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/chat",
+      "name": "Support Chat",
+      "icon": "menu-icon icon-base bx bx-chat",
+      "slug": "app-chat",
+      "target": "_blank"
+    },
+    {
+      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/kanban",
+      "name": "Manage Staff Work",
+      "icon": "menu-icon icon-base bx bx-grid",
+      "slug": "app-kanban",
+      "target": "_blank"
+    },
+    {
+      "name": "Account",
+      "icon": "menu-icon icon-base bx bx-dock-top",
+      "slug": "pages-account-settings-account",
+      "url": "pages/account-settings-account"
+    }
+  ]
+}
