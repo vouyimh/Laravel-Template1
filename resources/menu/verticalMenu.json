@@ -9,15 +9,15 @@
         "danger",
         "1"
       ],
-    "submenu": [
-      {
-        "url": "/dashboard/total-booking",
-        "name": "Total booking",
-        "slug": "dashboard-total-booking"
-      }
-    ]
-    },
+      "submenu": [
         {
+          "url": "/dashboard/total-booking",
+          "name": "Total booking",
+          "slug": "dashboard-total-booking"
+        }
+      ]
+    },
+    {
       "name": "Authentications",
       "icon": "menu-icon icon-base bx bx-lock-open-alt",
       "slug": "auth",
@@ -41,7 +41,18 @@
       "name": "Client",
       "icon": "menu-icon icon-base bx bxl-php",
       "slug": "laravel-example-user-management",
-      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/laravel/user-management"
+      "submenu": [
+        {
+          "url": "/admin/client",
+          "name": "List Client",
+          "slug": "list-client"
+        },
+        {
+          "url": "/admin/client/add-client",
+          "name": "Add Client",
+          "slug": "add-client"
+        }
+      ]
     },
     {
       "name": "Staff",
