@@ -5,4 +5,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\ClientController;
 
 
-Route::apiResource('clients', ClientController::class);
+Route::get('clients', [ClientController::class, 'index']);
+Route::post('add-client', [ClientController::class, 'create']);
+Route::delete('/client/{id}', [ClientController::class, 'destroy']);

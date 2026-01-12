@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class ClientController extends Controller
 {
@@ -13,108 +15,118 @@ class ClientController extends Controller
      */
     public function index()
     {
-        return response()->json(
-            Client::with('houses')->latest()->get()
-        );
+        try {
+            // Eager load 'houses' relationship
+            $clients = Client::with('houses')->get();
+    
+            return response()->json([
+                'message' => 'Clients retrieved successfully',
+                'data' => $clients,
+            ], 200);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve clients',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
-    /**
-     * POST /api/clients
-     */
-    public function store(Request $request)
+    public function create(Request $request)
     {
+        // Validate request
         $validated = $request->validate([
             'company_name' => 'required|string|max:255',
             'owner_name'   => 'required|string|max:255',
             'email'        => 'required|email|unique:clients,email',
-            'password'     => 'required|min:5',
-            'phone_number' => 'nullable|string',
-            'company_type' => 'nullable|string',
-            'tax'          => 'boolean',
-            'file'         => 'nullable|string',
+            'password'     => 'required|string|min:6',
 
+            'phone_number'    => 'nullable|string|max:20',
+            'company_type'    => 'nullable|string|max:255',
             'company_address' => 'nullable|array',
-            'company_address.street_name' => 'nullable|string',
-            'company_address.local_code'  => 'nullable|string',
-            'company_address.village'     => 'nullable|string',
-            'company_address.house_number'=> 'nullable|string',
+            'tax'             => 'boolean',
+            'file'            => 'nullable|string',
 
-            'houses' => 'nullable|array',
-            'houses.*.street_name' => 'required|string',
-            'houses.*.local_code'  => 'required|string',
-            'houses.*.village'     => 'required|string',
-            'houses.*.house_number'=> 'required|string',
+            // Client houses (array)
+            'houses'                  => 'nullable|array',
+            'houses.*.street_name'    => 'required_with:houses|string|max:255',
+            'houses.*.local_code'     => 'required_with:houses|string|max:50',
+            'houses.*.village'        => 'required_with:houses|string|max:255',
+            'houses.*.house_number'   => 'required_with:houses|string|max:50',
         ]);
 
-        $client = Client::create([
-            ...$validated,
-            'password' => Hash::make($validated['password']),
-        ]);
+        DB::beginTransaction();
 
-        if (!empty($validated['houses'])) {
-            $client->houses()->createMany($validated['houses']);
+        try {
+            // Create client
+            $client = Client::create([
+                'company_name'    => $validated['company_name'],
+                'owner_name'      => $validated['owner_name'],
+                'email'           => $validated['email'],
+                'password'        => Hash::make($validated['password']),
+                'phone_number'    => $validated['phone_number'] ?? null,
+                'company_type'    => $validated['company_type'] ?? null,
+                'company_address' => $validated['company_address'] ?? null,
+                'tax'             => $validated['tax'] ?? false,
+                'file'            => $validated['file'] ?? null,
+            ]);
+
+            // Create client houses (if any)
+            if (!empty($validated['houses'])) {
+                foreach ($validated['houses'] as $house) {
+                    $client->houses()->create($house);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Client created successfully',
+                'data'    => $client->load('houses'),
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to create client',
+                'error'   => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Client created successfully',
-            'data' => $client->load('houses')
-        ], 201);
     }
-
-    /**
-     * GET /api/clients/{id}
-     */
-    public function show($id)
-    {
-        return response()->json(
-            Client::with('houses')->findOrFail($id)
-        );
-    }
-
-    /**
-     * PUT /api/clients/{id}
-     */
-    public function update(Request $request, $id)
-    {
-        $client = Client::findOrFail($id);
-
-        $validated = $request->validate([
-            'company_name' => 'sometimes|string|max:255',
-            'owner_name'   => 'sometimes|string|max:255',
-            'email'        => [
-                'sometimes',
-                'email',
-                Rule::unique('clients')->ignore($client->id)
-            ],
-            'password'     => 'sometimes|min:5',
-            'phone_number' => 'nullable|string',
-            'company_type' => 'nullable|string',
-            'tax'          => 'boolean',
-            'file'         => 'nullable|string',
-            'company_address' => 'nullable|array',
-        ]);
-
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
-        }
-
-        $client->update($validated);
-
-        return response()->json([
-            'message' => 'Client updated successfully',
-            'data' => $client->load('houses')
-        ]);
-    }
-
+    
     /**
      * DELETE /api/clients/{id}
      */
     public function destroy($id)
     {
-        Client::findOrFail($id)->delete();
+        try {
+            // Find the client by ID
+            $client = Client::find($id);
 
-        return response()->json([
-            'message' => 'Client deleted successfully'
-        ]);
+            if (!$client) {
+                return response()->json([
+                    'message' => 'Client not found',
+                ], 404);
+            }
+
+            // Optional: delete related houses if not cascade
+            // $client->houses()->delete();
+
+            // Delete the client
+            $client->delete();
+
+            return response()->json([
+                'message' => 'Client deleted successfully',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete client',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+
+
 }

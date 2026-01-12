@@ -9,6 +9,9 @@ class Client extends Model
 {
     use HasFactory;
 
+    // Specify primary key
+    protected $primaryKey = 'client_id';
+
     // Mass assignable fields
     protected $fillable = [
         'company_name',
@@ -41,6 +44,6 @@ class Client extends Model
 
     public function houses()
     {
-        return $this->hasMany(ClientHouse::class);
+        return $this->hasMany(ClientHouse::class, 'client_id', 'client_id');
     }
 }
