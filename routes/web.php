@@ -46,6 +46,8 @@ use App\Http\Controllers\form_layouts\VerticalForm;
 use App\Http\Controllers\form_layouts\HorizontalForm;
 use App\Http\Controllers\pages\StaffList;
 use App\Http\Controllers\pages\StaffAdd;
+use App\Http\Controllers\pages\StaffEdit;
+use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
 Route::get('/dashboard', function () {
@@ -95,6 +97,9 @@ Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'i
 // staff
 Route::get('/pages/staff-list', [StaffList::class, 'index'])->name('pages-staff-list');
 Route::match(['get','post'], '/pages/staff-add', [StaffAdd::class, 'index'])->name('pages-staff-add');
+Route::get('/pages/staff-edit/{id}', [StaffEdit::class, 'index'])->name('pages-staff-edit');
+Route::post('/pages/staff-edit/{id}', [StaffEdit::class, 'update'])->name('pages-staff-update');
+Route::delete('/pages/staff-delete/{id}', [StaffEdit::class, 'destroy'])->name('pages-staff-delete');
 
 
 // authentication
