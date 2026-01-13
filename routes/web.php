@@ -98,9 +98,9 @@ Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'i
 Route::get('/pages/staff-list', [StaffList::class, 'index'])->name('pages-staff-list');
 Route::match(['get','post'], '/pages/staff-add', [StaffAdd::class, 'index'])->name('pages-staff-add');
 Route::get('/pages/staff-edit/{id}', [StaffEdit::class, 'index'])->name('pages-staff-edit');
-Route::post('/pages/staff-edit/{id}', [StaffEdit::class, 'update'])->name('pages-staff-update');
-Route::delete('/pages/staff-delete/{id}', [StaffEdit::class, 'destroy'])->name('pages-staff-delete');
-
+Route::put('/pages/staff-edit/{id}', [StaffEdit::class, 'update'])->name('pages-staff-update');
+Route::delete('/pages/staff-delete/{id}', [StaffDelete::class, 'destroy'])
+    ->name('pages-staff-delete');
 
 // authentication
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');

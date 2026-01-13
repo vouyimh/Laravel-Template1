@@ -18,5 +18,6 @@ class Staff extends Model
         'Username',
         'Password',
         'PhoneNumber',
+        'ProfilePicture',
     ];
 }

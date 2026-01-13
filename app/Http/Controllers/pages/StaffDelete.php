@@ -5,10 +5,11 @@ namespace App\Http\Controllers\pages;
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class StaffDelete extends Controller
 {
-    // Show staff list for deletion (optional)
+    // Optional: show staff list page for deletion
     public function index()
     {
         $staff = Staff::orderByDesc('StaffID')->get();
@@ -18,13 +19,37 @@ class StaffDelete extends Controller
     // Delete a staff
     public function destroy(Request $request, $id)
     {
-        $staff = Staff::findOrFail($id);
+        $staff = Staff::find($id);
+
+        if (!$staff) {
+            // For fetch/ajax requests
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Staff not found'
+                ], 404);
+            }
+
+            return redirect()
+                ->back()
+                ->with('error', 'Staff not found');
+        }
+
+        // ✅ delete profile picture file (if exists)
+        if (!empty($staff->ProfilePicture)) {
+            Storage::disk('public')->delete($staff->ProfilePicture);
+        }
+
         $staff->delete();
 
-        if ($request->ajax()) {
+        // ✅ for SweetAlert fetch()
+        if ($request->expectsJson()) {
             return response()->json(['success' => true]);
         }
 
-        return redirect()->route('pages-staff-delete')->with('success', 'Staff deleted successfully!');
+        // normal redirect fallback
+        return redirect()
+            ->route('pages-staff-list')
+            ->with('success', 'Staff deleted successfully!');
     }
 }
