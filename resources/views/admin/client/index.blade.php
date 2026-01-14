@@ -2,16 +2,25 @@
 
 @section('title', 'Client')
 
-@section('page-script')
-<!-- Include jQuery and DataTables via CDN -->
+@section('script')
+
+<!-- Include jQuery first -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
     $(document).ready(function() {
         $('#clients-table').DataTable({
-            
+            processing: true,
+            ajax: {
+                url: 'http://127.0.0.1:8000/api/clients',
+                type: 'GET',
+                dataSrc: 'data'  // <-- important!
+            },
+            columns: [
+                { data: 'company_name' },
+                { data: 'owner_name' },
+                { data: 'created_at' }
+            ]
         });
     });
 </script>
@@ -27,33 +36,13 @@
                 <table id="clients-table" class="display table table-striped" style="width:100%">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Created At</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Example static data -->
-                        <tr>
-                            <td>1</td>
-                            <td>John Doe</td>
-                            <td>john@example.com</td>
-                            <td>2026-01-11</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Jane Smith</td>
-                            <td>jane@example.com</td>
-                            <td>2026-01-10</td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>Robert Johnson</td>
-                            <td>robert@example.com</td>
-                            <td>2026-01-09</td>
-                        </tr>
-                        <!-- Add more static rows as needed -->
+              
                     </tbody>
                 </table>
             </div>

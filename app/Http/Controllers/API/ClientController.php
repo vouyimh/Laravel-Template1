@@ -26,6 +26,7 @@ class ClientController extends Controller
     
         } catch (\Exception $e) {
             return response()->json([
+                'data' => [],
                 'message' => 'Failed to retrieve clients',
                 'error' => $e->getMessage(),
             ], 500);
@@ -128,5 +129,86 @@ class ClientController extends Controller
         }
     }
 
+
+    /**
+     * PATCH /api/clients/{id}
+     */
+    public function update(Request $request, $id)
+    {
+        // Find client
+        $client = Client::with('houses')->find($id);
+
+        if (!$client) {
+            return response()->json([
+                'message' => 'Client not found',
+            ], 404);
+        }
+
+        // Validate request (PATCH = sometimes)
+        $validated = $request->validate([
+            'company_name' => 'sometimes|string|max:255',
+            'owner_name'   => 'sometimes|string|max:255',
+            'email'        => 'sometimes|email|unique:clients,email,' . $client->id,
+            'password'     => 'sometimes|string|min:6',
+
+            'phone_number'    => 'sometimes|nullable|string|max:20',
+            'company_type'    => 'sometimes|nullable|string|max:255',
+            'company_address' => 'sometimes|nullable|array',
+            'tax'             => 'sometimes|boolean',
+            'file'            => 'sometimes|nullable|string',
+
+            // Houses
+            'houses'                  => 'sometimes|array',
+            'houses.*.id'             => 'sometimes|exists:houses,id',
+            'houses.*.street_name'    => 'required_with:houses|string|max:255',
+            'houses.*.local_code'     => 'required_with:houses|string|max:50',
+            'houses.*.village'        => 'required_with:houses|string|max:255',
+            'houses.*.house_number'   => 'required_with:houses|string|max:50',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Handle password hashing
+            if (isset($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            }
+
+            // Update client fields
+            $client->update($validated);
+
+            // Update or create houses
+            if (isset($validated['houses'])) {
+                foreach ($validated['houses'] as $houseData) {
+
+                    // Update existing house
+                    if (isset($houseData['id'])) {
+                        $client->houses()
+                            ->where('id', $houseData['id'])
+                            ->update($houseData);
+                    }
+                    // Create new house
+                    else {
+                        $client->houses()->create($houseData);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Client updated successfully',
+                'data'    => $client->fresh()->load('houses'),
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to update client',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
 
 }
