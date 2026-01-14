@@ -45,6 +45,10 @@ use App\Http\Controllers\form_elements\BasicInput;
 use App\Http\Controllers\form_elements\InputGroups;
 use App\Http\Controllers\form_layouts\VerticalForm;
 use App\Http\Controllers\form_layouts\HorizontalForm;
+use App\Http\Controllers\pages\StaffList;
+use App\Http\Controllers\pages\StaffAdd;
+use App\Http\Controllers\pages\StaffEdit;
+use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
 Route::get('/dashboard', function () {
@@ -87,6 +91,17 @@ Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'i
 //Route::get('/pages/account-settings-connections', [AccountSettingsConnections::class, 'index'])->name('pages-account-settings-connections');
 //Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');
 //Route::get('/pages/misc-under-maintenance', [MiscUnderMaintenance::class, 'index'])->name('pages-misc-under-maintenance');
+
+//staff
+// Route::get('/pages/staff-list', [StaffList::class, 'index'])->name('pages-staff-list');
+// Route::get('/pages/staff-add', [StaffAdd::class, 'index'])->name('pages-staff-add');
+// staff
+Route::get('/pages/staff-list', [StaffList::class, 'index'])->name('pages-staff-list');
+Route::match(['get','post'], '/pages/staff-add', [StaffAdd::class, 'index'])->name('pages-staff-add');
+Route::get('/pages/staff-edit/{id}', [StaffEdit::class, 'index'])->name('pages-staff-edit');
+Route::put('/pages/staff-edit/{id}', [StaffEdit::class, 'update'])->name('pages-staff-update');
+Route::delete('/pages/staff-delete/{id}', [StaffDelete::class, 'destroy'])
+    ->name('pages-staff-delete');
 
 // authentication
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');

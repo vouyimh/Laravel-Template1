@@ -61,6 +61,25 @@
       "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/laravel/user-management"
     },
     {
+      "name": "Staff",
+      "icon": "menu-icon icon-base bx bx-group",
+      "slug": "auth",
+      "submenu": [
+        {
+          "url": "pages/staff-list",
+          "name": "Staff List",
+          "slug": "pages-staff-list",
+          "target": "_blank"
+        },
+        {
+          "url": "pages/staff-add",
+          "name": "Staff Add",
+          "slug": "pages-staff-add",
+          "target": "_blank"
+        }
+      ]
+    },
+    {
       "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/chat",
       "name": "Support Chat",
       "icon": "menu-icon icon-base bx bx-chat",
