@@ -42,8 +42,7 @@ public function update(Request $request, $id)
         $staff->ProfilePicture = $filename;
         $staff->save();
     }
-
-    return redirect()->route('pages-staff-list')->with('success', 'Staff updated successfully!');
+    return view('admin.staff.add-staff');
 }
 
 }

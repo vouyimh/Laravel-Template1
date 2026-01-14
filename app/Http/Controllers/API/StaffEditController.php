@@ -7,7 +7,7 @@ use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class StaffEdit extends Controller
+class StaffEditController extends Controller
 {
     public function index($id)
     {

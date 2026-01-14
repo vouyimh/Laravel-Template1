@@ -66,16 +66,14 @@
       "slug": "auth",
       "submenu": [
         {
-          "url": "pages/staff-list",
-          "name": "Staff List",
-          "slug": "pages-staff-list",
-          "target": "_blank"
+          "url": "/admin/staff-list",
+          "name": "List Staff",
+          "slug": "list-staff"
         },
         {
-          "url": "pages/staff-add",
-          "name": "Staff Add",
-          "slug": "pages-staff-add",
-          "target": "_blank"
+          "url": "/admin/staff/add-staff",
+          "name": "Add Staff",
+          "slug": "add-staff"
         }
       ]
     },

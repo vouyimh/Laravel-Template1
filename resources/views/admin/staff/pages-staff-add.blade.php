@@ -24,7 +24,8 @@
   <div class="card mx-auto shadow-sm" style="max-width: 900px;">
     <div class="card-body p-4 p-md-5">
 
-      <form method="POST" action="{{ route('pages-staff-add') }}" enctype="multipart/form-data">
+      {{-- ✅ POST to your new route name --}}
+      <form method="POST" action="{{ route('admin.staff.add') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="row g-4">
@@ -40,11 +41,9 @@
               <input id="ProfilePicture" name="ProfilePicture" type="file" class="d-none" accept="image/*">
 
               <div class="position-relative d-inline-block">
-
-                {{-- ✅ Click avatar to upload (NO JS required) --}}
+                {{-- click avatar --}}
                 <label for="ProfilePicture" class="d-block m-0 p-0" style="cursor:pointer;">
-                  <div class="rounded-circle border overflow-hidden shadow-sm"
-                       style="width:160px; height:160px;">
+                  <div class="rounded-circle border overflow-hidden shadow-sm" style="width:160px; height:160px;">
                     <img id="profilePreview"
                          src="{{ asset('assets/img/avatars/default.png') }}"
                          alt="Preview"
@@ -53,7 +52,7 @@
                   </div>
                 </label>
 
-                {{-- ✅ Click camera to upload (NO JS required) --}}
+                {{-- camera button --}}
                 <label for="ProfilePicture"
                        class="position-absolute bottom-0 end-0 translate-middle p-2 bg-primary border border-light rounded-circle shadow"
                        style="cursor:pointer;"
@@ -70,7 +69,6 @@
               <div id="fileMeta" class="mt-2 small text-muted" style="display:none;"></div>
 
               <div class="d-flex justify-content-center gap-2 mt-3">
-                {{-- ✅ Works without JS --}}
                 <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0">
                   <i class="bx bx-upload me-1"></i> Upload
                 </label>
@@ -88,6 +86,7 @@
 
           {{-- RIGHT: Form --}}
           <div class="col-md-8">
+
             <div class="mb-2">
               <span class="badge bg-label-secondary">Information</span>
             </div>
@@ -169,18 +168,20 @@
                 <input name="Password" type="password"
                        class="form-control @error('Password') is-invalid @enderror"
                        placeholder="Password" required>
-                <div class="form-text">Use at least 8 characters.</div>
+                <div class="form-text">Use at least 6 characters.</div>
                 @error('Password')
-                  <div class="text-danger small mt-1">{{ $message }}</div>
+                  <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
               </div>
 
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-              <a href="{{ route('pages-staff-list') }}" class="btn btn-outline-secondary">
+              {{-- ✅ Cancel should go to new staff list route --}}
+              <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">
                 Cancel
               </a>
+
               <button type="submit" class="btn btn-primary">
                 <i class="bx bx-save me-1"></i> Save
               </button>
@@ -188,14 +189,15 @@
 
           </div>
         </div>
-
       </form>
 
     </div>
   </div>
 
 </div>
+@endsection
 
+@section('script')
 <script>
 (function () {
   const input = document.getElementById('ProfilePicture');
@@ -237,37 +239,31 @@
     clearMeta();
   }
 
-  function previewFast(file) {
-    if (!file || !file.type || !file.type.startsWith('image/')) {
+  input.addEventListener('change', function (e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return resetImage();
+
+    if (!file.type || !file.type.startsWith('image/')) {
       alert('Please choose an image file.');
-      resetImage();
-      return;
+      return resetImage();
     }
 
-    // ✅ prevent huge images that make preview slow
     if (file.size > maxSize) {
       alert('Image is too large. Please select an image under 2MB.');
-      resetImage();
-      return;
+      return resetImage();
     }
 
     cleanupObjectUrl();
-    objectUrl = URL.createObjectURL(file); // ✅ instant preview
+    objectUrl = URL.createObjectURL(file);
     preview.src = objectUrl;
 
     if (removeBtn) removeBtn.style.display = 'inline-flex';
     setMeta(file);
-  }
-
-  input.addEventListener('change', function (e) {
-    const file = e.target.files && e.target.files[0];
-    if (file) previewFast(file);
-    else resetImage();
   });
 
   if (removeBtn) removeBtn.addEventListener('click', resetImage);
 
-  // Cleanup when leaving page
   window.addEventListener('beforeunload', cleanupObjectUrl);
 })();
 </script>
+@endsection

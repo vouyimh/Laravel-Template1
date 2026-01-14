@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\pages;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -8,7 +8,7 @@ use App\Models\Staff;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class StaffAdd extends Controller
+class StaffAddController extends Controller
 {
     public function index(Request $request)
     {
@@ -25,18 +25,16 @@ class StaffAdd extends Controller
                 'ProfilePicture' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             ]);
 
-            // Clean values
-            $validated['FirstName'] = trim($validated['FirstName']);
-            $validated['LastName']  = trim($validated['LastName']);
-            $validated['Email']     = trim($validated['Email']);
-            $validated['Username']  = trim($validated['Username']);
+            $validated['FirstName']   = trim($validated['FirstName']);
+            $validated['LastName']    = trim($validated['LastName']);
+            $validated['Email']       = trim($validated['Email']);
+            $validated['Username']    = trim($validated['Username']);
             $validated['PhoneNumber'] = isset($validated['PhoneNumber']) ? trim($validated['PhoneNumber']) : null;
 
             $profilePath = null;
 
             DB::beginTransaction();
             try {
-                // Upload file
                 if ($request->hasFile('ProfilePicture')) {
                     $profilePath = $request->file('ProfilePicture')->store('staff', 'public');
                 }
@@ -54,22 +52,23 @@ class StaffAdd extends Controller
 
                 DB::commit();
 
+                // ✅ go back to list (/admin/staff-list)
                 return redirect()
-                    ->route('pages-staff-list')
+                    ->route('admin.staff.list')
                     ->with('success', 'Staff added successfully');
 
             } catch (\Throwable $e) {
                 DB::rollBack();
 
-                // If file uploaded but DB failed, remove the file
                 if ($profilePath) {
                     Storage::disk('public')->delete($profilePath);
                 }
 
-                throw $e; // or return back()->withErrors(...)
+                throw $e;
             }
         }
 
-        return view('content.pages.pages-staff-add');
+        // ✅ view file: resources/views/admin/staff/pages-staff-add.blade.php
+        return view('admin.staff.pages-staff-add');
     }
 }

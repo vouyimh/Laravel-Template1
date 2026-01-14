@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Http\Controllers\pages;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Staff;
 
-class StaffList extends Controller
+class StaffListController extends Controller
 {
     public function index()
     {
         $staff = Staff::orderByDesc('StaffID')->get();
-
-        return view('content.pages.pages-staff-list', compact('staff'));
+        return view('admin.staff.pages-staff-list', compact('staff'));
     }
 }

@@ -7,7 +7,7 @@ use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class StaffDelete extends Controller
+class StaffDeleteController extends Controller
 {
     // Optional: show staff list page for deletion
     public function index()
