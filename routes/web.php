@@ -18,6 +18,7 @@ use App\Http\Controllers\authentications\LoginBasic;
 use App\Http\Controllers\authentications\RegisterBasic;
 use App\Http\Controllers\authentications\ForgotPasswordBasic;
 use App\Http\Controllers\cards\CardBasic;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\user_interface\Accordion;
 use App\Http\Controllers\user_interface\Alerts;
 use App\Http\Controllers\user_interface\Badges;
@@ -149,4 +150,10 @@ Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
 // tables
 //Route::get('/tables/basic', [TablesBasic::class, 'index'])->name('tables-basic');
 
-require __DIR__.'/auth.php';
+Route::get('admin/client', [ClientController::class, 'index'])
+    ->name('admin.client.index');
+
+Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
+    ->name('admin.client.add-client');
+
+require __DIR__ . '/auth.php';
