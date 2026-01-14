@@ -85,7 +85,3 @@
   @yield('script')
   @stack('scripts')
 @endsection
-<<<<<<< HEAD
-=======
-
->>>>>>> fa597c29ff1138cb7dc541322c047fe6803a25ee
