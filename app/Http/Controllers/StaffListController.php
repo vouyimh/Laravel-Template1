@@ -9,8 +9,9 @@ class StaffListController extends Controller
     // GET /admin/staff-list
     public function staffList()
     {
-        $staff = Staff::orderByDesc('StaffID')->get(); // ✅ provide $staff to blade
-        return view('admin.staff.pages-staff-list', compact('staff'));
+        // $staff = Staff::orderByDesc('StaffID')->get(); // ✅ provide $staff to blade
+        // return view('admin.staff.pages-staff-list', compact('staff'));
+        return view('admin.staff.pages-staff-list');
     }
 
     // GET /admin/staff-add

@@ -93,11 +93,9 @@ Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'i
 
 // Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
-    Route::get('/staff-list', [StaffListController::class, 'staffList'])
-        ->name('admin.staff.list');
 
-    Route::get('/staff-add', [StaffListController::class, 'addStaff'])
-        ->name('admin.staff.add');
+
+
 
 // });
 // authentication
@@ -153,4 +151,10 @@ Route::get('admin/client', [ClientController::class, 'index'])
 Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
     ->name('admin.client.add-client');
 
+
+Route::get('admin/staff/pages-staff-list', [StaffListController::class, 'staffList'])
+    ->name('admin.staff.pages-staff-list');
+
+Route::get('admin/staff/pages-staff-add', [StaffListController::class, 'addStaff'])
+    ->name('admin.staff.pages-staff-add');
 require __DIR__ . '/auth.php';
