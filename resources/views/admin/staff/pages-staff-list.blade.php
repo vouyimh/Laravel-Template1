@@ -2,6 +2,17 @@
 
 @section('title','Staff List')
 
+{{-- ✅ CSS must be in HEAD (this section should be printed in <head> by your layout) --}}
+@section('vendor-style')
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+  <style>
+    /* hide default datatable search box + length dropdown (we use custom UI) */
+    div.dataTables_filter, div.dataTables_length { display:none !important; }
+  </style>
+@endsection
+
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
 
@@ -13,8 +24,7 @@
     </div>
 
     <div class="d-flex gap-2">
-      <a href="{{ route('admin.staff.add') }}" class="btn btn-primary d-flex align-items-center gap-2">
-
+      <a href="{{ route('admin.staff.pages-staff-add') }}" class="btn btn-primary d-flex align-items-center gap-2">
         <i class="bx bx-plus"></i> Add New Staff
       </a>
     </div>
@@ -56,7 +66,6 @@
                  placeholder="Search name, username, email, phone...">
         </div>
 
-        <!-- DataTables Export button will be placed herer -->
         <div id="exportWrap"></div>
       </div>
 
@@ -132,10 +141,9 @@
               <td class="text-muted">{{ $s->PhoneNumber ?? '-' }}</td>
 
               <td class="text-end">
-                <a href="{{ route('pages-staff-edit', $s->StaffID) }}" class="btn btn-sm btn-outline-primary me-1">
+                <a href="{{ route('admin.staff.pages-staff-edit', $s->StaffID) }}" class="btn btn-sm btn-outline-primary">
                   <i class="bx bx-pencil"></i>
                 </a>
-
                 <button type="button"
                         class="btn btn-sm btn-outline-danger delete-btn"
                         data-id="{{ $s->StaffID }}"
@@ -153,30 +161,45 @@
 </div>
 @endsection
 
+{{-- ✅ EVERYTHING JS in one section to guarantee order --}}
 @section('script')
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<!-- DataTables CDN -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+{{-- ✅ jQuery MUST load before DataTables --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-<!-- Buttons for CSV export -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+{{-- ✅ DataTables + Buttons --}}
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+
+{{-- ✅ Required for csvHtml5 --}}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
 
 <script>
-$(document).ready(function() {
-
-  const csrfToken = $('meta[name="csrf-token"]').attr('content');
+$(function () {
   const ROLE_COL = 3;
   const ACTION_COL = 5;
 
+  // role exact match filter (works with badge HTML)
+  $.fn.dataTable.ext.search.push(function (settings, data) {
+    if (settings.nTable.id !== 'staff-table') return true;
+
+    const selectedRole = ($('#roleFilter').val() || '').trim().toLowerCase();
+    if (!selectedRole) return true;
+
+    const roleText = $('<div>').html(data[ROLE_COL]).text().trim().toLowerCase();
+    return roleText === selectedRole;
+  });
+
   const dt = $('#staff-table').DataTable({
-    pageLength: 10,
+    pageLength: parseInt($('#pageSize').val() || '10', 10),
     lengthChange: false,
     order: [[0, 'desc']],
     columnDefs: [{ orderable: false, targets: [ACTION_COL] }],
+    dom: 'Brtip',
     buttons: [{
       extend: 'csvHtml5',
       text: '<i class="bx bx-download"></i> Export CSV',
@@ -193,27 +216,20 @@ $(document).ready(function() {
     $('#countBadge').text(`${shown} shown (Total ${total})`);
   }
 
-  //Always keep count correct
   dt.on('draw', updateCount);
   updateCount();
 
-  // Search
   $('#txtSearch').on('input', function () {
     dt.search(this.value).draw();
   });
 
-  // Page size
   $('#pageSize').on('change', function () {
     dt.page.len(parseInt(this.value, 10)).draw();
   });
 
-  // Role filter (exact match)
   $('#roleFilter').on('change', function () {
-    const val = this.value || '';
-    const regex = val ? '^' + $.fn.dataTable.util.escapeRegex(val) + '$' : '';
-    dt.column(ROLE_COL).search(regex, true, false).draw();
+    dt.draw();
   });
-
 });
 </script>
 @endsection
