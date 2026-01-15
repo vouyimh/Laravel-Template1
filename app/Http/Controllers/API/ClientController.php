@@ -33,6 +33,34 @@ class ClientController extends Controller
         }
     }
 
+    /**
+     * GET /api/clients/{id}
+     */
+    public function show($id)
+    {
+        try {
+            $client = Client::with('houses')->find($id);
+
+            if (!$client) {
+                return response()->json([
+                    'message' => 'Client not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Client retrieved successfully',
+                'data'    => $client,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to retrieve client',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
     public function create(Request $request)
     {
         // Validate request
