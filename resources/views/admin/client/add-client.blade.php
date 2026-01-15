@@ -44,71 +44,77 @@
     <div class="col-md-12">
         <div class="card mb-6 p-3">
             <h1 class="text-center fw-bold mb-4">Add Client</h1>
-        
-                <form action="" method="POST">
-                    @csrf
 
-                    <!-- Company Name -->
-                    <div class="mb-3">
-                        <label class="form-label">Company Name</label>
-                        <input type="text" name="company_name" class="form-control" required>
-                    </div>
+            <form action="" method="POST">
+                @csrf
 
-                    <!-- Owner Name -->
-                    <div class="mb-3">
-                        <label class="form-label">Owner Name</label>
-                        <input type="text" name="owner_name" class="form-control" required>
-                    </div>
+                <!-- Company Name -->
+                <div class="mb-3">
+                    <label class="form-label">Company Name</label>
+                    <input type="text" name="company_name" class="form-control" required>
+                </div>
 
-                    <!-- Email -->
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" name="email" class="form-control" required>
-                    </div>
+                <!-- Owner Name -->
+                <div class="mb-3">
+                    <label class="form-label">Owner Name</label>
+                    <input type="text" name="owner_name" class="form-control" required>
+                </div>
 
-                    <!-- Password -->
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
+                <!-- Email -->
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
 
-                    <!-- Tax -->
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" name="tax" id="tax">
-                        <label class="form-check-label" for="tax">Tax Registered</label>
-                    </div>
+                <!-- Password -->
+                <div class="mb-3">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
 
-                    <!-- Company Address -->
-                    <h4>Company Address</h4>
-                    <div class="mb-3">
-                        <label class="form-label">Street Name</label>
-                        <input type="text" name="company_address[street_name]" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Local Code</label>
-                        <input type="text" name="company_address[local_code]" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Village</label>
-                        <input type="text" name="company_address[village]" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">House Number</label>
-                        <input type="text" name="company_address[house_number]" class="form-control" required>
-                    </div>
+                <!-- Phone Number -->
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="text" name="phone_number" class="form-control" required>
+                </div>
 
-                    <!-- Houses -->
-                    <h4>Houses</h4>
-                    <div id="houses-container">
-                        <!-- Initial house can be added here if needed -->
-                    </div>
-                    <button type="button" class="btn btn-secondary mb-3" onclick="addHouse()">Add House</button>
+                <!-- Tax -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" name="tax" id="tax">
+                    <label class="form-check-label" for="tax">Tax Registered</label>
+                </div>
 
-                    <div>
-                        <button type="submit" class="btn btn-primary">Save Client</button>
-                    </div>
-                </form>
-            </div>
+                <!-- Company Address -->
+                <h4>Company Address</h4>
+                <div class="mb-3">
+                    <label class="form-label">Street Name</label>
+                    <input type="text" name="company_address[street_name]" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Local Code</label>
+                    <input type="text" name="company_address[local_code]" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Village</label>
+                    <input type="text" name="company_address[village]" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">House Number</label>
+                    <input type="text" name="company_address[house_number]" class="form-control" required>
+                </div>
+
+                <!-- Houses -->
+                <h4>Houses</h4>
+                <div id="houses-container">
+                    <!-- Initial house can be added here if needed -->
+                </div>
+                <button type="button" class="btn btn-secondary mb-3" onclick="addHouse()">Add House</button>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">Save Client</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection

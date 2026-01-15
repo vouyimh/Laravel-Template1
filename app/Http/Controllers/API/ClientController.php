@@ -18,12 +18,11 @@ class ClientController extends Controller
         try {
             // Eager load 'houses' relationship
             $clients = Client::with('houses')->get();
-    
+
             return response()->json([
                 'message' => 'Clients retrieved successfully',
                 'data' => $clients,
             ], 200);
-    
         } catch (\Exception $e) {
             return response()->json([
                 'data' => [],
@@ -51,7 +50,6 @@ class ClientController extends Controller
                 'message' => 'Client retrieved successfully',
                 'data'    => $client,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to retrieve client',
@@ -113,7 +111,6 @@ class ClientController extends Controller
                 'message' => 'Client created successfully',
                 'data'    => $client->load('houses'),
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -123,7 +120,7 @@ class ClientController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * DELETE /api/clients/{id}
      */
@@ -148,7 +145,6 @@ class ClientController extends Controller
             return response()->json([
                 'message' => 'Client deleted successfully',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete client',
@@ -163,61 +159,63 @@ class ClientController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Find client
         $client = Client::with('houses')->find($id);
 
         if (!$client) {
-            return response()->json([
-                'message' => 'Client not found',
-            ], 404);
+            return response()->json(['message' => 'Client not found'], 404);
         }
 
-        // Validate request (PATCH = sometimes)
         $validated = $request->validate([
             'company_name' => 'sometimes|string|max:255',
             'owner_name'   => 'sometimes|string|max:255',
-            'email'        => 'sometimes|email|unique:clients,email,' . $client->id,
+            'email' => 'sometimes|email|unique:clients,email,' . $client->client_id . ',client_id',
             'password'     => 'sometimes|string|min:6',
+            'phone_number' => 'nullable|string|max:20',
+            'tax'          => 'sometimes|boolean',
 
-            'phone_number'    => 'sometimes|nullable|string|max:20',
-            'company_type'    => 'sometimes|nullable|string|max:255',
-            'company_address' => 'sometimes|nullable|array',
-            'tax'             => 'sometimes|boolean',
-            'file'            => 'sometimes|nullable|string',
+            'company_address' => 'sometimes|array',
 
-            // Houses
-            'houses'                  => 'sometimes|array',
-            'houses.*.id'             => 'sometimes|exists:houses,id',
-            'houses.*.street_name'    => 'required_with:houses|string|max:255',
-            'houses.*.local_code'     => 'required_with:houses|string|max:50',
-            'houses.*.village'        => 'required_with:houses|string|max:255',
-            'houses.*.house_number'   => 'required_with:houses|string|max:50',
+            // houses
+            'houses'                => 'sometimes|array',
+            'houses.*.id'           => 'nullable|exists:client_houses,id',
+            'houses.*.street_name'  => 'required|string|max:255',
+            'houses.*.local_code'   => 'required|string|max:50',
+            'houses.*.village'      => 'required|string|max:255',
+            'houses.*.house_number' => 'required|string|max:50',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Handle password hashing
+            // password
             if (isset($validated['password'])) {
                 $validated['password'] = Hash::make($validated['password']);
             }
 
-            // Update client fields
-            $client->update($validated);
+            // update client ONLY
+            $clientData = collect($validated)->except(['houses'])->toArray();
+            $client->update($clientData);
 
-            // Update or create houses
+            // handle houses
             if (isset($validated['houses'])) {
-                foreach ($validated['houses'] as $houseData) {
 
-                    // Update existing house
-                    if (isset($houseData['id'])) {
+                // delete removed houses
+                $incomingIds = collect($validated['houses'])
+                    ->pluck('id')
+                    ->filter()
+                    ->toArray();
+
+                $client->houses()
+                    ->whereNotIn('id', $incomingIds)
+                    ->delete();
+
+                foreach ($validated['houses'] as $house) {
+                    if (!empty($house['id'])) {
                         $client->houses()
-                            ->where('id', $houseData['id'])
-                            ->update($houseData);
-                    }
-                    // Create new house
-                    else {
-                        $client->houses()->create($houseData);
+                            ->where('id', $house['id'])
+                            ->update($house);
+                    } else {
+                        $client->houses()->create($house);
                     }
                 }
             }
@@ -226,17 +224,14 @@ class ClientController extends Controller
 
             return response()->json([
                 'message' => 'Client updated successfully',
-                'data'    => $client->fresh()->load('houses'),
-            ], 200);
-
-        } catch (\Exception $e) {
+                'data' => $client->fresh()->load('houses')
+            ]);
+        } catch (\Throwable $e) {
             DB::rollBack();
-
             return response()->json([
-                'message' => 'Failed to update client',
-                'error'   => $e->getMessage(),
+                'message' => 'Update failed',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
-
 }

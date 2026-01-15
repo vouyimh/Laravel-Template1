@@ -138,14 +138,45 @@
         });
 
 
+        // $('#clients-table').on('click', '.edit-client', function() {
+        //     const clientId = $(this).data('id');
+
+        //     // Get client data from API
+        //     $.get(`/api/client/${clientId}`, function(res) {
+        //         const client = res.data;
+
+        //         // Populate the edit form fields
+        //         $('#editCompanyName').val(client.company_name || '');
+        //         $('#editOwnerName').val(client.owner_name || '');
+        //         $('#editEmail').val(client.email || '');
+        //         $('#editPhone').val(client.phone_number || '');
+        //         $('#editTax').prop('checked', client.tax || false);
+
+        //         if (client.company_address) {
+        //             $('#editStreet').val(client.company_address.street_name || '');
+        //             $('#editLocalCode').val(client.company_address.local_code || '');
+        //             $('#editVillage').val(client.company_address.village || '');
+        //             $('#editHouseNumber').val(client.company_address.house_number || '');
+        //         }
+
+        //         // Store clientId in form for submission
+        //         $('#editClientForm').data('client-id', clientId);
+
+        //         // Show the modal
+        //         $('#editClientModal').modal('show');
+        //     });
+        // });
+
+
         $('#clients-table').on('click', '.edit-client', function() {
             const clientId = $(this).data('id');
 
-            // Get client data from API
             $.get(`/api/client/${clientId}`, function(res) {
+
                 const client = res.data;
 
                 // Populate the edit form fields
+                $('#editClientId').val(client.client_id);
                 $('#editCompanyName').val(client.company_name || '');
                 $('#editOwnerName').val(client.owner_name || '');
                 $('#editEmail').val(client.email || '');
@@ -159,10 +190,16 @@
                     $('#editHouseNumber').val(client.company_address.house_number || '');
                 }
 
-                // Store clientId in form for submission
-                $('#editClientForm').data('client-id', clientId);
+                // Reset houses
+                $('#edit-houses-container').html('');
 
-                // Show the modal
+                // Load existing houses
+                if (client.houses && client.houses.length) {
+                    client.houses.forEach(house => {
+                        addEditHouse(house);
+                    });
+                }
+
                 $('#editClientModal').modal('show');
             });
         });
@@ -170,7 +207,19 @@
         $('#editClientForm').submit(function(e) {
             e.preventDefault();
 
-            const clientId = $(this).data('client-id');
+            const clientId = $('#editClientId').val();
+            const houses = [];
+
+            $('#edit-houses-container .house-item').each(function() {
+                houses.push({
+                    id: $(this).find('.house-id').val() || null,
+                    street_name: $(this).find('.house-street').val(),
+                    local_code: $(this).find('.house-local').val(),
+                    village: $(this).find('.house-village').val(),
+                    house_number: $(this).find('.house-number').val()
+                });
+            });
+
             const formData = {
                 company_name: $('#editCompanyName').val(),
                 owner_name: $('#editOwnerName').val(),
@@ -182,7 +231,8 @@
                     local_code: $('#editLocalCode').val(),
                     village: $('#editVillage').val(),
                     house_number: $('#editHouseNumber').val()
-                }
+                },
+                houses: houses
             };
 
             $.ajax({
@@ -201,7 +251,6 @@
                 }
             });
         });
-
 
         // ✅ DELETE CLIENT (THIS GOES IN THE VIEW)
         $('#clients-table').on('click', '.delete-client', function() {
@@ -224,6 +273,64 @@
         });
 
     });
+
+
+    function addEditHouse(house = null) {
+
+        const container = document.getElementById('edit-houses-container');
+        const index = container.children.length;
+
+        const html = `
+    <div class="card house-item mb-3 p-3 border border-secondary">
+        <h5>House #${index + 1}</h5>
+
+        ${house?.id ? `
+            <input type="hidden"
+                   class="house-id"
+                   value="${house.id}">
+        ` : ''}
+
+        <div class="mb-3">
+            <label class="form-label">Street Name</label>
+            <input type="text"
+                   class="form-control house-street"
+                   value="${house?.street_name ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Local Code</label>
+            <input type="text"
+                   class="form-control house-local"
+                   value="${house?.local_code ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Village</label>
+            <input type="text"
+                   class="form-control house-village"
+                   value="${house?.village ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">House Number</label>
+            <input type="text"
+                   class="form-control house-number"
+                   value="${house?.house_number ?? ''}"
+                   required>
+        </div>
+
+        <button type="button"
+                class="btn btn-danger"
+                onclick="this.closest('.house-item').remove()">
+            Remove House
+        </button>
+    </div>`;
+
+        container.insertAdjacentHTML('beforeend', html);
+    }
 </script>
 @endsection
 
@@ -323,38 +430,45 @@
 
 
 <!-- Edit Client Modal -->
-<div class="modal fade" id="editClientModal" tabindex="-1" aria-labelledby="editClientLabel" aria-hidden="true">
+<div class="modal fade" id="editClientModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title" id="editClientLabel">Edit Client</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h1 class="modal-title">Edit Client</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <div class="modal-body">
                 <form id="editClientForm">
                     @csrf
+                    <input type="hidden" id="editClientId">
+
                     <!-- Company Info -->
                     <h4>Company Info</h4>
                     <div class="mb-3">
                         <label class="form-label">Company Name</label>
-                        <input type="text" class="form-control" id="editCompanyName" name="company_name" required>
+                        <input type="text" id="editCompanyName" class="form-control" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Owner Name</label>
-                        <input type="text" class="form-control" id="editOwnerName" name="owner_name" required>
+                        <input type="text" id="editOwnerName" class="form-control" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                        <input type="text" id="editEmail" class="form-control" required>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" id="editPhone" name="phone_number">
+                        <input type="text" id="editPhone" class="form-control" required>
                     </div>
+
+                    <!-- Tax -->
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="editTax" name="tax">
-                        <label class="form-check-label" for="editTax">Tax Registered</label>
+                        <input class="form-check-input" type="checkbox" name="tax" id="editTax">
+                        <label class="form-check-label" for="tax">Tax Registered</label>
                     </div>
 
                     <!-- Company Address -->
@@ -376,7 +490,15 @@
                         <input type="text" class="form-control" id="editHouseNumber" name="house_number">
                     </div>
 
-                    <div class="mt-3 text-end">
+                    <!-- Houses -->
+                    <h4>Houses</h4>
+                    <div id="edit-houses-container"></div>
+
+                    <button type="button" class="btn btn-secondary mb-3" onclick="addEditHouse()">
+                        Add House
+                    </button>
+
+                    <div class="text-end">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save Changes</button>
                     </div>
