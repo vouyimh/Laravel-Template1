@@ -51,7 +51,7 @@
     <div class="card-body p-4 p-md-5">
 
       {{-- ✅ MUST be PUT --}}
-<form method="POST" action="{{ url('/pages/staff-edit/'.$staff->StaffID) }}" enctype="multipart/form-data">
+<form method="POST" action="{{ route('admin.staff.pages-staff-edit', $staff->StaffID) }}" enctype="multipart/form-data">
   @csrf
   @method('PUT')
 

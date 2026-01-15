@@ -25,7 +25,7 @@
     <div class="card-body p-4 p-md-5">
 
       {{-- ✅ POST to your new route name --}}
-      <form method="POST" action="{{ route('admin.staff.add') }}" enctype="multipart/form-data">
+      <form method="POST" action="{{ route('admin.staff.pages-staff-add') }}" enctype="multipart/form-data">
         @csrf
 
         <div class="row g-4">

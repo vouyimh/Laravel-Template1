@@ -158,12 +158,13 @@ Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList']
 Route::get('admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
     ->name('admin.staff.pages-staff-add');
 
-Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
-    ->name('admin.staff.pages-staff-store');
+// Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
+//     ->name('admin.staff.pages-staff-store');
 
 Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
     ->name('admin.staff.pages-staff-edit');
 
 Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
     ->name('admin.staff.pages-staff-update');
+
 require __DIR__ . '/auth.php';
