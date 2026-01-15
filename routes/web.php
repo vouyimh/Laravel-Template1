@@ -49,6 +49,7 @@ use App\Http\Controllers\pages\StaffList;
 use App\Http\Controllers\pages\StaffAdd;
 use App\Http\Controllers\pages\StaffEdit;
 use App\Http\Controllers\pages\StaffDelete;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
 Route::get('/dashboard', function () {
@@ -155,5 +156,13 @@ Route::get('admin/client', [ClientController::class, 'index'])
 
 Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
     ->name('admin.client.add-client');
+
+
+
+Route::resource('admin/tasks', TaskController::class);
+
+// Route::middleware(['auth', 'is_admin'])->group(function () {
+//     Route::resource('admin/tasks', TaskController::class);
+// });
 
 require __DIR__ . '/auth.php';
