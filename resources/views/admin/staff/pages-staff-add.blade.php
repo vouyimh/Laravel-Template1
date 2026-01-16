@@ -3,11 +3,26 @@
 @section('title', 'Add Staff')
 
 @section('content')
+<style>
+  .required::after{
+    content:" *";
+    color:#dc3545;
+    font-weight:700;
+  }
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
 
-  <div class="text-center mb-4">
-    <h4 class="fw-bold mb-1">Add Staff</h4>
-    <p class="text-muted mb-0">Create a new staff account and upload a profile photo.</p>
+  {{-- Header (same style as Edit) --}}
+  <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+      <h4 class="fw-bold mb-1">Add Staff</h4>
+      <div class="text-muted small">Create a new staff account and upload a profile photo.</div>
+    </div>
+
+    <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">
+      <i class="bx bx-arrow-back me-1"></i> Back to List
+    </a>
   </div>
 
   @if($errors->any())
@@ -21,10 +36,15 @@
     </div>
   @endif
 
+  @php
+    // ✅ Use staff.jpg like Edit (avoid default.png 404)
+    $defaultAvatar = asset('assets/img/avatars/staff.jpg');
+  @endphp
+
   <div class="card mx-auto shadow-sm" style="max-width: 900px;">
     <div class="card-body p-4 p-md-5">
 
-      {{-- ✅ POST to your new route name --}}
+      {{-- ✅ POST route for saving --}}
       <form method="POST" action="{{ route('admin.staff.pages-staff-add') }}" enctype="multipart/form-data">
         @csrf
 
@@ -33,26 +53,25 @@
           {{-- LEFT: Profile --}}
           <div class="col-md-4">
             <div class="text-center">
+
               <div class="mb-2">
                 <span class="badge bg-label-primary">Profile</span>
               </div>
 
-              {{-- File input --}}
               <input id="ProfilePicture" name="ProfilePicture" type="file" class="d-none" accept="image/*">
 
               <div class="position-relative d-inline-block">
-                {{-- click avatar --}}
                 <label for="ProfilePicture" class="d-block m-0 p-0" style="cursor:pointer;">
                   <div class="rounded-circle border overflow-hidden shadow-sm" style="width:160px; height:160px;">
                     <img id="profilePreview"
-                         src="{{ asset('assets/img/avatars/default.png') }}"
+                         src="{{ $defaultAvatar }}"
                          alt="Preview"
                          class="w-100 h-100"
-                         style="object-fit: cover;">
+                         style="object-fit: cover;"
+                         onerror="this.src='{{ $defaultAvatar }}'">
                   </div>
                 </label>
 
-                {{-- camera button --}}
                 <label for="ProfilePicture"
                        class="position-absolute bottom-0 end-0 translate-middle p-2 bg-primary border border-light rounded-circle shadow"
                        style="cursor:pointer;"
@@ -70,7 +89,7 @@
 
               <div class="d-flex justify-content-center gap-2 mt-3">
                 <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0">
-                  <i class="bx bx-upload me-1"></i> Upload
+                  <i class="bx bx-upload me-1"></i> Change
                 </label>
 
                 <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;">
@@ -86,102 +105,86 @@
 
           {{-- RIGHT: Form --}}
           <div class="col-md-8">
-
             <div class="mb-2">
               <span class="badge bg-label-secondary">Information</span>
             </div>
 
             <div class="row g-3">
-
               <div class="col-md-6">
-                <label class="form-label">First Name</label>
+                <label class="form-label required">First Name</label>
                 <input name="FirstName" type="text"
                        class="form-control @error('FirstName') is-invalid @enderror"
-                       placeholder="First Name" required
-                       value="{{ old('FirstName') }}">
-                @error('FirstName')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                       required value="{{ old('FirstName') }}">
+                @error('FirstName') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Last Name</label>
+                <label class="form-label required">Last Name</label>
                 <input name="LastName" type="text"
                        class="form-control @error('LastName') is-invalid @enderror"
-                       placeholder="Last Name" required
-                       value="{{ old('LastName') }}">
-                @error('LastName')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                       required value="{{ old('LastName') }}">
+                @error('LastName') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Email</label>
+                <label class="form-label required">Email</label>
                 <input name="Email" type="email"
                        class="form-control @error('Email') is-invalid @enderror"
-                       placeholder="Email" required
-                       value="{{ old('Email') }}">
-                @error('Email')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                       required value="{{ old('Email') }}">
+                @error('Email') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Role</label>
-                <select name="Role"
+                <label class="form-label required">Role</label>
+                <select name="Role" id="RoleSelect"
                         class="form-select @error('Role') is-invalid @enderror"
                         required>
                   <option value="">-- Select Role --</option>
                   <option value="Temporary" {{ old('Role')=='Temporary' ? 'selected' : '' }}>Temporary</option>
                   <option value="Permanent" {{ old('Role')=='Permanent' ? 'selected' : '' }}>Permanent</option>
-                  <option value="Company" {{ old('Role')=='Company' ? 'selected' : '' }}>Company</option>
+                  <option value="Company"   {{ old('Role')=='Company' ? 'selected' : '' }}>Company</option>
                 </select>
-                @error('Role')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                @error('Role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              </div>
+
+              {{-- ✅ Work Type (same as Edit behavior) --}}
+              <div class="col-md-6">
+                <label class="form-label required">Work Type</label>
+                <select name="EmploymentType" id="EmploymentType"
+                        class="form-select @error('EmploymentType') is-invalid @enderror"
+                        required>
+                </select>
+                @error('EmploymentType') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Username</label>
+                <label class="form-label required">Username</label>
                 <input name="Username" type="text"
                        class="form-control @error('Username') is-invalid @enderror"
-                       placeholder="Username" required
-                       value="{{ old('Username') }}">
-                @error('Username')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                       required value="{{ old('Username') }}">
+                @error('Username') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
               <div class="col-md-6">
                 <label class="form-label">Phone Number</label>
                 <input name="PhoneNumber" type="text"
                        class="form-control @error('PhoneNumber') is-invalid @enderror"
-                       placeholder="Phone Number"
                        value="{{ old('PhoneNumber') }}">
-                @error('PhoneNumber')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                @error('PhoneNumber') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
               <div class="col-md-12">
-                <label class="form-label">Password</label>
+                <label class="form-label required">Password</label>
                 <input name="Password" type="password"
                        class="form-control @error('Password') is-invalid @enderror"
-                       placeholder="Password" required>
+                       required>
                 <div class="form-text">Use at least 6 characters.</div>
-                @error('Password')
-                  <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                @error('Password') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
-
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-              {{-- ✅ Cancel should go to new staff list route --}}
-              <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">
-                Cancel
-              </a>
-
+              <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">Cancel</a>
               <button type="submit" class="btn btn-primary">
                 <i class="bx bx-save me-1"></i> Save
               </button>
@@ -193,77 +196,109 @@
 
     </div>
   </div>
-
 </div>
-@endsection
 
-@section('script')
 <script>
 (function () {
+  // ===== image preview/remove =====
   const input = document.getElementById('ProfilePicture');
   const preview = document.getElementById('profilePreview');
   const removeBtn = document.getElementById('removeBtn');
   const fileMeta = document.getElementById('fileMeta');
 
-  if (!input || !preview) return;
-
-  const defaultSrc = preview.src;
-  const maxSize = 2 * 1024 * 1024; // 2MB
+  const defaultAvatar = @json($defaultAvatar);
+  const maxSize = 2 * 1024 * 1024;
   let objectUrl = null;
 
+  function cleanup() {
+    if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
+  }
   function setMeta(file) {
     if (!fileMeta) return;
-    const kb = Math.round(file.size / 1024);
     fileMeta.style.display = 'block';
-    fileMeta.innerText = `${file.name} • ${kb} KB`;
+    fileMeta.innerText = `${file.name} • ${Math.round(file.size/1024)} KB`;
   }
-
   function clearMeta() {
     if (!fileMeta) return;
     fileMeta.style.display = 'none';
     fileMeta.innerText = '';
   }
-
-  function cleanupObjectUrl() {
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-      objectUrl = null;
-    }
-  }
+  function showRemoveBtn() { if (removeBtn) removeBtn.style.display = 'inline-flex'; }
+  function hideRemoveBtn() { if (removeBtn) removeBtn.style.display = 'none'; }
 
   function resetImage() {
-    input.value = '';
-    cleanupObjectUrl();
-    preview.src = defaultSrc;
-    if (removeBtn) removeBtn.style.display = 'none';
+    if (input) input.value = '';
+    cleanup();
+    if (preview) preview.src = defaultAvatar;
     clearMeta();
+    hideRemoveBtn();
   }
 
-  input.addEventListener('change', function (e) {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return resetImage();
+  if (input && preview) {
+    input.addEventListener('change', function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return resetImage();
 
-    if (!file.type || !file.type.startsWith('image/')) {
-      alert('Please choose an image file.');
-      return resetImage();
-    }
+      if (!file.type.startsWith('image/')) {
+        alert('Please choose an image file.');
+        return resetImage();
+      }
+      if (file.size > maxSize) {
+        alert('Image is too large. Max 2MB.');
+        return resetImage();
+      }
 
-    if (file.size > maxSize) {
-      alert('Image is too large. Please select an image under 2MB.');
-      return resetImage();
-    }
+      cleanup();
+      objectUrl = URL.createObjectURL(file);
+      preview.src = objectUrl;
 
-    cleanupObjectUrl();
-    objectUrl = URL.createObjectURL(file);
-    preview.src = objectUrl;
-
-    if (removeBtn) removeBtn.style.display = 'inline-flex';
-    setMeta(file);
-  });
+      setMeta(file);
+      showRemoveBtn();
+    });
+  }
 
   if (removeBtn) removeBtn.addEventListener('click', resetImage);
+  window.addEventListener('beforeunload', cleanup);
 
-  window.addEventListener('beforeunload', cleanupObjectUrl);
+  // ===== Role -> Work Type (same as Edit) =====
+  const roleSelect = document.getElementById('RoleSelect');
+  const workTypeSelect = document.getElementById('EmploymentType');
+
+  let savedWorkType = @json(old('EmploymentType', ''));
+
+  const map = {
+    temporary: ['Part Time', 'Full Time'],
+    permanent: ['Part Time', 'Full Time'],
+    company:   ['Calculate Time', 'Contractor']
+  };
+
+  function renderWorkType() {
+    if (!roleSelect || !workTypeSelect) return;
+
+    const roleKey = (roleSelect.value || '').toLowerCase();
+    const list = map[roleKey] || [];
+
+    workTypeSelect.innerHTML = '';
+    workTypeSelect.add(new Option('-- Select Work Type --', ''));
+
+    if (!list.length) {
+      workTypeSelect.disabled = true;
+      return;
+    }
+
+    workTypeSelect.disabled = false;
+    list.forEach(v => workTypeSelect.add(new Option(v, v)));
+
+    if (savedWorkType) workTypeSelect.value = savedWorkType;
+  }
+
+  if (roleSelect && workTypeSelect) {
+    roleSelect.addEventListener('change', function () {
+      savedWorkType = '';
+      renderWorkType();
+    });
+    renderWorkType();
+  }
 })();
 </script>
 @endsection

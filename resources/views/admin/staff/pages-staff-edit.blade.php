@@ -3,16 +3,23 @@
 @section('title', 'Edit Staff')
 
 @section('content')
+<style>
+  .required::after{
+    content:" *";
+    color:#dc3545;
+    font-weight:700;
+  }
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
 
-  {{-- Header --}}
   <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
     <div>
       <h4 class="fw-bold mb-1">Edit Staff</h4>
       <div class="text-muted small">Update staff information and profile photo.</div>
     </div>
 
-    <a href="{{ route('pages-staff-list') }}" class="btn btn-outline-secondary">
+    <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">
       <i class="bx bx-arrow-back me-1"></i> Back to List
     </a>
   </div>
@@ -34,30 +41,28 @@
 
   @php
     $full = trim(($staff->FirstName ?? '').' '.($staff->LastName ?? ''));
-    $first = $staff->FirstName ?? '';
-    $last  = $staff->LastName ?? '';
-    $initials = strtoupper(substr($first,0,1).substr($last,0,1));
+    $defaultAvatar = asset('assets/img/avatars/staff.jpg');
 
-    // ✅ IMPORTANT: this file must exist in: public/assets/img/avatars/default.png
-    $defaultAvatar = asset('assets/img/avatars/default.png');
-
-    // ✅ staff image from storage (public disk)
     $imgUrl = !empty($staff->ProfilePicture)
       ? asset('storage/'.ltrim($staff->ProfilePicture,'/'))
       : $defaultAvatar;
+
+    // ✅ IMPORTANT: change WorkType to your REAL DB column name if different
+    $savedWorkType = old('EmploymentType', $staff->WorkType ?? '');
   @endphp
 
   <div class="card mx-auto shadow-sm" style="max-width: 900px;">
     <div class="card-body p-4 p-md-5">
 
-      {{-- ✅ MUST be PUT --}}
-<form method="POST" action="{{ route('admin.staff.pages-staff-edit', $staff->StaffID) }}" enctype="multipart/form-data">
-  @csrf
-  @method('PUT')
+      <form method="POST"
+            action="{{ route('admin.staff.pages-staff-edit', $staff->StaffID) }}"
+            enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
 
         <div class="row g-4">
 
-          {{-- LEFT: Profile --}}
+          {{-- LEFT --}}
           <div class="col-md-4">
             <div class="text-center">
               <div class="mb-2">
@@ -103,7 +108,6 @@
                 </button>
               </div>
 
-              {{-- ✅ controller will read this --}}
               <input type="hidden" name="RemoveProfilePicture" id="RemoveProfilePicture" value="0">
 
               @error('ProfilePicture')
@@ -112,7 +116,7 @@
             </div>
           </div>
 
-          {{-- RIGHT: Form --}}
+          {{-- RIGHT --}}
           <div class="col-md-8">
             <div class="mb-2">
               <span class="badge bg-label-secondary">Information</span>
@@ -120,7 +124,7 @@
 
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">First Name</label>
+                <label class="form-label required">First Name</label>
                 <input name="FirstName" type="text"
                        class="form-control @error('FirstName') is-invalid @enderror"
                        required value="{{ old('FirstName', $staff->FirstName) }}">
@@ -128,7 +132,7 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Last Name</label>
+                <label class="form-label required">Last Name</label>
                 <input name="LastName" type="text"
                        class="form-control @error('LastName') is-invalid @enderror"
                        required value="{{ old('LastName', $staff->LastName) }}">
@@ -136,7 +140,7 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Email</label>
+                <label class="form-label required">Email</label>
                 <input name="Email" type="email"
                        class="form-control @error('Email') is-invalid @enderror"
                        required value="{{ old('Email', $staff->Email) }}">
@@ -144,8 +148,9 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Role</label>
-                <select name="Role" class="form-select @error('Role') is-invalid @enderror" required>
+                <label class="form-label required">Role</label>
+                <select name="Role" id="RoleSelect"
+                        class="form-select @error('Role') is-invalid @enderror" required>
                   <option value="">-- Select Role --</option>
                   <option value="Temporary" {{ old('Role', $staff->Role) == 'Temporary' ? 'selected' : '' }}>Temporary</option>
                   <option value="Permanent" {{ old('Role', $staff->Role) == 'Permanent' ? 'selected' : '' }}>Permanent</option>
@@ -155,7 +160,15 @@
               </div>
 
               <div class="col-md-6">
-                <label class="form-label">Username</label>
+                <label class="form-label required">Work Type</label>
+                <select name="EmploymentType" id="EmploymentType"
+                        class="form-select @error('EmploymentType') is-invalid @enderror" required>
+                </select>
+                @error('EmploymentType') <div class="invalid-feedback">{{ $message }}</div> @enderror
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label required">Username</label>
                 <input name="Username" type="text"
                        class="form-control @error('Username') is-invalid @enderror"
                        required value="{{ old('Username', $staff->Username) }}">
@@ -181,12 +194,11 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-              <a href="{{ route('pages-staff-list') }}" class="btn btn-outline-secondary">Cancel</a>
+              <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">Cancel</a>
               <button type="submit" class="btn btn-primary">
                 <i class="bx bx-save me-1"></i> Update
               </button>
             </div>
-
           </div>
 
         </div>
@@ -198,15 +210,14 @@
 
 <script>
 (function () {
+  // ===== image preview/remove =====
   const input = document.getElementById('ProfilePicture');
   const preview = document.getElementById('profilePreview');
   const removeBtn = document.getElementById('removeBtn');
   const fileMeta = document.getElementById('fileMeta');
   const removeFlag = document.getElementById('RemoveProfilePicture');
 
-  if (!input || !preview) return;
-
-  const defaultAvatar = "{{ $defaultAvatar }}";
+  const defaultAvatar = @json($defaultAvatar);
   const maxSize = 2 * 1024 * 1024;
   let objectUrl = null;
 
@@ -226,42 +237,40 @@
   function showRemoveBtn() { if (removeBtn) removeBtn.style.display = 'inline-flex'; }
   function hideRemoveBtn() { if (removeBtn) removeBtn.style.display = 'none'; }
 
-  // show remove if not default
-  if (preview.src && !preview.src.includes('assets/img/avatars/default.png')) {
-    showRemoveBtn();
+  if (preview && preview.src && preview.src !== defaultAvatar) showRemoveBtn();
+
+  if (input && preview) {
+    input.addEventListener('change', function (e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Please choose an image file.');
+        input.value = '';
+        return;
+      }
+      if (file.size > maxSize) {
+        alert('Image is too large. Max 2MB.');
+        input.value = '';
+        return;
+      }
+
+      if (removeFlag) removeFlag.value = '0';
+
+      cleanup();
+      objectUrl = URL.createObjectURL(file);
+      preview.src = objectUrl;
+
+      setMeta(file);
+      showRemoveBtn();
+    });
   }
-
-  input.addEventListener('change', function (e) {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please choose an image file.');
-      input.value = '';
-      return;
-    }
-
-    if (file.size > maxSize) {
-      alert('Image is too large. Max 2MB.');
-      input.value = '';
-      return;
-    }
-
-    if (removeFlag) removeFlag.value = '0';
-
-    cleanup();
-    objectUrl = URL.createObjectURL(file);
-    preview.src = objectUrl;
-
-    setMeta(file);
-    showRemoveBtn();
-  });
 
   if (removeBtn) {
     removeBtn.addEventListener('click', function () {
-      input.value = '';
+      if (input) input.value = '';
       cleanup();
-      preview.src = defaultAvatar;
+      if (preview) preview.src = defaultAvatar;
       clearMeta();
       hideRemoveBtn();
       if (removeFlag) removeFlag.value = '1';
@@ -269,6 +278,54 @@
   }
 
   window.addEventListener('beforeunload', cleanup);
+
+  // ===== Role -> Work Type =====
+  const roleSelect = document.getElementById('RoleSelect');
+  const workTypeSelect = document.getElementById('EmploymentType');
+
+  // ✅ saved from DB (or old input)
+  let savedWorkType = @json($savedWorkType || '');
+  savedWorkType = (savedWorkType || '').trim(); // normalize
+
+  const map = {
+    temporary: ['Part Time', 'Full Time'],
+    permanent: ['Part Time', 'Full Time'],
+    company:   ['Calculate Time', 'Contractor']
+  };
+
+  function renderWorkType() {
+    const roleKey = (roleSelect.value || '').toLowerCase();
+    const list = map[roleKey] || [];
+
+    workTypeSelect.innerHTML = '';
+    const ph = new Option('-- Select Work Type --', '');
+    workTypeSelect.add(ph);
+
+    if (!list.length) {
+      workTypeSelect.disabled = true;
+      return;
+    }
+
+    workTypeSelect.disabled = false;
+
+    list.forEach(v => {
+      workTypeSelect.add(new Option(v, v));
+    });
+
+    // ✅ ALWAYS try to select saved value (if exists)
+    if (savedWorkType) {
+      workTypeSelect.value = savedWorkType;
+    }
+  }
+
+  roleSelect.addEventListener('change', function () {
+    // when role changes, clear savedWorkType so it doesn't force old selection
+    savedWorkType = '';
+    renderWorkType();
+  });
+
+  // initial
+  renderWorkType();
 })();
 </script>
 @endsection

@@ -155,8 +155,8 @@ Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
 Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])
     ->name('admin.staff.pages-staff-list');
 
-Route::get('admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
-    ->name('admin.staff.pages-staff-add');
+Route::match(['get','post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
+  ->name('admin.staff.pages-staff-add');
 
 // Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
 //     ->name('admin.staff.pages-staff-store');
@@ -166,5 +166,9 @@ Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editSt
 
 Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
     ->name('admin.staff.pages-staff-update');
+
+Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
+  ->name('admin.staff.pages-staff-delete');
+ 
 
 require __DIR__ . '/auth.php';
