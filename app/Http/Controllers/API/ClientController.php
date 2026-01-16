@@ -69,17 +69,27 @@ class ClientController extends Controller
             'password'     => 'required|string|min:6',
 
             'phone_number'    => 'nullable|string|max:20',
-            'company_type'    => 'nullable|string|max:255',
+            'company_type'    => 'nullable|string|in:Personal,Company',
             'company_address' => 'nullable|array',
-            'tax'             => 'boolean',
+            'company_address.street_name' => 'required_with:company_address|string|max:255',
+            'company_address.local_code'  => 'required_with:company_address|string|max:50',
+            'company_address.village'     => 'required_with:company_address|string|max:255',
+            'company_address.house_number'=> 'required_with:company_address|string|max:50',
+            
+            'tax'             => 'sometimes|boolean',
             'file'            => 'nullable|string',
 
-            // Client houses (array)
-            'houses'                  => 'nullable|array',
-            'houses.*.street_name'    => 'required_with:houses|string|max:255',
-            'houses.*.local_code'     => 'required_with:houses|string|max:50',
-            'houses.*.village'        => 'required_with:houses|string|max:255',
-            'houses.*.house_number'   => 'required_with:houses|string|max:50',
+            // Houses validation
+            'houses'                => 'nullable|array',
+            'houses.*.street_name'  => 'required_with:houses|string|max:255',
+            'houses.*.local_code'   => 'required_with:houses|string|max:50',
+            'houses.*.village'      => 'required_with:houses|string|max:255',
+            'houses.*.house_number' => 'required_with:houses|string|max:50',
+            'houses.*.room'         => 'required_with:houses|integer|min:1',
+            'houses.*.size'         => 'required_with:houses|numeric|min:0',
+            'houses.*.time'         => 'required_with:houses|string|max:255',
+            'houses.*.tools'        => 'required_with:houses|string|max:1000',
+            'houses.*.tasks'        => 'required_with:houses|string|max:1000',
         ]);
 
         DB::beginTransaction();

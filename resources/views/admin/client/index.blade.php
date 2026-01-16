@@ -137,37 +137,6 @@
             });
         });
 
-
-        // $('#clients-table').on('click', '.edit-client', function() {
-        //     const clientId = $(this).data('id');
-
-        //     // Get client data from API
-        //     $.get(`/api/client/${clientId}`, function(res) {
-        //         const client = res.data;
-
-        //         // Populate the edit form fields
-        //         $('#editCompanyName').val(client.company_name || '');
-        //         $('#editOwnerName').val(client.owner_name || '');
-        //         $('#editEmail').val(client.email || '');
-        //         $('#editPhone').val(client.phone_number || '');
-        //         $('#editTax').prop('checked', client.tax || false);
-
-        //         if (client.company_address) {
-        //             $('#editStreet').val(client.company_address.street_name || '');
-        //             $('#editLocalCode').val(client.company_address.local_code || '');
-        //             $('#editVillage').val(client.company_address.village || '');
-        //             $('#editHouseNumber').val(client.company_address.house_number || '');
-        //         }
-
-        //         // Store clientId in form for submission
-        //         $('#editClientForm').data('client-id', clientId);
-
-        //         // Show the modal
-        //         $('#editClientModal').modal('show');
-        //     });
-        // });
-
-
         $('#clients-table').on('click', '.edit-client', function() {
             const clientId = $(this).data('id');
 

@@ -156,4 +156,8 @@ Route::get('admin/client', [ClientController::class, 'index'])
 Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
     ->name('admin.client.add-client');
 
+// For creating the client (POST request)
+Route::post('admin/client/add-client', [ClientController::class, 'create'])
+    ->name('admin.client.create');
+
 require __DIR__ . '/auth.php';
