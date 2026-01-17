@@ -22,7 +22,11 @@ return new class extends Migration
             $table->string('local_code');
             $table->string('village');
             $table->string('house_number');
-
+            $table->integer('room');
+            $table->string('size');
+            $table->string('time');
+            $table->string('tools');
+            $table->string('tasks');
             $table->timestamps();
         });
     }

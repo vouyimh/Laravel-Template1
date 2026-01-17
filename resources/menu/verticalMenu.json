@@ -79,11 +79,10 @@
       "target": "_blank"
     },
     {
-      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/kanban",
+      "url": "/admin/tasks",
       "name": "Manage Staff Work",
       "icon": "menu-icon icon-base bx bx-grid",
-      "slug": "app-kanban",
-      "target": "_blank"
+      "slug": "app-kanban"
     },
     {
       "name": "Account",

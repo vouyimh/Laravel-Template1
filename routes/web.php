@@ -46,6 +46,11 @@ use App\Http\Controllers\form_elements\InputGroups;
 use App\Http\Controllers\form_layouts\VerticalForm;
 use App\Http\Controllers\form_layouts\HorizontalForm;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\pages\StaffList;
+use App\Http\Controllers\pages\StaffAdd;
+use App\Http\Controllers\pages\StaffEdit;
+use App\Http\Controllers\pages\StaffDelete;
+use App\Http\Controllers\TaskController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
 Route::get('/dashboard', function () {
@@ -169,5 +174,8 @@ Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'update
 
 Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
     ->name('admin.staff.pages-staff-delete');
+
+Route::resource('admin/tasks', TaskController::class);
+
 
 require __DIR__ . '/auth.php';
