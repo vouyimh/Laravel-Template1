@@ -60,7 +60,14 @@
                     data: 'owner_name'
                 },
                 {
-                    data: 'created_at'
+                    data: 'email'
+                },
+                {
+                    data: 'created_at',
+                    render: function(data) {
+                        if (!data) return '';
+                        return data.split('T')[0]; // ✅ 2026-01-16
+                    }
                 },
                 {
                     data: null,
@@ -103,6 +110,8 @@
                 $('#viewEmail').val(client.email || '');
                 $('#viewPhone').val(client.phone_number || '');
                 $('#viewTax').prop('checked', client.tax || false);
+                $('#viewLockbox').val(client.lockbox || '');
+                $('#viewCompanyType').val(client.company_type || '');
 
                 // Company Address
                 if (client.company_address) {
@@ -124,6 +133,11 @@
                             <div class="mb-1"><strong>Local Code:</strong> ${h.local_code}</div>
                             <div class="mb-1"><strong>Village:</strong> ${h.village}</div>
                             <div class="mb-1"><strong>House Number:</strong> ${h.house_number}</div>
+                            <div class="mb-1"><strong>Total Number of Rooms:</strong> ${h.room}</div>
+                            <div class="mb-1"><strong>Size:</strong> ${h.size}</div>
+                            <div class="mb-1"><strong>Total Time for Cleaning:</strong> ${h.time}</div>
+                            <div class="mb-1"><strong>Total Tools:</strong> ${h.tools}</div>
+                            <div class="mb-1"><strong>Task To Do:</strong> ${h.tasks}</div>
                         </div>
                         `;
                         housesContainer.append(houseHTML);
@@ -151,6 +165,8 @@
                 $('#editEmail').val(client.email || '');
                 $('#editPhone').val(client.phone_number || '');
                 $('#editTax').prop('checked', client.tax || false);
+                $('#editLockbox').val(client.lockbox || '');
+                $('#editCompanyType').val(client.company_type || '');
 
                 if (client.company_address) {
                     $('#editStreet').val(client.company_address.street_name || '');
@@ -185,7 +201,12 @@
                     street_name: $(this).find('.house-street').val(),
                     local_code: $(this).find('.house-local').val(),
                     village: $(this).find('.house-village').val(),
-                    house_number: $(this).find('.house-number').val()
+                    house_number: $(this).find('.house-number').val(),
+                    room: $(this).find('.room').val(),
+                    size: $(this).find('.size').val(),
+                    time: $(this).find('.time').val(),
+                    tools: $(this).find('.tools').val(),
+                    tasks: $(this).find('.tasks').val(),
                 });
             });
 
@@ -195,6 +216,8 @@
                 email: $('#editEmail').val(),
                 phone_number: $('#editPhone').val(),
                 tax: $('#editTax').is(':checked') ? true : false,
+                lockbox: $('#editLockbox').val(),
+                company_type: $('#editCompanyType').val(),
                 company_address: {
                     street_name: $('#editStreet').val(),
                     local_code: $('#editLocalCode').val(),
@@ -233,7 +256,7 @@
                 type: 'DELETE',
                 success: function(response) {
                     alert(response.message);
-                    table.ajax.reload(null, false);
+                    $('#clients-table').DataTable().ajax.reload(null, false);
                 },
                 error: function(xhr) {
                     alert(xhr.responseJSON?.message || 'Delete failed');
@@ -291,6 +314,46 @@
                    required>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Total Number of Rooms</label>
+            <input type="text"
+                   class="form-control room"
+                   value="${house?.room ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Size</label>
+            <input type="text"
+                   class="form-control size"
+                   value="${house?.size ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Total Time for Cleaning</label>
+            <input type="text"
+                   class="form-control time"
+                   value="${house?.time ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Total Tools</label>
+            <input type="text"
+                   class="form-control tools"
+                   value="${house?.tools ?? ''}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Task To Do</label>
+            <input type="text"
+                   class="form-control tasks"
+                   value="${house?.tasks ?? ''}"
+                   required>
+        </div>
+
         <button type="button"
                 class="btn btn-danger"
                 onclick="this.closest('.house-item').remove()">
@@ -313,7 +376,8 @@
                 <table id="clients-table" class="display table table-striped" style="width:100%">
                     <thead>
                         <tr>
-                            <th>Name</th>
+                            <th>Company Name</th>
+                            <th>Owner Name</th>
                             <th>Email</th>
                             <th>Created At</th>
                             <th>Actions</th>
@@ -358,6 +422,17 @@
                         <label class="form-label">Phone Number</label>
                         <input type="text" class="form-control" id="viewPhone" readonly>
                     </div>
+                    <!-- Lockbox -->
+                    <div class="mb-3">
+                        <label class="form-label">Lockbox Number</label>
+                        <input type="text" class="form-control" id="viewLockbox" readonly>
+                    </div>
+                    <!-- Company Type -->
+                    <div class="mb-3">
+                        <label class="form-label">Company Type</label>
+                        <input type="text" class="form-control" id="viewCompanyType" readonly>
+                    </div>
+                    <!-- Tax -->
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="viewTax" disabled>
                         <label class="form-check-label" for="viewTax">Tax Registered</label>
@@ -432,6 +507,19 @@
                     <div class="mb-3">
                         <label class="form-label">Phone Number</label>
                         <input type="text" id="editPhone" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Lockbox Number</label>
+                        <input type="text" id="editLockbox" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Company Type</label>
+                        <select name="company_type" id="editCompanyType" class="form-select " required="">
+                            <option value="Personal">Personal</option>
+                            <option value="Company">Company</option>
+                        </select>
                     </div>
 
                     <!-- Tax -->

@@ -5,10 +5,15 @@
 <!-- Page Scripts -->
 @section('script')
 <!-- @vite(['resources/assets/js/pages-account-settings-account.js']) -->
-<script>
+<!-- Include jQuery first -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+<script>
     $(document).ready(function() {
         $('#add-client-form').submit(function(e) {
+
             e.preventDefault(); // prevent normal form submission
 
             // Build houses array
@@ -34,7 +39,7 @@
                 email: $('input[name="email"]').val(),
                 password: $('input[name="password"]').val(),
                 phone_number: $('input[name="phone_number"]').val(),
-                lockbox_number: $('input[name="lockbox_number"]').val(),
+                lockbox: $('input[name="lockbox_number"]').val(),
                 company_type: $('select[name="company_type"]').val(),
                 tax: $('#tax').is(':checked') ? true : false,
                 company_address: {
@@ -47,19 +52,20 @@
             };
 
             $.ajax({
-                url: 'api/add-client',
+                url: '/api/add-client',
                 type: 'POST',
+                contentType: 'application/json',
+                dataType: 'json',
                 data: JSON.stringify(formData),
-                headers: {
-                    'X-CSRF-TOKEN': $('input[name="_token"]').val() // include CSRF token
-                },
+
                 success: function(response) {
                     alert(response.message);
                     $('#add-client-form')[0].reset();
                     $('#houses-container').html('');
+                    window.location.href = '/admin/client';
                 },
                 error: function(xhr) {
-                    if(xhr.status === 422){
+                    if (xhr.status === 422) {
                         // Validation errors
                         let errors = xhr.responseJSON.errors;
                         let message = '';
@@ -81,48 +87,86 @@
         const index = container.children.length;
 
         const houseHTML = `
-        <div class="card mb-3 p-3 border border-secondary">
-            <h5>House #${index + 1}</h5>
-            <div class="mb-3">
-                <label class="form-label">Street Name</label>
-                <input type="text" name="houses[${index}][street_name]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Local Code</label>
-                <input type="text" name="houses[${index}][local_code]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Village</label>
-                <input type="text" name="houses[${index}][village]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">House Number</label>
-                <input type="text" name="houses[${index}][house_number]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Total Number of Rooms</label>
-                <input type="number" name="houses[${index}][room]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Size</label>
-                <input type="text" name="houses[${index}][size]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Total Time for Cleaning</label>
-                <input type="text" name="houses[${index}][time]" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Total Tools</label>
-                <textarea name="houses[${index}][tools]" class="form-control" required></textarea>
-            </div>
+            <div class="card mb-3 p-3 border border-secondary">
+                <h5>House #${index + 1}</h5>
 
-            <div class="mb-3">
-                <label class="form-label">Task To Do</label>
-                <textarea name="houses[${index}][tasks]" class="form-control" required></textarea>
+                <div class="mb-3">
+                    <label class="form-label">Street Name</label>
+                    <input type="text"
+                        name="houses[${index}][street_name]"
+                        class="form-control house-street"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Local Code</label>
+                    <input type="text"
+                        name="houses[${index}][local_code]"
+                        class="form-control house-local"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Village</label>
+                    <input type="text"
+                        name="houses[${index}][village]"
+                        class="form-control house-village"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">House Number</label>
+                    <input type="text"
+                        name="houses[${index}][house_number]"
+                        class="form-control house-number"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Number of Rooms</label>
+                    <input type="number"
+                        name="houses[${index}][room]"
+                        class="form-control house-room"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Size</label>
+                    <input type="text"
+                        name="houses[${index}][size]"
+                        class="form-control house-size"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Time for Cleaning</label>
+                    <input type="text"
+                        name="houses[${index}][time]"
+                        class="form-control house-time"
+                        required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Total Tools</label>
+                    <textarea name="houses[${index}][tools]"
+                            class="form-control house-tools"
+                            required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Task To Do</label>
+                    <textarea name="houses[${index}][tasks]"
+                            class="form-control house-tasks"
+                            required></textarea>
+                </div>
+
+                <button type="button"
+                        class="btn btn-danger"
+                        onclick="this.parentElement.remove()">
+                    Remove House
+                </button>
             </div>
-            <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">Remove House</button>
-        </div>
-        `;
+            `;
 
         container.insertAdjacentHTML('beforeend', houseHTML);
     }
@@ -136,7 +180,6 @@
             <h1 class="text-center fw-bold mb-4">Add Client</h1>
 
             <form id="add-client-form" method="POST">
-                @csrf
 
                 <!-- Company Name -->
                 <div class="mb-3">
