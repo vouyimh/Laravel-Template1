@@ -15,6 +15,11 @@ class ClientHouse extends Model
         'local_code',
         'village',
         'house_number',
+        'room',
+        'size',
+        'time',
+        'tools',
+        'tasks',
     ];
 
     public function client()

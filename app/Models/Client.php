@@ -19,9 +19,10 @@ class Client extends Model
         'email',
         'password',
         'phone_number',
-        'company_type',
         'company_address',
         'tax',
+        'lockbox',
+        'company_type',
         'file',
     ];
 

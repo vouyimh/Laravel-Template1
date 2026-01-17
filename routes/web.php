@@ -161,8 +161,5 @@ Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
 
 Route::resource('admin/tasks', TaskController::class);
 
-// Route::middleware(['auth', 'is_admin'])->group(function () {
-//     Route::resource('admin/tasks', TaskController::class);
-// });
 
 require __DIR__ . '/auth.php';

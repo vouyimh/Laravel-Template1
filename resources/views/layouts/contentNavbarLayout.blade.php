@@ -77,6 +77,8 @@
 
     <div class="drag-target"></div>
   </div>
+  <!-- Include jQuery first -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
   {{-- ✅ SweetAlert loaded once here (so every page can use Swal) --}}
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -85,4 +87,3 @@
   @yield('script')
   @stack('scripts')
 @endsection
-
