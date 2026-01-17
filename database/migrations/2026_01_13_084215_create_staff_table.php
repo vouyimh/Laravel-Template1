@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('LastName', 50);
             $table->string('Email', 100)->unique();
             $table->enum('Role', ['Temporary', 'Permanent', 'Company']);
+            $table->string('EmploymentType', 30);
             $table->string('Username', 50)->unique();
             $table->string('Password', 255);
             $table->string('PhoneNumber', 20)->nullable();
