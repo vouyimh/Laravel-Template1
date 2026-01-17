@@ -182,12 +182,8 @@
                      class="btn btn-sm btn-outline-primary btn-icon">
                     <i class="bx bx-pencil"></i>
                   </a>
-                  <button type="button"
-                    class="btn btn-sm btn-outline-danger btn-icon delete-btn"
-                    data-id="{{ $s->StaffID }}"
-                    data-url="{{ route('admin.staff.pages-staff-delete', $s->StaffID) }}"
-                    data-name="{{ $full }}">
-                    <i class="bx bx-trash"></i>
+                  <button class="delete-btn" data-url="{{ route('admin.staff.pages-staff-delete', $s->StaffID) }}">
+                      <i class="bx bx-trash"></i>
                   </button>
                 </td>
               </tr>
@@ -223,7 +219,6 @@
   z-index: 2147483647 !important;
 }
 </style>
-
 <script>
 $(function () {
   const ROLE_COL = 3;   // Role column index (0-based)
@@ -249,11 +244,9 @@ $(function () {
     order: [[0, 'desc']],
     columnDefs: [{ orderable: false, targets: [ACTION_COL] }],
     responsive: false,
-
     dom:
       "tr" +
       "<'dt-bottom d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2'<'text-muted'i><'ms-auto'p>>",
-
     language: {
       info: "Showing _START_ to _END_ of _TOTAL_ entries",
       infoEmpty: "Showing 0 to 0 of 0 entries",
@@ -278,72 +271,63 @@ $(function () {
   updateCount();
 
   // ✅ Hooks
-  $('#roleFilter').on('change', function () {
-    dt.draw();
-  });
+  $('#roleFilter').on('change', function () { dt.draw(); });
+  $('#staffSearch').on('input', function () { dt.search(this.value).draw(); });
+  $('#pageSize').on('change', function () { dt.page.len(parseInt(this.value, 10)).draw(); });
 
-  $('#staffSearch').on('input', function () {
-    dt.search(this.value).draw();
-  });
-
-  $('#pageSize').on('change', function () {
-    dt.page.len(parseInt(this.value, 10)).draw();
-  });
-
-// ✅ SweetAlert Delete (delegation because DataTables redraw replaces DOM)
+  // ✅ SweetAlert Delete (delegation because DataTables redraw replaces DOM)
 $(document).on('click', '.delete-btn', async function () {
-  const url   = $(this).data('url');        // ✅ correct
-  const rowEl = $(this).closest('tr');
+    const url = $(this).data('url');
+    const rowEl = $(this).closest('tr');
+    const csrfToken = $('meta[name="csrf-token"]').attr('content');
 
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-  if (!csrfToken) {
-    Swal.fire('CSRF Missing', 'Add <meta name="csrf-token" content="{{ csrf_token() }}"> in layout head.', 'error');
-    return;
-  }
+    if (!url) return Swal.fire('Error', 'Missing delete URL.', 'error');
 
-  if (!url) {
-    Swal.fire('Error', 'Missing delete URL (data-url).', 'error');
-    return;
-  }
-
-  const result = await Swal.fire({
-    title: 'Delete staff?',
-    text: 'This action cannot be undone.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Yes, delete',
-    cancelButtonText: 'Cancel',
-    backdrop: true
-  });
-
-  if (!result.isConfirmed) return;
-
-  Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-  try {
-    const res = await fetch(url, {          // ✅ uses Laravel route URL
-      method: 'DELETE',
-      headers: {
-        'X-CSRF-TOKEN': csrfToken,
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+    const result = await Swal.fire({
+        title: 'Delete staff?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete',
+        cancelButtonText: 'Cancel'
     });
 
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed.');
+    if (!result.isConfirmed) return;
 
-    dt.row(rowEl).remove().draw();
+    Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-    Swal.fire({ title: 'Deleted!', text: 'Staff deleted successfully.', icon: 'success', timer: 1200, showConfirmButton: false });
-  } catch (err) {
-    Swal.fire('Error', err.message || 'Server error. Please try again.', 'error');
-  }
+      try {
+          const res = await fetch(url, {
+              method: 'DELETE',
+              headers: {
+                  'X-CSRF-TOKEN': csrfToken,
+                  'Accept': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest'
+              },
+              credentials: 'same-origin'
+          });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'Delete failed.');
+
+        // Remove the row from DataTable
+        $('#staff-table').DataTable().row(rowEl).remove().draw();
+
+        Swal.fire({
+            title: 'Deleted!',
+            text: data.message,
+            icon: 'success',
+            timer: 1200,
+            showConfirmButton: false
+        });
+    } catch (err) {
+        Swal.fire('Error', err.message || 'Server error', 'error');
+    }
 });
-
 
 });
 </script>
+
 @endsection

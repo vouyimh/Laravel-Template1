@@ -30,6 +30,7 @@ class StaffController extends Controller
             'LastName'  => ['required','string','max:50'],
             'Email'     => ['required','email','max:100','unique:Staff,Email'],
             'Role'      => ['required','in:Temporary,Permanent,Company'],
+            'EmploymentType' => ['required','string','max:30'],
             'Username'  => ['required','string','max:50','unique:Staff,Username'],
             'Password'  => ['required','string','min:6'],
             'PhoneNumber' => ['nullable','string','max:20'],
@@ -48,6 +49,7 @@ class StaffController extends Controller
                 'LastName'  => trim($validated['LastName']),
                 'Email'     => trim($validated['Email']),
                 'Role'      => $validated['Role'],
+                'EmploymentType' => $validated['EmploymentType'],
                 'Username'  => trim($validated['Username']),
                 'Password'  => bcrypt($validated['Password']),
                 'PhoneNumber' => isset($validated['PhoneNumber']) ? trim($validated['PhoneNumber']) : null,
@@ -132,3 +134,4 @@ class StaffController extends Controller
         return redirect()->route('admin.staff.pages-staff-list')->with('success', 'Staff deleted successfully!');
     }
 }
+
