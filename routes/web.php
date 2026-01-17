@@ -45,6 +45,7 @@ use App\Http\Controllers\form_elements\BasicInput;
 use App\Http\Controllers\form_elements\InputGroups;
 use App\Http\Controllers\form_layouts\VerticalForm;
 use App\Http\Controllers\form_layouts\HorizontalForm;
+use App\Http\Controllers\StaffController;
 use App\Http\Controllers\pages\StaffList;
 use App\Http\Controllers\pages\StaffAdd;
 use App\Http\Controllers\pages\StaffEdit;
@@ -94,16 +95,14 @@ Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'i
 //Route::get('/pages/misc-under-maintenance', [MiscUnderMaintenance::class, 'index'])->name('pages-misc-under-maintenance');
 
 //staff
-// Route::get('/pages/staff-list', [StaffList::class, 'index'])->name('pages-staff-list');
-// Route::get('/pages/staff-add', [StaffAdd::class, 'index'])->name('pages-staff-add');
-// staff
-Route::get('/pages/staff-list', [StaffList::class, 'index'])->name('pages-staff-list');
-Route::match(['get','post'], '/pages/staff-add', [StaffAdd::class, 'index'])->name('pages-staff-add');
-Route::get('/pages/staff-edit/{id}', [StaffEdit::class, 'index'])->name('pages-staff-edit');
-Route::put('/pages/staff-edit/{id}', [StaffEdit::class, 'update'])->name('pages-staff-update');
-Route::delete('/pages/staff-delete/{id}', [StaffDelete::class, 'destroy'])
-    ->name('pages-staff-delete');
 
+// Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
+
+
+
+
+
+// });
 // authentication
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');
 Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-register-basic');
@@ -158,11 +157,25 @@ Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
     ->name('admin.client.add-client');
 
 
+Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])
+    ->name('admin.staff.pages-staff-list');
+
+Route::match(['get','post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
+  ->name('admin.staff.pages-staff-add');
+
+Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
+    ->name('admin.staff.pages-staff-store');
+
+Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
+    ->name('admin.staff.pages-staff-edit');
+
+Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
+    ->name('admin.staff.pages-staff-update');
+
+Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
+    ->name('admin.staff.pages-staff-delete');
 
 Route::resource('admin/tasks', TaskController::class);
 
-// Route::middleware(['auth', 'is_admin'])->group(function () {
-//     Route::resource('admin/tasks', TaskController::class);
-// });
 
 require __DIR__ . '/auth.php';

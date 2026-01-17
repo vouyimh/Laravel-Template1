@@ -15,6 +15,7 @@ class Staff extends Model
         'LastName',
         'Email',
         'Role',
+        'EmploymentType', 
         'Username',
         'Password',
         'PhoneNumber',

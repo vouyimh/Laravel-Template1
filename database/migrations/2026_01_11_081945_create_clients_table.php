@@ -18,15 +18,19 @@ return new class extends Migration
             $table->string('owner_name');
             $table->string('email')->unique();
             $table->string('password');
-
             $table->string('phone_number')->nullable();
-            $table->string('company_type')->nullable();
 
             // JSON for company address
             $table->json('company_address')->nullable();
 
             // Yes / No
             $table->boolean('tax')->default(false);
+
+            // Lockbox Number
+            $table->string('lockbox')->nullable();
+
+            // Company Type
+            $table->enum('company_type', ['Personal', 'Company']);
 
             // file name or path
             $table->string('file')->nullable();

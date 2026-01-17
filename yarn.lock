@@ -2120,6 +2120,25 @@
     "es-errors" "^1.3.0"
     "is-data-view" "^1.0.1"
 
+datatables.net-dt@^2.3.6:
+  version "2.3.6"
+  resolved "https://registry.npmjs.org/datatables.net-dt/-/datatables.net-dt-2.3.6.tgz"
+  integrity sha512-8OEUNCEfkeW+TuVUDlT1q6/XXOitgVzCdNqBivw8bK9DnaNk5F6JjT8lE2pQ4uAfoL/dTy2J+HKxTHeTh8HJlg==
+  dependencies:
+    datatables.net "2.3.6"
+    jquery ">=1.7"
+
+datatables.net@^2.3.6, datatables.net@2.3.6:
+  version "2.3.6"
+  resolved "https://registry.npmjs.org/datatables.net/-/datatables.net-2.3.6.tgz"
+  integrity sha512-xQ/dCxrjfxM0XY70wSIzakkTZ6ghERwlLmAPyCnu8Sk5cyt9YvOVyOsFNOa/BZ/lM63Q3i2YSSvp/o7GXZGsbg==
+  dependencies:
+    jquery ">=1.7"
+
+debug@^2.2.0:
+  version "2.6.9"
+  resolved "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"
+  integrity sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==
 "debug@^2.2.0":
   "integrity" "sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA=="
   "resolved" "https://registry.npmjs.org/debug/-/debug-2.6.9.tgz"
@@ -3616,6 +3635,11 @@
   "version" "1.21.7"
 
 "jquery@^3.7.1":
+jquery@^3.7.1, jquery@>=1.7:
+  version "3.7.1"
+  resolved "https://registry.npmjs.org/jquery/-/jquery-3.7.1.tgz"
+  integrity sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==
+"jquery@3.7.1":
   "integrity" "sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg=="
   "resolved" "https://registry.npmjs.org/jquery/-/jquery-3.7.1.tgz"
   "version" "3.7.1"
