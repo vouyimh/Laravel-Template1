@@ -21,6 +21,7 @@ return new class extends Migration
 
             // ✅ image path
             $table->string('ProfilePicture', 255)->nullable();
+            $table->string('Address', 255)->nullable();
         });
     }
 

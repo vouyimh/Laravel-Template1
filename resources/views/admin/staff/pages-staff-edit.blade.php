@@ -4,21 +4,40 @@
 
 @section('content')
 <style>
-  .required::after{
-    content:" *";
-    color:#dc3545;
-    font-weight:700;
+  .required::after { content:" *"; color:#dc3545; font-weight:700; }
+  .address-wrapper { position: relative; }
+  #addressSuggestions {
+    position: absolute; top: calc(100% + 4px); left:0; right:0;
+    max-height:220px; overflow-y:auto; background:#fff;
+    border:1px solid #dee2e6; border-radius:6px; z-index:2000;
+    box-shadow:0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
   }
+  #addressSuggestions .item { padding:8px 12px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+  #addressSuggestions .item:last-child { border-bottom:none; }
+  #addressSuggestions .item:hover { background:#f5f6f8; }
+  .address-space { margin-bottom:120px; }
 </style>
 
-<div class="container-xxl flex-grow-1 container-p-y">
+@php
+    $defaultAvatar = asset('assets/img/avatars/staff.jpg');
+    $imgUrl = !empty($staff->ProfilePicture)
+      ? asset('storage/'.$staff->ProfilePicture)
+      : $defaultAvatar;
 
+    $fullName = trim(($staff->FirstName ?? '').' '.($staff->LastName ?? ''));
+    $savedWorkType = old('EmploymentType', $staff->EmploymentType ?? '');
+    $savedAddress  = old('Address', $staff->Address ?? '');
+@endphp
+
+<input type="hidden" id="savedWorkType" value="{{ addslashes($savedWorkType) }}">
+<input type="hidden" id="savedAddress" value="{{ addslashes($savedAddress) }}">
+
+<div class="container-xxl flex-grow-1 container-p-y">
   <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
     <div>
       <h4 class="fw-bold mb-1">Edit Staff</h4>
       <div class="text-muted small">Update staff information and profile photo.</div>
     </div>
-
     <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">
       <i class="bx bx-arrow-back me-1"></i> Back to List
     </a>
@@ -31,301 +50,228 @@
   @if($errors->any())
     <div class="alert alert-danger">
       <div class="fw-semibold mb-1">Please fix the errors below:</div>
-      <ul class="mb-0">
-        @foreach($errors->all() as $e)
-          <li>{{ $e }}</li>
-        @endforeach
-      </ul>
+      <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
     </div>
   @endif
 
-  @php
-    $full = trim(($staff->FirstName ?? '').' '.($staff->LastName ?? ''));
-    $defaultAvatar = asset('assets/img/avatars/staff.jpg');
-
-    $imgUrl = !empty($staff->ProfilePicture)
-      ? asset('storage/'.ltrim($staff->ProfilePicture,'/'))
-      : $defaultAvatar;
-
-    // ✅ IMPORTANT: change WorkType to your REAL DB column name if different
-    $savedWorkType = old('EmploymentType', $staff->WorkType ?? '');
-  @endphp
-
-  <div class="card mx-auto shadow-sm" style="max-width: 900px;">
+  <div class="card mx-auto shadow-sm" style="max-width:900px;">
     <div class="card-body p-4 p-md-5">
-
-      <form method="POST"
-            action="{{ route('admin.staff.pages-staff-edit', $staff->StaffID) }}"
-            enctype="multipart/form-data">
+      <form method="POST" action="{{ route('admin.staff.pages-staff-edit', $staff->StaffID) }}" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
         <div class="row g-4">
-
-          {{-- LEFT --}}
-          <div class="col-md-4">
-            <div class="text-center">
-              <div class="mb-2">
-                <span class="badge bg-label-primary">Profile</span>
-              </div>
-
-              <input id="ProfilePicture" name="ProfilePicture" type="file" class="d-none" accept="image/*">
-
-              <div class="position-relative d-inline-block">
-                <label for="ProfilePicture" class="d-block m-0 p-0" style="cursor:pointer;">
-                  <div class="rounded-circle border overflow-hidden shadow-sm" style="width:160px; height:160px;">
-                    <img id="profilePreview"
-                         src="{{ $imgUrl }}"
-                         alt="Preview"
-                         class="w-100 h-100"
-                         style="object-fit: cover;"
-                         onerror="this.src='{{ $defaultAvatar }}'">
-                  </div>
-                </label>
-
-                <label for="ProfilePicture"
-                       class="position-absolute bottom-0 end-0 translate-middle p-2 bg-primary border border-light rounded-circle shadow"
-                       style="cursor:pointer;"
-                       title="Upload photo">
-                  <i class="bx bx-camera text-white"></i>
-                </label>
-              </div>
-
-              <div class="mt-3">
-                <div class="fw-semibold">{{ $full ?: 'Staff' }}</div>
-                <div class="text-muted small">JPG/PNG/WebP • Max 2MB</div>
-              </div>
-
-              <div id="fileMeta" class="mt-2 small text-muted" style="display:none;"></div>
-
-              <div class="d-flex justify-content-center gap-2 mt-3">
-                <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0">
-                  <i class="bx bx-upload me-1"></i> Change
-                </label>
-
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;">
-                  <i class="bx bx-trash me-1"></i> Remove
-                </button>
-              </div>
-
-              <input type="hidden" name="RemoveProfilePicture" id="RemoveProfilePicture" value="0">
-
-              @error('ProfilePicture')
-                <div class="text-danger small mt-2">{{ $message }}</div>
-              @enderror
+          {{-- LEFT PROFILE --}}
+          <div class="col-md-4 text-center">
+            <input id="ProfilePicture" name="ProfilePicture" type="file" class="d-none" accept="image/*">
+            <div class="position-relative d-inline-block">
+              <label for="ProfilePicture" style="cursor:pointer;">
+                <div class="rounded-circle border overflow-hidden shadow-sm" style="width:160px;height:160px;">
+                  <img id="profilePreview" src="{{ $imgUrl }}" alt="Preview" class="w-100 h-100" style="object-fit:cover;" onerror="this.src='{{ $defaultAvatar }}'">
+                </div>
+              </label>
+              <label for="ProfilePicture" class="position-absolute bottom-0 end-0 translate-middle p-2 bg-primary border border-light rounded-circle shadow" style="cursor:pointer;" title="Upload photo">
+                <i class="bx bx-camera text-white"></i>
+              </label>
             </div>
+            <div class="mt-3">
+              <div class="fw-semibold">{{ $fullName ?: 'Staff' }}</div>
+              <div class="text-muted small">JPG/PNG/WebP • Max 2MB</div>
+            </div>
+            <div class="d-flex justify-content-center gap-2 mt-3">
+              <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0"><i class="bx bx-upload me-1"></i> Change</label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;"><i class="bx bx-trash me-1"></i> Remove</button>
+            </div>
+            <input type="hidden" name="RemoveProfilePicture" id="RemoveProfilePicture" value="0">
           </div>
 
-          {{-- RIGHT --}}
+          {{-- RIGHT FORM --}}
           <div class="col-md-8">
-            <div class="mb-2">
-              <span class="badge bg-label-secondary">Information</span>
-            </div>
-
             <div class="row g-3">
+              {{-- NAME --}}
               <div class="col-md-6">
                 <label class="form-label required">First Name</label>
-                <input name="FirstName" type="text"
-                       class="form-control @error('FirstName') is-invalid @enderror"
-                       required value="{{ old('FirstName', $staff->FirstName) }}">
-                @error('FirstName') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <input name="FirstName" type="text" class="form-control" required value="{{ old('FirstName',$staff->FirstName) }}">
               </div>
-
               <div class="col-md-6">
                 <label class="form-label required">Last Name</label>
-                <input name="LastName" type="text"
-                       class="form-control @error('LastName') is-invalid @enderror"
-                       required value="{{ old('LastName', $staff->LastName) }}">
-                @error('LastName') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <input name="LastName" type="text" class="form-control" required value="{{ old('LastName',$staff->LastName) }}">
               </div>
 
+              {{-- EMAIL --}}
               <div class="col-md-6">
                 <label class="form-label required">Email</label>
-                <input name="Email" type="email"
-                       class="form-control @error('Email') is-invalid @enderror"
-                       required value="{{ old('Email', $staff->Email) }}">
-                @error('Email') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <input name="Email" type="email" class="form-control" required value="{{ old('Email',$staff->Email) }}">
               </div>
 
+              {{-- ROLE --}}
               <div class="col-md-6">
                 <label class="form-label required">Role</label>
-                <select name="Role" id="RoleSelect"
-                        class="form-select @error('Role') is-invalid @enderror" required>
+                <select name="Role" id="RoleSelect" class="form-select" required>
                   <option value="">-- Select Role --</option>
-                  <option value="Temporary" {{ old('Role', $staff->Role) == 'Temporary' ? 'selected' : '' }}>Temporary</option>
-                  <option value="Permanent" {{ old('Role', $staff->Role) == 'Permanent' ? 'selected' : '' }}>Permanent</option>
-                  <option value="Company"   {{ old('Role', $staff->Role) == 'Company' ? 'selected' : '' }}>Company</option>
+                  <option value="Temporary" {{ old('Role',$staff->Role)=='Temporary'?'selected':'' }}>Temporary</option>
+                  <option value="Permanent" {{ old('Role',$staff->Role)=='Permanent'?'selected':'' }}>Permanent</option>
+                  <option value="Company" {{ old('Role',$staff->Role)=='Company'?'selected':'' }}>Company</option>
                 </select>
-                @error('Role') <div class="invalid-feedback">{{ $message }}</div> @enderror
               </div>
 
+              {{-- WORK TYPE --}}
               <div class="col-md-6">
                 <label class="form-label required">Work Type</label>
-                <select name="EmploymentType" id="EmploymentType"
-                        class="form-select @error('EmploymentType') is-invalid @enderror" required>
-                </select>
-                @error('EmploymentType') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <select name="EmploymentType" id="EmploymentType" class="form-select" required></select>
               </div>
 
+              {{-- USERNAME --}}
               <div class="col-md-6">
                 <label class="form-label required">Username</label>
-                <input name="Username" type="text"
-                       class="form-control @error('Username') is-invalid @enderror"
-                       required value="{{ old('Username', $staff->Username) }}">
-                @error('Username') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <input name="Username" type="text" class="form-control" required value="{{ old('Username',$staff->Username) }}">
               </div>
 
+              {{-- PHONE --}}
               <div class="col-md-6">
                 <label class="form-label">Phone Number</label>
-                <input name="PhoneNumber" type="text"
-                       class="form-control @error('PhoneNumber') is-invalid @enderror"
-                       value="{{ old('PhoneNumber', $staff->PhoneNumber) }}">
-                @error('PhoneNumber') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <input name="PhoneNumber" type="text" class="form-control" value="{{ old('PhoneNumber',$staff->PhoneNumber) }}">
               </div>
 
+              {{-- PASSWORD --}}
               <div class="col-md-12">
                 <label class="form-label">New Password (optional)</label>
-                <input name="Password" type="password"
-                       class="form-control @error('Password') is-invalid @enderror"
-                       placeholder="Leave blank to keep current password">
-                <div class="form-text">If you enter a password, it will replace the current password.</div>
-                @error('Password') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                <input name="Password" type="password" class="form-control" placeholder="Leave blank to keep current password">
               </div>
+
+              {{-- ADDRESS --}}
+              <div class="col-md-12 address-space">
+                <label class="form-label required">Address</label>
+                <div class="address-wrapper">
+                  <input name="Address" id="addressInput" class="form-control" value="{{ $savedAddress }}" required>
+                  <div id="addressSuggestions" style="display:none;"></div>
+                </div>
+              </div>
+
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
               <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">Cancel</a>
-              <button type="submit" class="btn btn-primary">
-                <i class="bx bx-save me-1"></i> Update
-              </button>
+              <button type="submit" class="btn btn-primary"><i class="bx bx-save me-1"></i>Update</button>
             </div>
           </div>
-
         </div>
       </form>
-
     </div>
   </div>
 </div>
 
 <script>
-(function () {
-  // ===== image preview/remove =====
+(function(){
+  // ===== IMAGE =====
   const input = document.getElementById('ProfilePicture');
   const preview = document.getElementById('profilePreview');
   const removeBtn = document.getElementById('removeBtn');
-  const fileMeta = document.getElementById('fileMeta');
   const removeFlag = document.getElementById('RemoveProfilePicture');
+  const defaultAvatar = "{{ $defaultAvatar }}";
+  const maxSize = 2*1024*1024;
 
-  const defaultAvatar = @json($defaultAvatar);
-  const maxSize = 2 * 1024 * 1024;
-  let objectUrl = null;
+  if(preview.src && preview.src!==defaultAvatar) removeBtn.style.display='inline-flex';
 
-  function cleanup() {
-    if (objectUrl) { URL.revokeObjectURL(objectUrl); objectUrl = null; }
-  }
-  function setMeta(file) {
-    if (!fileMeta) return;
-    fileMeta.style.display = 'block';
-    fileMeta.innerText = `${file.name} • ${Math.round(file.size/1024)} KB`;
-  }
-  function clearMeta() {
-    if (!fileMeta) return;
-    fileMeta.style.display = 'none';
-    fileMeta.innerText = '';
-  }
-  function showRemoveBtn() { if (removeBtn) removeBtn.style.display = 'inline-flex'; }
-  function hideRemoveBtn() { if (removeBtn) removeBtn.style.display = 'none'; }
+  input.addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')) { alert('Choose image'); input.value=''; return; }
+    if(file.size>maxSize) { alert('Image too large'); input.value=''; return; }
+    removeFlag.value='0';
+    preview.src = URL.createObjectURL(file);
+    removeBtn.style.display='inline-flex';
+  });
 
-  if (preview && preview.src && preview.src !== defaultAvatar) showRemoveBtn();
+  removeBtn.addEventListener('click', ()=>{
+    input.value=''; preview.src=defaultAvatar; removeFlag.value='1'; removeBtn.style.display='none';
+  });
 
-  if (input && preview) {
-    input.addEventListener('change', function (e) {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        alert('Please choose an image file.');
-        input.value = '';
-        return;
-      }
-      if (file.size > maxSize) {
-        alert('Image is too large. Max 2MB.');
-        input.value = '';
-        return;
-      }
-
-      if (removeFlag) removeFlag.value = '0';
-
-      cleanup();
-      objectUrl = URL.createObjectURL(file);
-      preview.src = objectUrl;
-
-      setMeta(file);
-      showRemoveBtn();
-    });
-  }
-
-  if (removeBtn) {
-    removeBtn.addEventListener('click', function () {
-      if (input) input.value = '';
-      cleanup();
-      if (preview) preview.src = defaultAvatar;
-      clearMeta();
-      hideRemoveBtn();
-      if (removeFlag) removeFlag.value = '1';
-    });
-  }
-
-  window.addEventListener('beforeunload', cleanup);
-
-  // ===== Role -> Work Type =====
+  // ===== ROLE → WORK TYPE =====
   const roleSelect = document.getElementById('RoleSelect');
-  const workTypeSelect = document.getElementById('EmploymentType');
-
-  // ✅ saved from DB (or old input)
-  let savedWorkType = @json($savedWorkType || '');
-  savedWorkType = (savedWorkType || '').trim(); // normalize
+  const workSelect = document.getElementById('EmploymentType');
+  const savedWorkType = document.getElementById('savedWorkType').value.trim();
 
   const map = {
-    temporary: ['Part Time', 'Full Time'],
-    permanent: ['Part Time', 'Full Time'],
-    company:   ['Calculate Time', 'Contractor']
+      temporary: ['Part Time','Full Time'],
+      permanent: ['Part Time','Full Time'],
+      company: ['Calculate Time','Contractor']
   };
 
   function renderWorkType() {
-    const roleKey = (roleSelect.value || '').toLowerCase();
-    const list = map[roleKey] || [];
+      const roleKey = (roleSelect.value || '').toLowerCase();
+      const list = map[roleKey] || [];
 
-    workTypeSelect.innerHTML = '';
-    const ph = new Option('-- Select Work Type --', '');
-    workTypeSelect.add(ph);
+      workSelect.innerHTML = '';
+      workSelect.add(new Option('-- Select Work Type --',''));
 
-    if (!list.length) {
-      workTypeSelect.disabled = true;
-      return;
-    }
+      const normalize = str => str.toLowerCase().replace(/\s+/g,'');
 
-    workTypeSelect.disabled = false;
+      list.forEach(v => {
+          const option = new Option(v, v);
+          if(savedWorkType && normalize(v) === normalize(savedWorkType)) {
+              option.selected = true;
+          }
+          workSelect.add(option);
+      });
 
-    list.forEach(v => {
-      workTypeSelect.add(new Option(v, v));
-    });
+      if (!list.some(v => normalize(v) === normalize(savedWorkType))) {
+          workSelect.value = '';
+      }
 
-    // ✅ ALWAYS try to select saved value (if exists)
-    if (savedWorkType) {
-      workTypeSelect.value = savedWorkType;
-    }
+      workSelect.disabled = list.length === 0;
   }
 
-  roleSelect.addEventListener('change', function () {
-    // when role changes, clear savedWorkType so it doesn't force old selection
-    savedWorkType = '';
-    renderWorkType();
+  // Initial render
+  renderWorkType();
+  roleSelect.addEventListener('change', renderWorkType);
+
+  // ===== ADDRESS AUTOCOMPLETE =====
+  const addressInput = document.getElementById('addressInput');
+  const suggestionBox = document.getElementById('addressSuggestions');
+  const savedAddress = document.getElementById('savedAddress').value.trim();
+  addressInput.value = savedAddress;
+
+  let timer;
+  addressInput.addEventListener('input', function() {
+      clearTimeout(timer);
+      const q = this.value.trim();
+      if(q.length < 2){ suggestionBox.style.display='none'; return; }
+      timer = setTimeout(()=>searchAddress(q),300);
   });
 
-  // initial
-  renderWorkType();
+  async function searchAddress(q){
+      try{
+          const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&q=${encodeURIComponent(q)}`, { headers:{'Accept-Language':'fr'} });
+          const data = await res.json();
+          suggestionBox.innerHTML='';
+
+          data.forEach(item=>{
+              const a=item.address;
+              const parts=[];
+              if(a.road) parts.push(a.road);
+              if(a.postcode) parts.push(a.postcode);
+              if(a.city) parts.push(a.city);
+              if(a.district) parts.push(a.district);
+              if(a.state) parts.push(a.state);
+              if(a.country) parts.push(a.country);
+
+              const text = parts.join(', ') || item.display_name;
+              const div = document.createElement('div');
+              div.className='item';
+              div.innerText=text;
+              div.onclick=()=>{ addressInput.value=text; suggestionBox.style.display='none'; };
+              suggestionBox.appendChild(div);
+          });
+
+          suggestionBox.style.display = data.length ? 'block' : 'none';
+      } catch(e){ console.error(e); suggestionBox.style.display='none'; }
+  }
+
+  document.addEventListener('click', e=>{
+      if(!addressInput.contains(e.target) && !suggestionBox.contains(e.target)) suggestionBox.style.display='none';
+  });
+
 })();
 </script>
 @endsection
