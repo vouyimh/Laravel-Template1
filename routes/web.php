@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
     Route::get('/admin', fn() => view('admin.dashboard'))->name('admin.dashboard');
 });
 
@@ -77,7 +78,7 @@ Route::middleware(['auth', 'role:client'])->group(function () {
 
 
 // Main Page Route
-Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
+
 Route::get('/dashboard/total-booking', [TotalBooking::class, 'index'])->name('dashboard-total-booking');
 
 // layout
