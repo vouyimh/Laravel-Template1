@@ -298,6 +298,7 @@ $(document).on('click', '.delete-btn', async function () {
 
     Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
+    console.log("URL", url);
       try {
           const res = await fetch(url, {
               method: 'DELETE',
@@ -322,6 +323,7 @@ $(document).on('click', '.delete-btn', async function () {
             timer: 1200,
             showConfirmButton: false
         });
+        
     } catch (err) {
         Swal.fire('Error', err.message || 'Server error', 'error');
     }
