@@ -53,9 +53,7 @@ use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -65,6 +63,38 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/admin', fn() => view('admin.dashboard'))->name('admin.dashboard');
+
+    Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+        
+    Route::get('admin/client', [ClientController::class, 'index'])
+        ->name('admin.client.index');
+
+    Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
+        ->name('admin.client.add-client');
+
+
+    Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])
+        ->name('admin.staff.pages-staff-list');
+
+    Route::match(['get','post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
+    ->name('admin.staff.pages-staff-add');
+
+    Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
+        ->name('admin.staff.pages-staff-store');
+
+    Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
+        ->name('admin.staff.pages-staff-edit');
+
+    Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
+        ->name('admin.staff.pages-staff-update');
+
+    Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
+        ->name('admin.staff.pages-staff-delete');
+
+    Route::resource('admin/tasks', TaskController::class);
+
 });
 
 Route::middleware(['auth', 'role:staff'])->group(function () {
@@ -89,6 +119,8 @@ Route::get('/layouts/blank', [Blank::class, 'index'])->name('layouts-blank');
 
 // pages
 Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'index'])->name('pages-account-settings-account');
+Route::post('/pages/account-settings-account', [AccountSettingsAccount::class, 'update'])->name('pages-account-settings-account.update');
+
 //Route::get('/pages/account-settings-notifications', [AccountSettingsNotifications::class, 'index'])->name('pages-account-settings-notifications');
 //Route::get('/pages/account-settings-connections', [AccountSettingsConnections::class, 'index'])->name('pages-account-settings-connections');
 //Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');
@@ -149,33 +181,6 @@ Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
 
 // tables
 //Route::get('/tables/basic', [TablesBasic::class, 'index'])->name('tables-basic');
-
-Route::get('admin/client', [ClientController::class, 'index'])
-    ->name('admin.client.index');
-
-Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
-    ->name('admin.client.add-client');
-
-
-Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])
-    ->name('admin.staff.pages-staff-list');
-
-Route::match(['get','post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
-  ->name('admin.staff.pages-staff-add');
-
-Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
-    ->name('admin.staff.pages-staff-store');
-
-Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
-    ->name('admin.staff.pages-staff-edit');
-
-Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
-    ->name('admin.staff.pages-staff-update');
-
-Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
-    ->name('admin.staff.pages-staff-delete');
-
-Route::resource('admin/tasks', TaskController::class);
 
 
 require __DIR__ . '/auth.php';
