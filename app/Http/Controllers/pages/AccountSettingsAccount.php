@@ -29,7 +29,7 @@ class AccountSettingsAccount extends Controller
             'first_name'   => 'required|string|max:100',
             'last_name'    => 'required|string|max:100',
             'email'        => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone'        => 'required|string|max:50',
+            'phone' => ['required','string','max:50','regex:/^\+\d{7,15}$/'],
 
             'organization' => 'nullable|string|max:255',
             'address'      => 'nullable|string|max:255',
