@@ -1,84 +1,112 @@
 @php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+/**
+ * 🔁 USER SOURCE
+ * ------------------------------------
+ * TEST MODE (no login yet):
+ *   fetch first admin from DB
+ *
+ * PRODUCTION (real login):
+ *   change to: $navUser = Auth::user();
+ */
+$navUser = \App\Models\User::where('role', 'admin')->first();
+// $navUser = Auth::user(); // ← use this later
 @endphp
 
-<!--  Brand demo (display only for navbar-full and hide on below xl) -->
+<!-- Brand -->
 @if(isset($navbarFull))
 <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-4">
-    <a href="{{url('/')}}" class="app-brand-link gap-2">
-        <span class="app-brand-logo demo">@include('_partials.macros')</span>
-        <span class="app-brand-text demo menu-text fw-bold text-heading">{{config('variables.templateName')}}</span>
-    </a>
+  <a href="{{ url('/') }}" class="app-brand-link gap-2">
+    <span class="app-brand-logo demo">@include('_partials.macros')</span>
+    <span class="app-brand-text demo menu-text fw-bold text-heading">
+      {{ config('variables.templateName') }}
+    </span>
+  </a>
 </div>
 @endif
 
-<!-- ! Not required for layout-without-menu -->
+<!-- Menu toggle -->
 @if(!isset($navbarHideToggle))
-<div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 {{ isset($contentNavbar) ?' d-xl-none ' : '' }}">
-    <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
-        <i class="icon-base bx bx-menu icon-md"></i>
-    </a>
+<div class="layout-menu-toggle navbar-nav align-items-xl-center me-4 me-xl-0 {{ isset($contentNavbar) ? 'd-xl-none' : '' }}">
+  <a class="nav-item nav-link px-0 me-xl-6" href="javascript:void(0)">
+    <i class="icon-base bx bx-menu icon-md"></i>
+  </a>
 </div>
 @endif
 
 <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
-    <!-- Search -->
-    <!-- <div class="navbar-nav align-items-center">
-        <div class="nav-item d-flex align-items-center">
-            <i class="icon-base bx bx-search icon-md"></i>
-            <input type="text" class="form-control border-0 shadow-none ps-1 ps-sm-2" placeholder="Search..." aria-label="Search...">
-        </div>
-    </div> -->
-    <!-- /Search -->
-    <ul class="navbar-nav flex-row align-items-center ms-auto">
-        <!-- Place this tag where you want the button to render. -->
-        <!-- <li class="nav-item lh-1 me-4">
-            <a class="github-button" href="{{config('variables.repository')}}" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star themeselection/sneat-html-laravel-admin-template-free on GitHub">Star</a>
-        </li> -->
+  <ul class="navbar-nav flex-row align-items-center ms-auto">
 
-        <!-- User -->
-        <li class="nav-item navbar-dropdown dropdown-user dropdown">
-            <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);" data-bs-toggle="dropdown">
+    <!-- USER DROPDOWN -->
+    <li class="nav-item navbar-dropdown dropdown-user dropdown">
+      <a class="nav-link dropdown-toggle hide-arrow p-0" href="#" data-bs-toggle="dropdown">
+        <div class="avatar avatar-online">
+          <img
+            src="{{ $navUser && $navUser->avatar_path
+                    ? asset('storage/'.$navUser->avatar_path)
+                    : asset('assets/img/avatars/1.png') }}"
+            alt="avatar"
+            class="w-px-40 h-auto rounded-circle">
+        </div>
+      </a>
+
+      <ul class="dropdown-menu dropdown-menu-end">
+        <!-- PROFILE SUMMARY -->
+        <li>
+          <a class="dropdown-item" href="javascript:void(0);">
+            <div class="d-flex">
+              <div class="flex-shrink-0 me-3">
                 <div class="avatar avatar-online">
-                    <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
+                  <img
+                    src="{{ $navUser && $navUser->avatar_path
+                            ? asset('storage/'.$navUser->avatar_path)
+                            : asset('assets/img/avatars/1.png') }}"
+                    alt="avatar"
+                    class="w-px-40 h-auto rounded-circle">
                 </div>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                    <a class="dropdown-item" href="javascript:void(0);">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0 me-3">
-                                <div class="avatar avatar-online">
-                                    <img src="{{ asset('assets/img/avatars/1.png') }}" alt class="w-px-40 h-auto rounded-circle">
-                                </div>
-                            </div>
-                            <div class="flex-grow-1">
-                                <h6 class="mb-0">John Doe</h6>
-                                <small class="text-muted">Admin</small>
-                            </div>
-                        </div>
-                    </a>
-                </li>
-                <li>
-                    <div class="dropdown-divider my-1"></div>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="{{ route('pages-account-settings-account') }}">
-                        <i class="icon-base bx bx-user icon-md me-3"></i>
-                        <span>My Profile</span>
-                    </a>
-                </li>
-                <li>
-                    <div class="dropdown-divider my-1"></div>
-                </li>
-                <li>
-                    <a class="dropdown-item" href="javascript:void(0);">
-                        <i class="icon-base bx bx-power-off icon-md me-3"></i><span>Log Out</span>
-                    </a>
-                </li>
-            </ul>
+              </div>
+
+              <div class="flex-grow-1">
+                <h6 class="mb-0">
+                  {{ $navUser
+                      ? (trim(($navUser->first_name ?? '').' '.($navUser->last_name ?? ''))
+                          ?: ($navUser->name ?? 'User'))
+                      : 'Guest' }}
+                </h6>
+                <small class="text-muted">
+                  {{ $navUser ? ucfirst($navUser->role ?? 'user') : 'Guest' }}
+                </small>
+              </div>
+            </div>
+          </a>
         </li>
-        <!--/ User -->
-    </ul>
+
+        <li><div class="dropdown-divider my-1"></div></li>
+
+        <!-- MY PROFILE -->
+        <li>
+          <a class="dropdown-item" href="{{ route('pages-account-settings-account') }}">
+            <i class="icon-base bx bx-user icon-md me-3"></i>
+            <span>My Profile</span>
+          </a>
+        </li>
+
+        <li><div class="dropdown-divider my-1"></div></li>
+
+        <!-- LOGOUT -->
+        {{-- For real login, replace with POST logout --}}
+        <li>
+          <a class="dropdown-item" href="javascript:void(0);">
+            <i class="icon-base bx bx-power-off icon-md me-3"></i>
+            <span>Log Out</span>
+          </a>
+        </li>
+
+      </ul>
+    </li>
+    <!-- /USER DROPDOWN -->
+
+  </ul>
 </div>
