@@ -14,7 +14,6 @@
 
 <style>
   .required::after{ content:" *"; color:#dc3545; font-weight:700; }
-
   .address-wrapper { position: relative; }
 
   #addressSuggestions{
@@ -59,8 +58,12 @@
             id="uploadedAvatar"
           />
 
-          <input type="hidden" id="defaultAvatar"
-                 value="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : asset('assets/img/avatars/1.png') }}">
+          {{-- saved avatar url (maybe empty) --}}
+          <input type="hidden" id="savedAvatar"
+                 value="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : '' }}">
+
+          {{-- fallback default avatar url --}}
+          <input type="hidden" id="fallbackAvatar" value="{{ asset('assets/img/avatars/1.png') }}">
 
           <div class="button-wrapper">
             <label for="upload" class="btn btn-primary me-3 mb-4" tabindex="0">
@@ -88,6 +91,9 @@
               enctype="multipart/form-data">
           @csrf
 
+          {{-- ✅ tells backend to remove avatar when Reset --}}
+          <input type="hidden" id="removeAvatar" name="remove_avatar" value="0">
+
           <div class="row g-6">
 
             <div class="col-md-6">
@@ -114,50 +120,66 @@
                      value="{{ old('organization', $u?->organization) }}" />
             </div>
 
-            {{-- Password Change (optional) --}}
+{{-- Password Change (optional) --}}
+<div class="col-md-6">
+  <label for="currentPassword" class="form-label">Current Password</label>
+  <div class="input-group">
+    <input class="form-control" type="password" id="currentPassword" name="current_password" autocomplete="current-password" />
+    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="currentPassword" aria-label="Show/hide current password">
+      <i class="bx bx-hide"></i>
+    </button>
+  </div>
+</div>
+
+<div class="col-md-6">
+  <label for="newPassword" class="form-label">New Password</label>
+  <div class="input-group">
+    <input class="form-control" type="password" id="newPassword" name="password" autocomplete="new-password" />
+    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="newPassword" aria-label="Show/hide new password">
+      <i class="bx bx-hide"></i>
+    </button>
+  </div>
+</div>
+
+<div class="col-md-6">
+  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+  <div class="input-group">
+    <input class="form-control" type="password" id="confirmPassword" name="password_confirmation" autocomplete="new-password" />
+    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="confirmPassword" aria-label="Show/hide confirm password">
+      <i class="bx bx-hide"></i>
+    </button>
+  </div>
+</div>
+
+
+            {{-- Phone --}}
             <div class="col-md-6">
-              <label for="currentPassword" class="form-label">Current Password</label>
-              <input class="form-control" type="password" id="currentPassword" name="current_password" autocomplete="current-password" />
-            </div>
+              <label class="form-label required" for="phoneLocal">Phone Number</label>
 
-            <div class="col-md-6">
-              <label for="newPassword" class="form-label">New Password</label>
-              <input class="form-control" type="password" id="newPassword" name="password" autocomplete="new-password" />
-            </div>
+              @php $savedPhone = old('phone', $u?->phone) ?? ''; @endphp
 
-            <div class="col-md-6">
-              <label for="confirmPassword" class="form-label">Confirm New Password</label>
-              <input class="form-control" type="password" id="confirmPassword" name="password_confirmation" autocomplete="new-password" />
-            </div>
-
-            {{-- Phone (FR/UK format validation) --}}
-            <div class="col-md-6">
-            <label class="form-label required" for="phoneLocal">Phone Number</label>
-
-            <div class="input-group">
-                @php $savedPhone = old('phone', $u?->phone) ?? ''; @endphp
-
+              <div class="input-group">
                 <select class="form-select" id="phoneCountry" style="max-width:240px;">
-                    <option value="+33" data-country="France">France (+33)</option>
-                    <option value="+44" data-country="United Kingdom">United Kingdom (+44)</option>
+                  <option value="+33" data-country="France">France (+33)</option>
+                  <option value="+44" data-country="United Kingdom">United Kingdom (+44)</option>
                 </select>
 
                 <input
-                type="text"
-                id="phoneLocal"
-                class="form-control"
-                placeholder="Digits only"
-                inputmode="numeric"
-                autocomplete="tel"
-                required
+                  type="text"
+                  id="phoneLocal"
+                  class="form-control"
+                  placeholder="Digits only"
+                  inputmode="numeric"
+                  autocomplete="tel"
+                  required
                 />
-                <input type="hidden" id="phone" name="phone" value="{{ old('phone', $u?->phone) }}">
+              </div>
+
+              {{-- ✅ ONLY ONE hidden input for phone --}}
+              <input type="hidden" id="phoneHidden" name="phone" value="{{ $savedPhone }}">
             </div>
 
-            <input type="hidden" id="phone" name="phone" value="{{ $savedPhone }}">
-            </div>
-
-            {{-- Address (French suggestion + fills state/zip/country) --}}
+            {{-- Address --}}
             <div class="col-md-6">
               <label class="form-label">Address</label>
               <div class="address-wrapper">
@@ -196,31 +218,7 @@
               </select>
             </div>
 
-            <!-- <div class="col-md-6">
-              <label for="language" class="form-label">Language</label>
-              @php($lang = old('language', $u?->language) ?? 'fr')
-              <select id="language" name="language" class="form-select">
-                <option value="">Select</option>
-                <option value="fr" {{ $lang === 'fr' ? 'selected' : '' }}>French (fr)</option>
-                <option value="en" {{ $lang === 'en' ? 'selected' : '' }}>English (en)</option>
-              </select>
-            </div> -->
-
-            <!-- <div class="col-md-6">
-              <label for="timezone" class="form-label">Timezone</label>
-              @php($tz = old('timezone', $u?->timezone) ?? 'Europe/Paris')
-              <select id="timezone" name="timezone" class="form-select">
-                <option value="">Select</option>
-                <option value="Europe/Paris" {{ $tz === 'Europe/Paris' ? 'selected' : '' }}>Europe/Paris (France)</option>
-                <option value="Asia/Phnom_Penh" {{ $tz === 'Asia/Phnom_Penh' ? 'selected' : '' }}>Asia/Phnom_Penh (Cambodia)</option>
-                <option value="Europe/London" {{ $tz === 'Europe/London' ? 'selected' : '' }}>Europe/London (UK)</option>
-                <option value="America/New_York" {{ $tz === 'America/New_York' ? 'selected' : '' }}>America/New_York (US)</option>
-                <option value="Asia/Seoul" {{ $tz === 'Asia/Seoul' ? 'selected' : '' }}>Asia/Seoul (Korea)</option>
-                <option value="Asia/Ho_Chi_Minh" {{ $tz === 'Asia/Ho_Chi_Minh' ? 'selected' : '' }}>Asia/Ho_Chi_Minh (Vietnam)</option>
-              </select>
-            </div> -->
-
-            {{-- Currency (default EUR) --}}
+            {{-- Currency --}}
             <div class="col-md-6">
               <label for="currency" class="form-label">Currency</label>
               @php($cur = old('currency', $u?->currency) ?? 'EUR')
@@ -246,50 +244,78 @@
 
   </div>
 </div>
-
 <script>
 (function () {
   document.addEventListener('DOMContentLoaded', function () {
 
+      // =========================
+    // PASSWORD TOGGLE (EYE ICON)
+    // =========================
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (!input) return;
+
+        const icon = btn.querySelector('i');
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) {
+            icon.classList.remove('bx-hide');
+            icon.classList.add('bx-show');
+          }
+        } else {
+          input.type = 'password';
+          if (icon) {
+            icon.classList.remove('bx-show');
+            icon.classList.add('bx-hide');
+          }
+        }
+      });
+    });
+
+  });
+  
     // =========================
     // AVATAR PREVIEW + RESET
     // =========================
-    const uploadInput   = document.getElementById('upload');
-    const avatarImg     = document.getElementById('uploadedAvatar');
-    const resetBtn      = document.getElementById('resetAvatarBtn');
-    const defaultAvatar = document.getElementById('defaultAvatar')?.value;
+    const uploadInput    = document.getElementById('upload');
+    const avatarImg      = document.getElementById('uploadedAvatar');
+    const resetBtn       = document.getElementById('resetAvatarBtn');
+    const fallbackAvatar = document.getElementById('fallbackAvatar')?.value || '';
+    const removeAvatar   = document.getElementById('removeAvatar');
 
     uploadInput?.addEventListener('change', function () {
       const file = this.files && this.files[0];
       if (!file) return;
+      if (removeAvatar) removeAvatar.value = '0';
       avatarImg.src = URL.createObjectURL(file);
     });
 
     resetBtn?.addEventListener('click', function () {
       if (uploadInput) uploadInput.value = '';
-      if (defaultAvatar) avatarImg.src = defaultAvatar;
+      if (fallbackAvatar) avatarImg.src = fallbackAvatar;
+      if (removeAvatar) removeAvatar.value = '1';
     });
 
 
     // =========================
     // PHONE: DIGITS ONLY + LENGTH RULES
-    // Saves to hidden input: phone = +33XXXXXXXXX or +44XXXXXXXXXX
     // =========================
     const form          = document.getElementById('formAccountSettings');
     const phoneCountry  = document.getElementById('phoneCountry');
     const phoneLocal    = document.getElementById('phoneLocal');
-    const phoneHidden   = document.getElementById('phone');
+    const phoneHidden   = document.getElementById('phoneHidden');
     const countrySelect = document.getElementById('country');
 
-    function digitsOnly(v) {
-      return (v || '').replace(/\D/g, '');
-    }
+    function digitsOnly(v) { return (v || '').replace(/\D/g, ''); }
 
     function getRule() {
       const code = phoneCountry?.value;
-      if (code === '+33') return { min: 9,  max: 9,  country: 'France' };          // FR local digits only
-      if (code === '+44') return { min: 10, max: 10, country: 'United Kingdom' };  // UK local digits only
-      return { min: 7, max: 15, country: '' }; // fallback
+      if (code === '+33') return { max: 9,  country: 'France' };
+      if (code === '+44') return { max: 10, country: 'United Kingdom' };
+      return { max: 15, country: '' };
     }
 
     function syncCountryFromPhoneCountry() {
@@ -301,35 +327,24 @@
 
     function applyPhone() {
       if (!phoneCountry || !phoneLocal || !phoneHidden) return;
-
       const r = getRule();
-
-      // enforce max length
       phoneLocal.maxLength = r.max;
-
-      // sanitize + cut to max
       phoneLocal.value = digitsOnly(phoneLocal.value).slice(0, r.max);
-
-      // save full value (+code + local digits)
       phoneHidden.value = phoneCountry.value + phoneLocal.value;
     }
 
-    // Block non-digit key presses
     phoneLocal?.addEventListener('keydown', (e) => {
       const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Home','End'];
       if (allowed.includes(e.key)) return;
-      if (e.ctrlKey || e.metaKey) return; // allow shortcuts
-
+      if (e.ctrlKey || e.metaKey) return;
       if (!/^\d$/.test(e.key)) e.preventDefault();
     });
 
-    // Prevent pasting letters/symbols
     phoneLocal?.addEventListener('paste', (e) => {
       const pasted = (e.clipboardData || window.clipboardData).getData('text');
       if (/\D/.test(pasted)) e.preventDefault();
     });
 
-    // Sanitize on any input
     phoneLocal?.addEventListener('input', applyPhone);
 
     phoneCountry?.addEventListener('change', () => {
@@ -337,7 +352,6 @@
       applyPhone();
     });
 
-    // Load existing phone from DB into select + local
     const existing = phoneHidden?.value || '';
     if (phoneCountry && phoneLocal) {
       if (existing.startsWith('+33')) {
@@ -347,7 +361,6 @@
         phoneCountry.value = '+44';
         phoneLocal.value = digitsOnly(existing.replace('+44', ''));
       } else {
-        // default France
         phoneCountry.value = '+33';
         phoneLocal.value = digitsOnly(existing);
       }
@@ -356,100 +369,150 @@
     syncCountryFromPhoneCountry();
     applyPhone();
 
-    // Optional: block submit if wrong length
     form?.addEventListener('submit', (e) => {
       const r = getRule();
       const len = digitsOnly(phoneLocal?.value || '').length;
 
-      // only strict check for FR/UK
       if ((phoneCountry.value === '+33' || phoneCountry.value === '+44') && len !== r.max) {
         e.preventDefault();
         alert(`Phone number must be exactly ${r.max} digits for ${r.country}.`);
         phoneLocal?.focus();
         return;
       }
-
       applyPhone();
     });
 
+// =========================
+// ADDRESS AUTOCOMPLETE (NOMINATIM)
+// ✅ show SHORT street suggestions (not full)
+// ✅ fill State with CITY (ex: Joué-lès-Tours)
+// =========================
+const addressInput  = document.getElementById('addressInput');
+const suggestionBox = document.getElementById('addressSuggestions');
+const stateEl       = document.getElementById('state');
+const zipEl         = document.getElementById('zipCode');
+const countryEl     = document.getElementById('country');
 
-    // =========================
-    // ADDRESS AUTOCOMPLETE (NOMINATIM) + FILL STATE/ZIP/COUNTRY
-    // =========================
-    const addressInput  = document.getElementById('addressInput');
-    const suggestionBox = document.getElementById('addressSuggestions');
-    const stateEl       = document.getElementById('state');
-    const zipEl         = document.getElementById('zipCode');
-    const countryEl     = document.getElementById('country');
+let timer;
 
-    let timer;
+function pickCity(a) {
+  return (
+    a.city ||
+    a.town ||
+    a.village ||
+    a.municipality ||
+    a.hamlet ||
+    a.suburb ||
+    a.city_district ||
+    ''
+  );
+}
 
-    addressInput?.addEventListener('input', function () {
-      clearTimeout(timer);
-      const q = this.value.trim();
-      if (q.length < 2) {
-        if (suggestionBox) suggestionBox.style.display = 'none';
-        return;
-      }
-      timer = setTimeout(() => searchAddress(q), 250);
+function buildShortAddress(a, fallback) {
+  return (
+    [a.house_number, a.road].filter(Boolean).join(' ') ||
+    a.road ||
+    a.name ||
+    fallback ||
+    ''
+  );
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+addressInput?.addEventListener('input', function () {
+  clearTimeout(timer);
+  const q = this.value.trim();
+  if (q.length < 2) {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+    return;
+  }
+  timer = setTimeout(() => searchAddress(q), 250);
+});
+
+async function searchAddress(q) {
+  if (!suggestionBox) return;
+
+  try {
+    // ✅ France only
+    // ✅ add countrycodes=fr (better results)
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=fr&countrycodes=fr&q=${encodeURIComponent(q)}`;
+
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+
+    suggestionBox.innerHTML = '';
+
+    (Array.isArray(data) ? data : []).forEach(item => {
+      const a = item.address || {};
+
+      // ✅ short title like "5 Rue Fizeau"
+      const title = buildShortAddress(a, item.display_name);
+
+      // ✅ subtitle like "Joué-lès-Tours 37300"
+      const city = pickCity(a);
+      const zip  = a.postcode || '';
+      const sub  = [city, zip].filter(Boolean).join('  ');
+
+      if (!title) return;
+
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div style="font-weight:600;">${escapeHtml(title)}</div>
+        ${sub ? `<div style="font-size:12px;color:#6c757d;">${escapeHtml(sub)}</div>` : ''}
+      `;
+
+      div.addEventListener('click', () => {
+        // ✅ set Address to short (not full)
+        addressInput.value = title;
+        suggestionBox.style.display = 'none';
+
+        // ✅ State should be CITY (not region)
+        if (stateEl && city) stateEl.value = city;
+
+        // zip
+        if (zipEl && zip) zipEl.value = zip;
+
+        // country select
+        const country = (a.country || '').trim();
+        if (countryEl && country) {
+          const opts = Array.from(countryEl.options).map(o => o.value);
+          const found = opts.find(v => v.toLowerCase() === country.toLowerCase());
+          if (found) countryEl.value = found;
+        }
+      });
+
+      suggestionBox.appendChild(div);
     });
 
-    async function searchAddress(q) {
-      if (!suggestionBox) return;
+    suggestionBox.style.display = suggestionBox.childElementCount ? 'block' : 'none';
+  } catch (e) {
+    console.error(e);
+    suggestionBox.style.display = 'none';
+  }
+}
 
-      try {
-        // ✅ French suggestions
-        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=fr&q=${encodeURIComponent(q)}`;
-        const res = await fetch(url);
-        const data = await res.json();
+document.addEventListener('click', (e) => {
+  if (!addressInput || !suggestionBox) return;
+  if (!addressInput.contains(e.target) && !suggestionBox.contains(e.target)) {
+    suggestionBox.style.display = 'none';
+  }
+});
 
-        suggestionBox.innerHTML = '';
-
-        data.forEach(item => {
-          const a = item.address || {};
-          const line = item.display_name || '';
-
-          const div = document.createElement('div');
-          div.className = 'item';
-          div.textContent = line;
-
-          div.addEventListener('click', () => {
-            addressInput.value = line;
-            suggestionBox.style.display = 'none';
-
-            const region  = a.state || a.region || a.county || '';
-            const zip     = a.postcode || '';
-            const country = a.country || '';
-
-            if (stateEl && region) stateEl.value = region;
-            if (zipEl && zip) zipEl.value = zip;
-
-            if (countryEl && country) {
-              const opts = Array.from(countryEl.options).map(o => o.value);
-              const found = opts.find(v => v.toLowerCase() === country.toLowerCase());
-              if (found) countryEl.value = found;
-            }
-          });
-
-          suggestionBox.appendChild(div);
-        });
-
-        suggestionBox.style.display = data.length ? 'block' : 'none';
-      } catch (e) {
-        console.error(e);
-        suggestionBox.style.display = 'none';
-      }
-    }
-
-    document.addEventListener('click', (e) => {
-      if (!addressInput || !suggestionBox) return;
-      if (!addressInput.contains(e.target) && !suggestionBox.contains(e.target)) {
-        suggestionBox.style.display = 'none';
-      }
-    });
 
   });
 })();
 </script>
+
+
 
 @endsection

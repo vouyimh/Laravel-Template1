@@ -1,9 +1,9 @@
 <?php
 // Variables
 return [
-  "creatorName" => "Bionett",
+  "creatorName" => "Bionett TOURS™",
   "creatorUrl" => "https://themeselection.com",
-  "templateName" => "Bionett",
+  "templateName" => "Bionett TOURS™",
   "templateSuffix" => "Sneat Bootstrap Dashboard FREE",
   "templateVersion" => "2.0.0",
   "templateFree" => true,
