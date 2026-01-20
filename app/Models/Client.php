@@ -28,7 +28,6 @@ class Client extends Model
 
     // Cast fields to correct data types
     protected $casts = [
-        'company_address' => 'array',
         'tax' => 'boolean',
     ];
 

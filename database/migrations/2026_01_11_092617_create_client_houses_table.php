@@ -18,10 +18,7 @@ return new class extends Migration
                 ->constrained('clients' , 'client_id')
                 ->cascadeOnDelete();
 
-            $table->string('street_name');
-            $table->string('local_code');
-            $table->string('village');
-            $table->string('house_number');
+            $table->string('house_address');
             $table->integer('room');
             $table->string('size');
             $table->string('time');

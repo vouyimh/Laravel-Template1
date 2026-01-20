@@ -11,10 +11,7 @@ class ClientHouse extends Model
     
     protected $fillable = [
         'client_id',
-        'street_name',
-        'local_code',
-        'village',
-        'house_number',
+        'house_address',
         'room',
         'size',
         'time',
