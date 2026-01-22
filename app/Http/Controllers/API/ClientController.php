@@ -70,11 +70,7 @@ class ClientController extends Controller
 
             'phone_number'    => 'nullable|string|max:20',
             'company_type'    => 'nullable|string|in:Personal,Company',
-            'company_address' => 'nullable|array',
-            'company_address.street_name' => 'required_with:company_address|string|max:255',
-            'company_address.local_code'  => 'required_with:company_address|string|max:50',
-            'company_address.village'     => 'required_with:company_address|string|max:255',
-            'company_address.house_number' => 'required_with:company_address|string|max:50',
+            'company_address' => 'nullable|string',
 
             'tax'             => 'sometimes|boolean',
             'file'            => 'nullable|string',
@@ -82,10 +78,7 @@ class ClientController extends Controller
 
             // Houses validation
             'houses'                => 'nullable|array',
-            'houses.*.street_name'  => 'required_with:houses|string|max:255',
-            'houses.*.local_code'   => 'required_with:houses|string|max:50',
-            'houses.*.village'      => 'required_with:houses|string|max:255',
-            'houses.*.house_number' => 'required_with:houses|string|max:50',
+            'houses.*.house_address'  => 'required_with:houses|string',
             'houses.*.room'         => 'required_with:houses|integer|min:1',
             'houses.*.size'         => 'required_with:houses|string|max:255',
             'houses.*.time'         => 'required_with:houses|string|max:255',
@@ -195,19 +188,12 @@ class ClientController extends Controller
             'lockbox'      => 'nullable|string',
             'tax'          => 'sometimes|boolean',
 
-            'company_address' => 'nullable|array',
-            'company_address.street_name'  => 'required_with:company_address|string|max:255',
-            'company_address.local_code'   => 'required_with:company_address|string|max:50',
-            'company_address.village'      => 'required_with:company_address|string|max:255',
-            'company_address.house_number' => 'required_with:company_address|string|max:50',
+            'company_address' => 'nullable|string',
 
             // Houses
             'houses'                => 'nullable|array',
             'houses.*.id'           => 'nullable|integer|exists:client_houses,id',
-            'houses.*.street_name'  => 'required_with:houses|string|max:255',
-            'houses.*.local_code'   => 'required_with:houses|string|max:50',
-            'houses.*.village'      => 'required_with:houses|string|max:255',
-            'houses.*.house_number' => 'required_with:houses|string|max:50',
+            'houses.*.house_address'  => 'required_with:houses|string|max:255',
             'houses.*.room'         => 'required_with:houses|integer|min:1',
             'houses.*.size'         => 'required_with:houses|string|max:255',
             'houses.*.time'         => 'required_with:houses|string|max:255',

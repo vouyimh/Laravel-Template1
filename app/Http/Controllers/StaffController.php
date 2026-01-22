@@ -35,6 +35,7 @@ class StaffController extends Controller
             'Password'  => ['required','string','min:6'],
             'PhoneNumber' => ['nullable','string','max:20'],
             'ProfilePicture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
+            'Address' => ['nullable','string','max:255'],
         ]);
 
         DB::beginTransaction();
@@ -54,6 +55,7 @@ class StaffController extends Controller
                 'Password'  => bcrypt($validated['Password']),
                 'PhoneNumber' => isset($validated['PhoneNumber']) ? trim($validated['PhoneNumber']) : null,
                 'ProfilePicture' => $profilePath,
+                 'Address' => trim($validated['Address']),
             ]);
 
             DB::commit();
@@ -82,11 +84,13 @@ class StaffController extends Controller
             'LastName'  => ['required','string','max:50'],
             'Email'     => ["required","email","max:100","unique:Staff,Email,$id,StaffID"],
             'Role'      => ['required','in:Temporary,Permanent,Company'],
+            'EmploymentType' => ['required','string','max:30'],
             'Username'  => ["required","string","max:50","unique:Staff,Username,$id,StaffID"],
             'PhoneNumber' => ['nullable','string','max:20'],
             'Password'  => ['nullable','string','min:6'],
             'ProfilePicture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
             'RemoveProfilePicture' => ['nullable','in:0,1'],
+             'Address' => ['nullable','string','max:255'],
         ]);
 
         // Remove profile picture
@@ -108,8 +112,10 @@ class StaffController extends Controller
         $staff->LastName  = trim($validated['LastName']);
         $staff->Email     = trim($validated['Email']);
         $staff->Role      = $validated['Role'];
+        $staff->EmploymentType = isset($validated['EmploymentType']) ? trim($validated['EmploymentType']) : null;
         $staff->Username  = trim($validated['Username']);
         $staff->PhoneNumber = isset($validated['PhoneNumber']) ? trim($validated['PhoneNumber']) : null;
+        $staff->Address = isset($validated['Address']) ? trim($validated['Address']) : null;
 
         if (!empty($validated['Password'])) {
             $staff->Password = bcrypt($validated['Password']);
@@ -131,7 +137,7 @@ class StaffController extends Controller
 
         $staff->delete();
 
-        return redirect()->route('admin.staff.pages-staff-list')->with('success', 'Staff deleted successfully!');
+       return response()->json(['success' => 'Staff deleted successfully!']);
     }
 }
 

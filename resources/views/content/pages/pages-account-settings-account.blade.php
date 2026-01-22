@@ -2,186 +2,298 @@
 
 @section('title', 'Account settings - Account')
 
-<!-- Page Scripts -->
 @section('page-script')
 @vite(['resources/assets/js/pages-account-settings-account.js'])
 @endsection
 
 @section('content')
-<div class="row">
-    <div class="col-md-12">
-        <!-- <div class="nav-align-top">
-            <ul class="nav nav-pills flex-column flex-md-row mb-6 gap-md-0 gap-2">
-                <li class="nav-item">
-                    <a class="nav-link active" href="javascript:void(0);"><i class="icon-base bx bx-user icon-sm me-1_5"></i> Account</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url('pages/account-settings-notifications') }}"><i class="icon-base bx bx-bell icon-sm me-1_5"></i> Notifications</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url('pages/account-settings-connections') }}"><i class="icon-base bx bx-link-alt icon-sm me-1_5"></i> Connections</a>
-                </li>
-            </ul>
-        </div> -->
-        <div class="card mb-6">
-            <!-- Account -->
-            <div class="card-body">
-                <div class="d-flex align-items-start align-items-sm-center gap-6 pb-4 border-bottom">
-                    <img src="{{ asset('assets/img/avatars/1.png') }}" alt="user-avatar" class="d-block w-px-100 h-px-100 rounded" id="uploadedAvatar" />
-                    <div class="button-wrapper">
-                        <label for="upload" class="btn btn-primary me-3 mb-4" tabindex="0">
-                            <span class="d-none d-sm-block">Upload new photo</span>
-                            <i class="icon-base bx bx-upload d-block d-sm-none"></i>
-                            <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg" />
-                        </label>
-                        <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
-                            <i class="icon-base bx bx-reset d-block d-sm-none"></i>
-                            <span class="d-none d-sm-block">Reset</span>
-                        </button>
+@php
+  // TEST MODE (no login yet)
+  $u = \App\Models\User::where('role','admin')->first();
+@endphp
 
-                        <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body pt-4">
-                <form id="formAccountSettings" method="POST" onsubmit="return false">
-                    <div class="row g-6">
-                        <div class="col-md-6">
-                            <label for="firstName" class="form-label">First Name</label>
-                            <input class="form-control" type="text" id="firstName" name="firstName" value="John" autofocus />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="lastName" class="form-label">Last Name</label>
-                            <input class="form-control" type="text" name="lastName" id="lastName" value="Doe" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="email" class="form-label">E-mail</label>
-                            <input class="form-control" type="text" id="email" name="email" value="john.doe@example.com" placeholder="john.doe@example.com" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="organization" class="form-label">Organization</label>
-                            <input type="text" class="form-control" id="organization" name="organization" value="{{ config('variables.creatorName') }}" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="phoneNumber">Phone Number</label>
-                            <div class="input-group input-group-merge">
-                                <span class="input-group-text">US (+1)</span>
-                                <input type="text" id="phoneNumber" name="phoneNumber" class="form-control" placeholder="202 555 0111" />
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="address" name="address" placeholder="Address" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="state" class="form-label">State</label>
-                            <input class="form-control" type="text" id="state" name="state" placeholder="California" />
-                        </div>
-                        <div class="col-md-6">
-                            <label for="zipCode" class="form-label">Zip Code</label>
-                            <input type="text" class="form-control" id="zipCode" name="zipCode" placeholder="231465" maxlength="6" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" for="country">Country</label>
-                            <select id="country" class="select2 form-select">
-                                <option value="">Select</option>
-                                <option value="Australia">Australia</option>
-                                <option value="Bangladesh">Bangladesh</option>
-                                <option value="Belarus">Belarus</option>
-                                <option value="Brazil">Brazil</option>
-                                <option value="Canada">Canada</option>
-                                <option value="China">China</option>
-                                <option value="France">France</option>
-                                <option value="Germany">Germany</option>
-                                <option value="India">India</option>
-                                <option value="Indonesia">Indonesia</option>
-                                <option value="Israel">Israel</option>
-                                <option value="Italy">Italy</option>
-                                <option value="Japan">Japan</option>
-                                <option value="Korea">Korea, Republic of</option>
-                                <option value="Mexico">Mexico</option>
-                                <option value="Philippines">Philippines</option>
-                                <option value="Russia">Russian Federation</option>
-                                <option value="South Africa">South Africa</option>
-                                <option value="Thailand">Thailand</option>
-                                <option value="Turkey">Turkey</option>
-                                <option value="Ukraine">Ukraine</option>
-                                <option value="United Arab Emirates">United Arab Emirates</option>
-                                <option value="United Kingdom">United Kingdom</option>
-                                <option value="United States">United States</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="language" class="form-label">Language</label>
-                            <select id="language" class="select2 form-select">
-                                <option value="">Select Language</option>
-                                <option value="en">English</option>
-                                <option value="fr">French</option>
-                                <option value="de">German</option>
-                                <option value="pt">Portuguese</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="timeZones" class="form-label">Timezone</label>
-                            <select id="timeZones" class="select2 form-select">
-                                <option value="">Select Timezone</option>
-                                <option value="-12">(GMT-12:00) International Date Line West</option>
-                                <option value="-11">(GMT-11:00) Midway Island, Samoa</option>
-                                <option value="-10">(GMT-10:00) Hawaii</option>
-                                <option value="-9">(GMT-09:00) Alaska</option>
-                                <option value="-8">(GMT-08:00) Pacific Time (US & Canada)</option>
-                                <option value="-8">(GMT-08:00) Tijuana, Baja California</option>
-                                <option value="-7">(GMT-07:00) Arizona</option>
-                                <option value="-7">(GMT-07:00) Chihuahua, La Paz, Mazatlan</option>
-                                <option value="-7">(GMT-07:00) Mountain Time (US & Canada)</option>
-                                <option value="-6">(GMT-06:00) Central America</option>
-                                <option value="-6">(GMT-06:00) Central Time (US & Canada)</option>
-                                <option value="-6">(GMT-06:00) Guadalajara, Mexico City, Monterrey</option>
-                                <option value="-6">(GMT-06:00) Saskatchewan</option>
-                                <option value="-5">(GMT-05:00) Bogota, Lima, Quito, Rio Branco</option>
-                                <option value="-5">(GMT-05:00) Eastern Time (US & Canada)</option>
-                                <option value="-5">(GMT-05:00) Indiana (East)</option>
-                                <option value="-4">(GMT-04:00) Atlantic Time (Canada)</option>
-                                <option value="-4">(GMT-04:00) Caracas, La Paz</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="currency" class="form-label">Currency</label>
-                            <select id="currency" class="select2 form-select">
-                                <option value="">Select Currency</option>
-                                <option value="usd">USD</option>
-                                <option value="euro">Euro</option>
-                                <option value="pound">Pound</option>
-                                <option value="bitcoin">Bitcoin</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mt-6">
-                        <button type="submit" class="btn btn-primary me-3">Save changes</button>
-                        <button type="reset" class="btn btn-outline-secondary">Cancel</button>
-                    </div>
-                </form>
-            </div>
-            <!-- /Account -->
+<style>
+  .required::after{
+    content:" *";
+    color:#dc3545;
+    font-weight:700;
+  }
+</style>
+
+<div class="row">
+  <div class="col-md-12">
+
+    @if(session('success'))
+      <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if($errors->any())
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach($errors->all() as $e)
+            <li>{{ $e }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
+    <div class="card mb-6">
+      <div class="card-body">
+        <div class="d-flex align-items-start align-items-sm-center gap-6 pb-4 border-bottom">
+
+          <img
+            src="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : asset('assets/img/avatars/1.png') }}"
+            alt="user-avatar"
+            class="d-block w-px-100 h-px-100 rounded"
+            id="uploadedAvatar"
+          />
+
+          <input type="hidden" id="defaultAvatar"
+                 value="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : asset('assets/img/avatars/1.png') }}">
+
+          <div class="button-wrapper">
+            <label for="upload" class="btn btn-primary me-3 mb-4" tabindex="0">
+              <span class="d-none d-sm-block">Upload new photo</span>
+              <i class="icon-base bx bx-upload d-block d-sm-none"></i>
+              <input type="file" id="upload" name="avatar" class="account-file-input" hidden accept="image/png, image/jpeg" form="formAccountSettings" />
+            </label>
+
+            <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
+              <i class="icon-base bx bx-reset d-block d-sm-none"></i>
+              <span class="d-none d-sm-block">Reset</span>
+            </button>
+
+            <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
+          </div>
         </div>
-        <!-- <div class="card">
-            <h5 class="card-header">Delete Account</h5>
-            <div class="card-body">
-                <div class="mb-6 col-12 mb-0">
-                    <div class="alert alert-warning">
-                        <h5 class="alert-heading mb-1">Are you sure you want to delete your account?</h5>
-                        <p class="mb-0">Once you delete your account, there is no going back. Please be certain.</p>
-                    </div>
-                </div>
-                <form id="formAccountDeactivation" onsubmit="return false">
-                    <div class="form-check my-8 ms-2">
-                        <input class="form-check-input" type="checkbox" name="accountActivation" id="accountActivation" />
-                        <label class="form-check-label" for="accountActivation">I confirm my account deactivation</label>
-                    </div>
-                    <button type="submit" class="btn btn-danger deactivate-account">Deactivate Account</button>
-                </form>
+      </div>
+
+      <div class="card-body pt-4">
+        <form id="formAccountSettings"
+              method="POST"
+              action="{{ route('pages-account-settings-account.update') }}"
+              enctype="multipart/form-data">
+          @csrf
+
+          <div class="row g-6">
+
+            <div class="col-md-6">
+              <label for="firstName" class="form-label required">First Name</label>
+              <input class="form-control" type="text" id="firstName" name="first_name"
+                     value="{{ old('first_name', $u?->first_name) }}" required />
             </div>
-        </div> -->
+
+            <div class="col-md-6">
+              <label for="lastName" class="form-label required">Last Name</label>
+              <input class="form-control" type="text" id="lastName" name="last_name"
+                     value="{{ old('last_name', $u?->last_name) }}" required />
+            </div>
+
+            <div class="col-md-6">
+              <label for="email" class="form-label required">E-mail</label>
+              <input class="form-control" type="email" id="email" name="email"
+                     value="{{ old('email', $u?->email) }}" required />
+            </div>
+
+            {{-- Password Change --}}
+            <div class="col-md-6">
+              <label for="currentPassword" class="form-label">Current Password</label>
+              <input class="form-control" type="password" id="currentPassword" name="current_password" autocomplete="current-password" />
+            </div>
+
+            <div class="col-md-6">
+              <label for="newPassword" class="form-label">New Password</label>
+              <input class="form-control" type="password" id="newPassword" name="password" autocomplete="new-password" />
+            </div>
+
+            <div class="col-md-6">
+              <label for="confirmPassword" class="form-label">Confirm New Password</label>
+              <input class="form-control" type="password" id="confirmPassword" name="password_confirmation" autocomplete="new-password" />
+            </div>
+
+            <div class="col-md-6">
+              <label for="organization" class="form-label">Organization</label>
+              <input type="text" class="form-control" id="organization" name="organization"
+                     value="{{ old('organization', $u?->organization) }}" />
+            </div>
+
+            {{-- ✅ Phone with Country Code select --}}
+            <div class="col-md-6">
+              <label class="form-label required" for="phoneLocal">Phone Number</label>
+
+              <div class="input-group">
+                <select class="form-select" id="phoneCountry" style="max-width: 210px;">
+                  <option value="+33"  data-country="France">France (+33)</option>
+                  <option value="+855" data-country="Cambodia">Cambodia (+855)</option>
+                  <option value="+44"  data-country="United Kingdom">United Kingdom (+44)</option>
+                  <option value="+1"   data-country="United States">United States (+1)</option>
+                  <option value="+82"  data-country="Korea, Republic of">Korea (+82)</option>
+                  <option value="+84"  data-country="Vietnam">Vietnam (+84)</option>
+                  <option value="+66"  data-country="Thailand">Thailand (+66)</option>
+                </select>
+
+                <input
+                  type="tel"
+                  id="phoneLocal"
+                  class="form-control"
+                  placeholder="Enter number"
+                  inputmode="tel"
+                  autocomplete="tel"
+                  required
+                />
+              </div>
+
+              {{-- ✅ This hidden input is what is saved to DB --}}
+              <input type="hidden" id="phone" name="phone" value="{{ old('phone', $u?->phone) }}">
+            </div>
+
+            {{-- ✅ Address with Auto Suggestion (Google Places) --}}
+            <div class="col-md-6">
+            <label for="address" class="form-label">Address</label>
+            <input
+                type="text"
+                class="form-control"
+                id="address"
+                name="address"
+                value="{{ old('address', $u?->address) }}"
+                placeholder="Start typing address..."
+                autocomplete="off"
+            />
+            </div>
+
+            <div class="col-md-6">
+              <label for="state" class="form-label">State</label>
+              <input class="form-control" type="text" id="state" name="state"
+                     value="{{ old('state', $u?->state) }}" placeholder="State/Province" />
+            </div>
+
+            <div class="col-md-6">
+              <label for="zipCode" class="form-label">Zip Code</label>
+              <input type="text" class="form-control" id="zipCode" name="zip_code"
+                     value="{{ old('zip_code', $u?->zip_code) }}" maxlength="20" placeholder="Zip code" />
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label" for="country">Country</label>
+              <select id="country" name="country" class="select2 form-select">
+                @php($country = old('country', $u?->country))
+                <option value="">Select</option>
+                @foreach(["Cambodia","France","United Kingdom","United States","Korea, Republic of","Vietnam","Thailand"] as $c)
+                  <option value="{{ $c }}" {{ $country === $c ? 'selected' : '' }}>{{ $c }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="language" class="form-label">Language</label>
+              <select id="language" name="language" class="select2 form-select">
+                @php($lang = old('language', $u?->language))
+                <option value="">Select Language</option>
+                <option value="en" {{ $lang === 'en' ? 'selected' : '' }}>English</option>
+                <option value="fr" {{ $lang === 'fr' ? 'selected' : '' }}>French</option>
+                <option value="km" {{ $lang === 'km' ? 'selected' : '' }}>Khmer</option>
+              </select>
+            </div>
+
+          </div>
+
+          <div class="mt-6">
+            <button type="submit" class="btn btn-primary me-3">Save changes</button>
+            <a href="{{ url('/') }}" class="btn btn-outline-secondary">Cancel</a>
+          </div>
+        </form>
+      </div>
     </div>
+
+  </div>
 </div>
+
+{{-- ✅ JS: avatar reset + phone combine + address autocomplete --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Avatar reset/preview
+  const uploadInput = document.getElementById('upload');
+  const avatarImg = document.getElementById('uploadedAvatar');
+  const resetBtn = document.querySelector('.account-image-reset');
+  const defaultAvatar = document.getElementById('defaultAvatar')?.value;
+
+  if (uploadInput && avatarImg) {
+    uploadInput.addEventListener('change', function () {
+      const file = this.files && this.files[0];
+      if (!file) return;
+      avatarImg.src = URL.createObjectURL(file);
+    });
+  }
+
+  if (resetBtn && avatarImg && uploadInput) {
+    resetBtn.addEventListener('click', function () {
+      uploadInput.value = '';
+      if (defaultAvatar) avatarImg.src = defaultAvatar;
+    });
+  }
+
+  // Phone combine: country code + local -> hidden "phone"
+  const phoneCountry = document.getElementById('phoneCountry');
+  const phoneLocal = document.getElementById('phoneLocal');
+  const phoneHidden = document.getElementById('phone');
+  const countrySelect = document.getElementById('country');
+
+  function setPhoneHidden() {
+    if (!phoneCountry || !phoneLocal || !phoneHidden) return;
+    const code = phoneCountry.value || '';
+    const local = (phoneLocal.value || '').replace(/\s+/g,'').replace(/^0+/, '');
+    phoneHidden.value = code + local;
+  }
+
+  function syncCountryFromPhoneCountry() {
+    if (!phoneCountry || !countrySelect) return;
+    const selected = phoneCountry.options[phoneCountry.selectedIndex];
+    const c = selected?.dataset?.country;
+    if (c) countrySelect.value = c;
+  }
+
+  // If DB already has phone like +85512345678 -> split it
+  const existingPhone = phoneHidden?.value || '';
+  if (existingPhone.startsWith('+')) {
+    const codes = Array.from(phoneCountry.options).map(o => o.value).sort((a,b)=>b.length-a.length);
+    const match = codes.find(code => existingPhone.startsWith(code));
+    if (match) {
+      phoneCountry.value = match;
+      phoneLocal.value = existingPhone.replace(match, '');
+      syncCountryFromPhoneCountry();
+    }
+  }
+
+  if (phoneCountry) phoneCountry.addEventListener('change', () => { setPhoneHidden(); syncCountryFromPhoneCountry(); });
+  if (phoneLocal) phoneLocal.addEventListener('input', setPhoneHidden);
+  setPhoneHidden();
+
+});
+</script>
+
+{{-- ✅ Google Places Autocomplete (Address Suggestions)
+     1) Create Google API key
+     2) Enable: Places API
+     3) Replace YOUR_GOOGLE_API_KEY below
+--}}
+<script
+  src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initAddressAutocomplete"
+  async defer></script>
+
+<script>
+function initAddressAutocomplete() {
+  const input = document.getElementById('address');
+  if (!input || !window.google || !google.maps || !google.maps.places) return;
+
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    types: ['geocode'],
+  });
+
+  autocomplete.addListener('place_changed', function () {
+    const place = autocomplete.getPlace();
+    // You can also parse place.address_components if you want to auto-fill state/zip/country.
+  });
+}
+</script>
+
 @endsection

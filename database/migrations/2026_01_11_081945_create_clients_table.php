@@ -20,8 +20,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('phone_number')->nullable();
 
-            // JSON for company address
-            $table->json('company_address')->nullable();
+            // Company address
+            $table->string('company_address')->nullable();
 
             // Yes / No
             $table->boolean('tax')->default(false);
