@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
     Route::get('/admin', fn() => view('admin.dashboard'))->name('admin.dashboard');
 
     Route::get('/dashboard', function () {
@@ -97,17 +98,19 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'role:staff'])->group(function () {
-    Route::get('/staff', fn() => view('staff.dashboard'))->name('staff.dashboard');
+Route::prefix('staff')->name('staff.')->middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/', fn() => view('staff.dashboard'))->name('staff.dashboard');
+    Route::resource('/tasks', TaskController::class);
 });
 
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/client', fn() => view('client.dashboard'))->name('client.dashboard');
+    Route::resource('client/tasks', TaskController::class);
 });
 
 
 // Main Page Route
-Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
+
 Route::get('/dashboard/total-booking', [TotalBooking::class, 'index'])->name('dashboard-total-booking');
 
 // layout

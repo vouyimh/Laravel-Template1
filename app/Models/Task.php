@@ -20,10 +20,10 @@ class Task extends Model
         'updated_at' => 'datetime',
     ];
 
-      public function assignedUsers()
-    {
-        return $this->hasMany(AssignedUser::class);
-    }
+    public function assignees()
+{
+    return $this->belongsToMany(User::class, 'assigned_users');
+}
 
     public function comments()
     {

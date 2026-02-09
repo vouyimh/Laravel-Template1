@@ -85,5 +85,5 @@
 
   {{-- ✅ This is the KEY: print page scripts --}}
   @yield('script')
-  @stack('scripts')
+
 @endsection

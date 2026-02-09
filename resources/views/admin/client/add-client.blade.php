@@ -10,6 +10,26 @@
 <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+<style>
+    .address-suggestions {
+        max-height: 220px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        z-index: 2000;
+        box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+
+    .address-suggestions .item {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    .address-suggestions .item:hover {
+        background: #f5f6f8;
+    }
+</style>
 <script>
     $(document).ready(function() {
         $('#add-client-form').submit(function(e) {
@@ -20,10 +40,7 @@
             let houses = [];
             $('#houses-container > div').each(function() {
                 houses.push({
-                    street_name: $(this).find('.house-street').val(),
-                    local_code: $(this).find('.house-local').val(),
-                    village: $(this).find('.house-village').val(),
-                    house_number: $(this).find('.house-number').val(),
+                    house_address: $(this).find('.house_address').val(),
                     room: $(this).find('.house-room').val(),
                     size: $(this).find('.house-size').val(),
                     time: $(this).find('.house-time').val(),
@@ -42,12 +59,7 @@
                 lockbox: $('input[name="lockbox_number"]').val(),
                 company_type: $('select[name="company_type"]').val(),
                 tax: $('#tax').is(':checked') ? true : false,
-                company_address: {
-                    street_name: $('input[name="company_address[street_name]"]').val(),
-                    local_code: $('input[name="company_address[local_code]"]').val(),
-                    village: $('input[name="company_address[village]"]').val(),
-                    house_number: $('input[name="company_address[house_number]"]').val(),
-                },
+                company_address: $('input[name="company_address"]').val(),
                 houses: houses
             };
 
@@ -79,6 +91,92 @@
                 }
             });
         });
+
+        // ===== ADDRESS AUTOCOMPLETE =====
+        let timer;
+
+        // Works for static + dynamically added inputs
+        $(document).on('input', '.address-autocomplete', function () {
+            const input = this;
+            const query = input.value.trim();
+            const suggestionBox = $(input).next('.address-suggestions');
+
+            clearTimeout(timer);
+
+            if (query.length < 1) {
+                suggestionBox.hide();
+                return;
+            }
+
+            timer = setTimeout(() => {
+                searchAddress(query, input, suggestionBox);
+            }, 300);
+        });
+
+        async function searchAddress(query, input, suggestionBox) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=fr&q=${encodeURIComponent(query)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                suggestionBox.empty();
+
+                data.forEach(item => {
+                    const a = item.address;
+                    const parts = [];
+
+                    // ===== YOUR EXACT FORMATTING LOGIC =====
+
+                    // House number + street
+                    if (a.house_number && a.road) {
+                        parts.push(`${a.house_number} ${a.road}`);
+                    } else if (a.road) {
+                        parts.push(a.road);
+                    }
+
+                    // Additional local info
+                    if (a.neighbourhood) parts.push(a.neighbourhood);
+                    if (a.suburb) parts.push(a.suburb);
+                    if (a.village) parts.push(a.village);
+                    if (a.town) parts.push(a.town);
+                    if (a.city) parts.push(a.city);
+
+                    // Postal code, district, state, country
+                    if (a.postcode) parts.push(a.postcode);
+                    if (a.district) parts.push(a.district);
+                    if (a.state) parts.push(a.state);
+                    if (a.country) parts.push(a.country);
+
+                    const text = parts.join(', ') || item.display_name;
+
+                    // =====================================
+
+                    const div = $('<div class="item"></div>').text(text);
+
+                    div.on('click', function () {
+                        input.value = text;
+                        input.dataset.lat = item.lat;
+                        input.dataset.lon = item.lon;
+                        suggestionBox.hide();
+                    });
+
+                    suggestionBox.append(div);
+                });
+
+                suggestionBox.toggle(data.length > 0);
+
+            } catch (err) {
+                console.error(err);
+                suggestionBox.hide();
+            }
+        }
+
+        // Close suggestions when clicking outside
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.address-autocomplete, .address-suggestions').length) {
+                $('.address-suggestions').hide();
+            }
+        });
     });
 
     // Function to add new house fields dynamically
@@ -91,36 +189,14 @@
                 <h5>House #${index + 1}</h5>
 
                 <div class="mb-3">
-                    <label class="form-label">Street Name</label>
+                    <label class="form-label">Address</label>
                     <input type="text"
-                        name="houses[${index}][street_name]"
-                        class="form-control house-street"
+                        name="houses[${index}][house_address]"
+                        class="form-control house_address address-autocomplete"
                         required>
+                    <div class="address-suggestions" style="display:none;"></div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Local Code</label>
-                    <input type="text"
-                        name="houses[${index}][local_code]"
-                        class="form-control house-local"
-                        required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Village</label>
-                    <input type="text"
-                        name="houses[${index}][village]"
-                        class="form-control house-village"
-                        required>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">House Number</label>
-                    <input type="text"
-                        name="houses[${index}][house_number]"
-                        class="form-control house-number"
-                        required>
-                </div>
+                
 
                 <div class="mb-3">
                     <label class="form-label">Total Number of Rooms</label>
@@ -170,6 +246,7 @@
 
         container.insertAdjacentHTML('beforeend', houseHTML);
     }
+
 </script>
 @endsection
 
@@ -235,20 +312,9 @@
                 <!-- Company Address -->
                 <h4>Company Address</h4>
                 <div class="mb-3">
-                    <label class="form-label">Street Name</label>
-                    <input type="text" name="company_address[street_name]" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Local Code</label>
-                    <input type="text" name="company_address[local_code]" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Village</label>
-                    <input type="text" name="company_address[village]" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">House Number</label>
-                    <input type="text" name="company_address[house_number]" class="form-control" required>
+                    <label class="form-label">Address</label>
+                    <input type="text" name="company_address" class="form-control address-autocomplete" required>
+                    <div class="address-suggestions" style="display:none;"></div>
                 </div>
 
                 <!-- Houses -->

@@ -73,13 +73,34 @@ class TaskManager extends Component
     public function store()
     {
         $this->validate();
+        $this->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|in:pending,in_progress,completed',
+            'priority' => 'required|in:low,medium,high',
+            'due_date' => 'nullable|date|after_or_equal:today',
+            'assignees' => 'nullable|array',
+            'assignees.*' => 'exists:users,id',
+        ]);
 
-        Task::create([
+        $task = Task::create([
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
+            'priority' => $this->priority,
             'due_date' => $this->due_date ?: null,
         ]);
+
+        if (!empty($this->assignees)) {
+            foreach ($this->assignees as $userId) {
+                DB::table('assigned_users')->insert([
+                    'task_id' => $task->id,
+                    'user_id' => $userId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
 
         $this->closeModal();
         session()->flash('message', 'Task created successfully!');
