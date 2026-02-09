@@ -30,6 +30,14 @@
 
     <!-- Include Scripts for customizer, helper, analytics, config -->
     @include('layouts/sections/scriptsIncludes')
+     <style>
+      .tm-symbol {
+        font-size: 0.65em;
+        vertical-align: super;
+        margin-left: 2px;
+        line-height: 1;
+      }
+    </style>
 </head>
 
 <body>

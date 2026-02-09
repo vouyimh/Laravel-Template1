@@ -4,7 +4,7 @@
 
 <span class="d-inline-flex align-items-center">
     <img
-        src="{{ asset('logo/BionettTOURS.jpg') }}"
+        src="{{ asset('logo/Bionett.jpg') }}"
         height="{{ $height }}"
         style="width: auto;"
         alt="Bionett TOURS™ Logo"
