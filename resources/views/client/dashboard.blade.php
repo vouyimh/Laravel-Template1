@@ -2,6 +2,6 @@
 
 @section('content')
 <div>
-    Hello Staff
+    Hello Client
 </div>
 @endsection

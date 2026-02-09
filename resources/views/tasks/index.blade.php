@@ -1,5 +1,11 @@
 @extends('layouts/contentNavbarLayout')
 
+@php
+    $role = auth()->user()->role;
+    $routePrefix = $role . '.tasks.';
+@endphp
+
+
 @section('title', 'Client')
 
 @section('content')

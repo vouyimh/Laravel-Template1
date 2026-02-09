@@ -98,12 +98,14 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 });
 
-Route::middleware(['auth', 'role:staff'])->group(function () {
-    Route::get('/staff', fn() => view('staff.dashboard'))->name('staff.dashboard');
+Route::prefix('staff')->name('staff.')->middleware(['auth', 'role:staff'])->group(function () {
+    Route::get('/', fn() => view('staff.dashboard'))->name('staff.dashboard');
+    Route::resource('/tasks', TaskController::class);
 });
 
 Route::middleware(['auth', 'role:client'])->group(function () {
     Route::get('/client', fn() => view('client.dashboard'))->name('client.dashboard');
+    Route::resource('client/tasks', TaskController::class);
 });
 
 
