@@ -52,6 +52,7 @@ use App\Http\Controllers\pages\StaffEdit;
 use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
+use App\Http\Controllers\TwoFactorController;
 
 
 
@@ -61,7 +62,23 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
+/*
+|--------------------------------------------------------------------------
+| 2FA Verification Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+
+    Route::get('/2fa-setup', [TwoFactorController::class, 'setup'])
+        ->name('2fa.setup');
+
+    Route::post('/2fa-verify', [TwoFactorController::class, 'verify'])
+        ->name('2fa.verify');
+});
+
+
+Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
     Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
     Route::get('/admin', fn() => view('admin.dashboard'))->name('admin.dashboard');
 
@@ -98,12 +115,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
 });
 
-Route::prefix('staff')->name('staff.')->middleware(['auth', 'role:staff'])->group(function () {
+Route::prefix('staff')->name('staff.')->middleware(['auth', '2fa', 'role:staff'])->group(function () {
     Route::get('/', fn() => view('staff.dashboard'))->name('staff.dashboard');
     Route::resource('/tasks', TaskController::class);
 });
 
-Route::middleware(['auth', 'role:client'])->group(function () {
+Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
     Route::get('/client', fn() => view('client.dashboard'))->name('client.dashboard');
     Route::resource('client/tasks', TaskController::class);
 });
