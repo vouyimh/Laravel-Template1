@@ -12,24 +12,34 @@ class TwoFactorController extends Controller
 {
     public function setup(Request $request)
     {
+        $user = auth()->user();
         $google2fa = new Google2FA();
 
-        // Generate secret if not exists
-        if (!$request->session()->has('2fa_secret')) {
-            $secret = $google2fa->generateSecretKey();
+        // ✅ If user already enabled 2FA
+        if (!empty($user->two_factor_secret)) {
+
+            // Use existing secret from database
+            $secret = $user->two_factor_secret;
+
+            // Store it in session temporarily for verification
             $request->session()->put('2fa_secret', $secret);
-        } else {
-            $secret = $request->session()->get('2fa_secret');
+
+            // Do NOT generate QR
+            return view('auth.2fa-verify', [
+                'qrCode' => null,   // No QR
+            ]);
         }
 
-        // IMPORTANT: pass (issuer, email, secret)
+        // ✅ First time setup → generate new secret
+        $secret = $google2fa->generateSecretKey();
+        $request->session()->put('2fa_secret', $secret);
+
         $otpAuthUrl = $google2fa->getQRCodeUrl(
-            'Bionett Tours',                 // Issuer / App Name
-            auth()->user()->email,           // Account (VERY IMPORTANT)
-            $secret                          // Secret
+            'Bionett Tours',
+            $user->email,
+            $secret
         );
 
-        // Generate QR code
         $qrCode = QrCode::size(200)->generate($otpAuthUrl);
 
         return view('auth.2fa-verify', [
@@ -60,9 +70,26 @@ class TwoFactorController extends Controller
             }
             
             $request->session()->put('2fa_verified', true);
-            return redirect('/dashboard');
+            return redirect()->intended($this->redirectByRole($user));
         }
 
         return back()->withErrors(['Invalid verification code']);
+    }
+
+    private function redirectByRole($user)
+    {
+        if ($user->role === 'admin') {
+            return route('admin.dashboard');
+        }
+
+        if ($user->role === 'staff') {
+            return route('staff.staff.dashboard');
+        }
+
+        if ($user->role === 'client') {
+            return route('client.dashboard');
+        }
+
+        return '/';
     }
 }
