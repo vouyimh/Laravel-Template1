@@ -77,11 +77,10 @@
       ]
     },
     {
-      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/chat",
+      "url": "/chat",
       "name": "Support Chat",
       "icon": "menu-icon icon-base bx bx-chat",
       "slug": "app-chat",
-      "target": "_blank",
       "roles": ["admin", "client", "staff"]
     },
     {
