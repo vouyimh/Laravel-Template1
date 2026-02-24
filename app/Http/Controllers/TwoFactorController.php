@@ -70,7 +70,7 @@ class TwoFactorController extends Controller
             }
             
             $request->session()->put('2fa_verified', true);
-            return redirect()->intended($this->redirectByRole($user));
+            return redirect($this->redirectByRole($user));
         }
 
         return back()->withErrors(['Invalid verification code']);
@@ -79,11 +79,11 @@ class TwoFactorController extends Controller
     private function redirectByRole($user)
     {
         if ($user->role === 'admin') {
-            return route('admin.dashboard');
+            return route('dashboard-analytics');
         }
 
         if ($user->role === 'staff') {
-            return route('staff.staff.dashboard');
+            return route('staff.dashboard');
         }
 
         if ($user->role === 'client') {

@@ -115,9 +115,9 @@ Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
 
 });
 
-Route::prefix('staff')->name('staff.')->middleware(['auth', '2fa', 'role:staff'])->group(function () {
-    Route::get('/', fn() => view('staff.dashboard'))->name('staff.dashboard');
-    Route::resource('/tasks', TaskController::class);
+Route::middleware(['auth', '2fa', 'role:staff'])->group(function () {
+    Route::get('/staff', fn() => view('staff.dashboard'))->name('staff.dashboard');
+    Route::resource('staff/tasks', TaskController::class);
 });
 
 Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
