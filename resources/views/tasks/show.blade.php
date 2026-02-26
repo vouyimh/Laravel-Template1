@@ -197,6 +197,7 @@
                                         </div>
                                     </div>
 
+                                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
                                     <!-- Action Buttons -->
                                     <div class="row">
                                         <div class="col-12">
@@ -225,6 +226,9 @@
                                                         </button>
                                                     </form>
                                                 @endif
+                        
+                                
+                                            @if(auth()->check() && auth()->user()->role === 'admin')
                                                 <form action="{{ route('tasks.destroy', $task->id) }}" method="POST"
                                                     style="display: inline;">
                                                     @csrf
@@ -234,9 +238,11 @@
                                                         <i class="fas fa-trash me-1"></i>Delete Task
                                                     </button>
                                                 </form>
+                                            @endif
                                             </div>
                                         </div>
                                     </div>
+                                @endif
                                 </div>
                             </div>
                         </div>

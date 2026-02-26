@@ -83,11 +83,11 @@ class TwoFactorController extends Controller
         }
 
         if ($user->role === 'staff') {
-            return route('staff.dashboard');
+            return route('staff.task');
         }
 
         if ($user->role === 'client') {
-            return route('client.dashboard');
+            return route('client.task');
         }
 
         return '/';
