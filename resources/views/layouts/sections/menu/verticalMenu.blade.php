@@ -80,11 +80,11 @@ use Illuminate\Support\Facades\Auth;
                  */
                 if ($menu->name === 'Manage Staff Work') {
                     if ($userRole === 'admin') {
-                        $menuUrl = url('/admin/tasks');
+                        $menuUrl = url('/tasks');
                     } elseif ($userRole === 'staff') {
-                        $menuUrl = url('/staff/tasks');
+                        $menuUrl = url('/tasks');
                     } else {
-                        $menuUrl = url('/client/tasks');
+                        $menuUrl = url('/tasks');
                     }
                 } else {
                     $menuUrl = isset($menu->url)

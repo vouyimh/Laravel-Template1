@@ -111,20 +111,26 @@ Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
     Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
         ->name('admin.staff.pages-staff-delete');
 
-    Route::resource('admin/tasks', TaskController::class);
+    // Route::resource('/tasks', TaskController::class);
 
 });
 
 Route::middleware(['auth', '2fa', 'role:staff'])->group(function () {
-    Route::get('/staff', fn() => view('staff.dashboard'))->name('staff.dashboard');
-    Route::resource('staff/tasks', TaskController::class);
+    // Route::get('/staff', fn() => view('staff.dashboard'))->name('staff.dashboard');
+    // Tasks main page
+    Route::get('/staff', [TaskController::class, 'index'])->name('staff.task');
 });
 
 Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
-    Route::get('/client', fn() => view('client.dashboard'))->name('client.dashboard');
-    Route::resource('client/tasks', TaskController::class);
+    // Route::get('/client', fn() => view('client.dashboard'))->name('client.dashboard');
+    // Tasks main page
+    Route::get('/client', [TaskController::class, 'index'])->name('client.task');
+
 });
 
+Route::middleware(['auth', '2fa'])->group(function () {
+    Route::resource('/tasks', TaskController::class);
+});
 
 // Main Page Route
 
