@@ -4,7 +4,7 @@ import Room from './pages/Room.vue'
 
 const routes = [
   {
-    path: '/',
+    path: '/chat',
     name: 'list.room',
     component: ListRoom
   },

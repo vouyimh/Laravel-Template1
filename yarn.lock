@@ -3928,6 +3928,11 @@
   "resolved" "https://registry.npmjs.org/kolorist/-/kolorist-1.8.0.tgz"
   "version" "1.8.0"
 
+"laravel-echo@^2.3.0":
+  "integrity" "sha512-wgHPnnBvfHmu2I58xJ4asZH37Nu6P0472ku6zuoGRLc3zEWwIbpovDLYTiOshDH1SM7rA6AjZTKuu+jYoM1tpQ=="
+  "resolved" "https://registry.npmjs.org/laravel-echo/-/laravel-echo-2.3.0.tgz"
+  "version" "2.3.0"
+
 "laravel-vite-plugin@1.0.6":
   "integrity" "sha512-B34OqmZc/rV1KvSjst8SsUm/LKHsuDusw8jiZCIhlnTHXbXnK89JUM9pTJuk6E/Vc/1DT2gX7qNfhipak1WS8w=="
   "resolved" "https://registry.npmjs.org/laravel-vite-plugin/-/laravel-vite-plugin-1.0.6.tgz"
@@ -4858,7 +4863,7 @@
   "resolved" "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz"
   "version" "2.3.1"
 
-"pusher-js@^8.4.0-rc2":
+"pusher-js@^8.4.0":
   "integrity" "sha512-wp3HqIIUc1GRyu1XrP6m2dgyE9MoCsXVsWNlohj0rjSkLf+a0jLvEyVubdg58oMk7bhjBWnFClgp8jfAa6Ak4Q=="
   "resolved" "https://registry.npmjs.org/pusher-js/-/pusher-js-8.4.0.tgz"
   "version" "8.4.0"

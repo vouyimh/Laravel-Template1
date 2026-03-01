@@ -202,11 +202,15 @@ Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
 // tables
 //Route::get('/tables/basic', [TablesBasic::class, 'index'])->name('tables-basic');
 // Route::middleware('auth')->group(function () {
-  Route::get('/chat', [App\Http\Controllers\MessageController::class, 'chat']);
+  
+//   Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
+// });
+ 
+
+ Route::middleware('auth')->group(function () {
+  Route::get('/{any}', [App\Http\Controllers\AppController::class, 'index'])->where('any', '.*');
   Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
   Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
   Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
-//   Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
-// });
-
+});
 require __DIR__ . '/auth.php';
