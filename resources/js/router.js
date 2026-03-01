@@ -3,16 +3,16 @@ import ListRoom from './pages/ListRoom.vue'
 import Room from './pages/Room.vue'
 
 const routes = [
-  {
-    path: '/chat',
-    name: 'list.room',
-    component: ListRoom
-  },
-  {
-    path: '/rooms/:roomId',
-    name: 'room',
-    component: Room
-  }
+  // {
+  //   path: '/chat',
+  //   name: 'list.room',
+  //   component: ListRoom
+  // },
+  // {
+  //   path: '/rooms/:roomId',
+  //   name: 'room',
+  //   component: Room
+  // }
 ]
 
 const router = createRouter({

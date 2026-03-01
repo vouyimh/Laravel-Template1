@@ -51,6 +51,7 @@ use App\Http\Controllers\pages\StaffAdd;
 use App\Http\Controllers\pages\StaffEdit;
 use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 use App\Http\Controllers\TwoFactorController;
 
@@ -130,6 +131,9 @@ Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
 
 Route::middleware(['auth', '2fa'])->group(function () {
     Route::resource('/tasks', TaskController::class);
+    Route::get('/chat/{roomId}', function ($roomId) {
+    return view('chat.index',['roomId' => $roomId]);
+    });
 });
 
 // Main Page Route
@@ -214,9 +218,11 @@ Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
  
 
  Route::middleware('auth')->group(function () {
-  Route::get('/{any}', [App\Http\Controllers\AppController::class, 'index'])->where('any', '.*');
+// Route::get('/{any}', [App\Http\Controllers\AppController::class, 'index'])
+//     ->where('any', '^(rooms|chat)(/.*)?$');
   Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
   Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
   Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
 });
+
 require __DIR__ . '/auth.php';

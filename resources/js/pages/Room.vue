@@ -22,9 +22,13 @@ const user = inject("$user");
 const appName = inject("$appName");
 const showToast = inject("$showToast");
 
+const props = defineProps({
+  roomId: Number
+})
+
 onBeforeMount(() => {
   const index = rooms.findIndex(
-    (item) => item.id === parseInt(route.params.roomId)
+    (item) => item.id === parseInt(props.roomId)
   );
   if (index > -1) {
     currentRoom.value = rooms[index];
@@ -128,3 +132,5 @@ function closeChat() {
       @closeChat="closeChat" />
   </div>
 </template>
+
+

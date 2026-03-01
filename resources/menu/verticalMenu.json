@@ -77,7 +77,7 @@
       ]
     },
     {
-      "url": "/chat",
+      "url": "/chat/1",
       "name": "Support Chat",
       "icon": "menu-icon icon-base bx bx-chat",
       "slug": "app-chat",

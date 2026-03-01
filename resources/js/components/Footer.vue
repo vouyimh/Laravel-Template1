@@ -14,7 +14,7 @@
   </footer>
 </template>
 
-<style>
+<style >
 footer {
   background: #1c5986;
   color: white;
@@ -36,3 +36,5 @@ footer a {
   color: #00ffe9;
 }
 </style>
+
+

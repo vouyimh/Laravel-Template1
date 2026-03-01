@@ -8,7 +8,7 @@
         <meta name="keywords" content="Realtime chat app, Laravel, VueJS, Laravel Echo, Redis, SocketIO">
 
         <title>Realtime Chat | Laravel, VueJS, Redis, Laravel Echo, SocketIO</title>
-
+        
         <link rel="stylesheet" href="{{ asset('css/font_awesome/all.min.css') }}">
         <link rel="icon favicon" href="{{ asset('images/favicon.png') }}">
         <meta name="csrf-token" content="{{ csrf_token() }}">

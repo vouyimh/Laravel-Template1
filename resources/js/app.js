@@ -23,9 +23,9 @@ import './bootstrap';
 // import 'select2/dist/css/select2.min.css';
 
 
-import { createApp } from "vue";
-import router from "./router";
-import App from "./App.vue";
+// import { createApp } from "vue";
+// import router from "./router";
+// import App from "./App.vue";
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
@@ -33,8 +33,25 @@ import App from "./App.vue";
  * to use in your application's views. An example is included for you.
  */
 
-const app = createApp(App);
-app.use(router);
+import { createApp } from 'vue'
+import Room from './pages/Room.vue'
+
+const chatEl = document.getElementById('chat-app')
+
+if (chatEl) {
+   const roomId = chatEl.dataset.roomId
+
+   const app = createApp(Room, { roomId })
+
+   app.provide('$rooms', window.__app__.rooms)
+   app.provide('$user', window.__app__.user)
+   app.provide('$emojis', window.__app__.emojis)
+   app.provide('$appName', window.__app__.appName)
+   app.provide('$confettiWords', window.__app__.confettiWords)
+   app.provide('$showToast', showToast)
+
+   app.mount(chatEl)
+}
 
 /**
  * The following block of code may be used to automatically register your
@@ -54,4 +71,4 @@ app.use(router);
  * scaffolding. Otherwise, you will need to add an element yourself.
  */
 
-app.mount("#app");
+// app.mount("#app");
