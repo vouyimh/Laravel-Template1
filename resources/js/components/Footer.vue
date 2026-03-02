@@ -15,6 +15,7 @@
 </template>
 
 <style >
+#chat-app{
 footer {
   background: #1c5986;
   color: white;
@@ -34,6 +35,7 @@ footer {
 
 footer a {
   color: #00ffe9;
+}
 }
 </style>
 

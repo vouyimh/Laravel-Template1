@@ -118,6 +118,7 @@ function celebrate(event) {
 </template>
 
 <style lang="scss">
+#chat-app{
 .bot-notification {
   max-width: 100% !important;
   width: 100%;
@@ -178,5 +179,6 @@ function celebrate(event) {
 
 .img_cont_msg {
   cursor: pointer;
+}
 }
 </style>

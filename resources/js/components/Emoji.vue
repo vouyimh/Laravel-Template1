@@ -92,6 +92,7 @@ const userReaction = computed(() => {
 </template>
 
 <style lang="scss">
+#chat-app{
 .emoji-container {
   border-radius: 20px;
   box-shadow: 0 2px 4px 1px rgba(0, 0, 0, 0.1);
@@ -156,5 +157,6 @@ const userReaction = computed(() => {
 .slide-fade-leave-to {
   transform: translate(-50%, 20px);
   opacity: 0;
+}
 }
 </style>

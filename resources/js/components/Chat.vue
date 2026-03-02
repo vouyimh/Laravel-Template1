@@ -484,7 +484,7 @@ html {
   // overflow: hidden;
 }
 
-
+#chat-app{
 .app-container {
   background: #0078d4;
   background-image: -o-linear-gradient(0deg, #0078d4, #00bcf2);
@@ -764,9 +764,11 @@ html {
     transform: translate(-30px, 0);
   }
 }
+}
 </style>
 
 <style lang="scss">
+#chat-app {
 .card {
   z-index: 1;
   height: 500px;
@@ -920,5 +922,6 @@ html {
       font-size: 22px;
     }
   }
+}
 }
 </style>

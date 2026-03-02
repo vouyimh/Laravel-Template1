@@ -252,3 +252,9 @@ If you want to [Download Free Admin Templates](https://themeselection.com/produc
 - [Instagram](https://www.instagram.com/themeselection/)
 - [Discord](https://discord.com/invite/kBHkY7DekX)
 - [YouTube](https://www.youtube.com/channel/UCuryo5s0CW4aP83itLjIdZg)
+
+//////////
+
+npm run dev
+php artisan reverb:start
+php artisan serve
