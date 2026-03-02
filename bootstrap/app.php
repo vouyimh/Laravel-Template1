@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
     health: '/up',
   )
   ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([
+
+    $middleware->web(append: [
+        \App\Http\Middleware\SetLocale::class,
+    ]);
+
+    $middleware->alias([
         'role' => \App\Http\Middleware\RoleMiddleware::class,
         '2fa' => \App\Http\Middleware\EnsureTwoFactorIsVerified::class,
     ]);
