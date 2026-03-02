@@ -146,7 +146,13 @@ Route::get('/layouts/blank', [Blank::class, 'index'])->name('layouts-blank');
 // pages
 Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'index'])->name('pages-account-settings-account');
 Route::post('/pages/account-settings-account', [AccountSettingsAccount::class, 'update'])->name('pages-account-settings-account.update');
+Route::get('/lang/{locale}', function ($locale) {
+    if (!in_array($locale, ['en', 'fr'])) abort(404);
 
+    session(['locale' => $locale]);
+
+    return back();
+})->name('lang.switch');
 //Route::get('/pages/account-settings-notifications', [AccountSettingsNotifications::class, 'index'])->name('pages-account-settings-notifications');
 //Route::get('/pages/account-settings-connections', [AccountSettingsConnections::class, 'index'])->name('pages-account-settings-connections');
 //Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');

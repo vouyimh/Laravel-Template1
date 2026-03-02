@@ -32,17 +32,17 @@
 <div class="container-xxl flex-grow-1 container-p-y">
   <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
     <div>
-      <h4 class="fw-bold mb-1">Add Staff</h4>
-      <div class="text-muted small">Create a new staff account and upload a profile photo.</div>
+      <h4 class="fw-bold mb-1">{{ __('Add Staff') }}</h4>
+      <div class="text-muted small"> {{ __('Create a new staff account and upload a profile photo.') }}</div>
     </div>
     <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">
-      <i class="bx bx-arrow-back me-1"></i> Back to List
+      <i class="bx bx-arrow-back me-1"></i>  {{ __('Back to List') }}
     </a>
   </div>
 
   @if($errors->any())
     <div class="alert alert-danger">
-      <div class="fw-semibold mb-1">Please fix the errors below:</div>
+      <div class="fw-semibold mb-1">  {{ __('Please fix the errors below:') }}</div>
       <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
     </div>
   @endif
@@ -67,8 +67,8 @@
               </label>
             </div>
             <div class="d-flex justify-content-center gap-2 mt-3">
-              <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0"><i class="bx bx-upload me-1"></i> Change</label>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;"><i class="bx bx-trash me-1"></i> Remove</button>
+              <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0"><i class="bx bx-upload me-1"></i>{{ __('Change') }}</label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;"><i class="bx bx-trash me-1"></i>{{ __('Remove') }}</button>
             </div>
           </div>
 
@@ -78,62 +78,62 @@
 
               {{-- NAME --}}
               <div class="col-md-6">
-                <label class="form-label required">First Name</label>
+                <label class="form-label required">{{ __('First Name') }}</label>
                 <input name="FirstName" class="form-control" required value="{{ old('FirstName') }}">
               </div>
               <div class="col-md-6">
-                <label class="form-label required">Last Name</label>
+                <label class="form-label required">{{ __('Last Name') }}</label>
                 <input name="LastName" class="form-control" required value="{{ old('LastName') }}">
               </div>
 
               {{-- EMAIL --}}
               <div class="col-md-6">
-                <label class="form-label required">Email</label>
+                <label class="form-label required">{{ __('Email') }}</label>
                 <input name="Email" type="email" class="form-control" required value="{{ old('Email') }}">
               </div>
 
               {{-- ROLE --}}
               <div class="col-md-6">
-                <label class="form-label required">Role</label>
+                <label class="form-label required">{{ __('Role') }}</label>
                 <select name="Role" id="RoleSelect" class="form-select" required>
-                  <option value="">-- Select Role --</option>
-                  <option value="Temporary">Temporary</option>
-                  <option value="Permanent">Permanent</option>
-                  <option value="Company">Company</option>
+                  <option value="">{{ __('-- Select Role --') }}</option>
+                  <option value="Temporary">{{ __('Temporary') }}</option>
+                  <option value="Permanent">{{ __('Permanent') }}</option>
+                  <option value="Company">{{ __('Company') }}</option>
                 </select>
               </div>
 
               {{-- WORK TYPE --}}
               <div class="col-md-6">
-                <label class="form-label required">Work Type</label>
+                <label class="form-label required">{{ __('Work Type') }}</label>
                 <select name="EmploymentType" id="EmploymentType" class="form-select" required>
-                  <option value="">-- Select Work Type --</option>
+                  <option value="">{{ __('-- Select Work Type --') }}</option>
                 </select>
               </div>
 
               {{-- USERNAME --}}
               <div class="col-md-6">
-                <label class="form-label required">Username</label>
+                <label class="form-label required">{{ __('Username') }}</label>
                 <input name="Username" class="form-control" required value="{{ old('Username') }}">
               </div>
 
               {{-- PHONE --}}
               <div class="col-md-6">
-                <label class="form-label">Phone Number</label>
+                <label class="form-label">{{ __('Phone Number') }}</label>
                 <input name="PhoneNumber" class="form-control" value="{{ old('PhoneNumber') }}">
               </div>
 
               {{-- PASSWORD --}}
               <div class="col-md-6">
-                <label class="form-label required">Password</label>
+                <label class="form-label required">{{ __('Password') }}</label>
                 <input name="Password" type="password" class="form-control" required>
               </div>
 
               {{-- ADDRESS --}}
               <div class="col-md-12 address-space">
-                <label class="form-label required">Address</label>
+                <label class="form-label required">{{ __('Address') }}</label>
                 <div class="address-wrapper">
-                  <input name="Address" id="addressInput" class="form-control" placeholder="Start typing address..." autocomplete="off" required>
+                  <input name="Address" id="addressInput" class="form-control" placeholder="{{ __('Start typing address...') }}" autocomplete="off" required>
                   <div id="addressSuggestions" style="display:none;"></div>
                 </div>
               </div>
@@ -141,8 +141,8 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-              <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">Cancel</a>
-              <button class="btn btn-primary"><i class="bx bx-save me-1"></i> Save</button>
+              <a href="{{ route('admin.staff.pages-staff-list') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
+              <button class="btn btn-primary"><i class="bx bx-save me-1"></i> {{ __('Save') }}</button>
             </div>
 
           </div>

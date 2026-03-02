@@ -77,12 +77,12 @@
   <!-- Header -->
   <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
     <div>
-      <h4 class="fw-bold mb-1">Staff Management</h4>
-      <div class="text-muted small">Search, filter by role, and manage staff accounts.</div>
+      <h4 class="fw-bold mb-1">{{ __('Staff Management') }}</h4>
+      <div class="text-muted small">{{ __('Search, filter by role, and manage staff accounts.') }}</div>
     </div>
     <div class="d-flex gap-2">
       <a href="{{ route('admin.staff.pages-staff-add') }}" class="btn btn-primary d-flex align-items-center gap-2">
-        <i class="bx bx-plus"></i> Add New Staff
+        <i class="bx bx-plus"></i> {{ __('Add New Staff') }}
       </a>
     </div>
   </div>
@@ -97,9 +97,9 @@
 
       <!-- Left: Role filter + count -->
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span class="text-muted small">Role</span>
+        <span class="text-muted small">{{ __('Role') }}</span>
         <select id="roleFilter" class="form-select form-select-sm w-auto">
-          <option value="">All Roles</option>
+          <option value="">{{ __('All Roles') }}</option>
           @foreach($roles as $r)
             <option value="{{ $r }}">{{ $r }}</option>
           @endforeach
@@ -110,20 +110,20 @@
 
       <!-- Right: Search + page size (custom) -->
       <div class="d-flex align-items-center gap-2 ms-md-auto flex-wrap">
-        <span class="text-muted small">Show</span>
+        <span class="text-muted small">{{ __('Show') }}</span>
         <select id="pageSize" class="form-select form-select-sm w-auto">
           <option value="5">5</option>
           <option value="10" selected>10</option>
           <option value="25">25</option>
           <option value="50">50</option>
         </select>
-        <span class="text-muted small">rows</span>
+        <span class="text-muted small">{{ __('rows') }}</span>
 
-        <span class="text-muted small ms-md-3">Search</span>
+        <span class="text-muted small ms-md-3">{{ __('Search') }}</span>
         <input id="staffSearch" type="text"
                class="form-control form-control-sm"
                style="width:260px;"
-               placeholder="Search staff...">
+               placeholder="{{ __('Search staff...') }}">
       </div>
 
     </div>
@@ -136,12 +136,12 @@
         <table class="table table-hover align-middle mb-0" id="staff-table">
           <thead>
             <tr>
-              <th style="width:80px;">ID</th>
-              <th>Staff</th>
-              <th>Email</th>
-              <th style="width:140px;">Role</th>
-              <th style="width:160px;">Phone</th>
-              <th class="text-end" style="width:140px;">Actions</th>
+              <th style="width:80px;">{{ __('ID') }}</th>
+              <th>{{ __('Staff') }}</th>
+              <th>{{ __('Email') }}</th>
+              <th style="width:140px;">{{ __('Role') }}</th>
+              <th style="width:160px;">{{ __('Phone') }}</th>
+              <th class="text-end" style="width:140px;">{{ __('Actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -284,14 +284,14 @@ $(document).on('click', '.delete-btn', async function () {
     if (!url) return Swal.fire('Error', 'Missing delete URL.', 'error');
 
     const result = await Swal.fire({
-        title: 'Delete staff?',
-        text: 'This action cannot be undone.',
+        title: '{{ __("Delete staff?") }}',
+        text: '{{ __("This action cannot be undone.") }}',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Yes, delete',
-        cancelButtonText: 'Cancel'
+        confirmButtonText: '{{ __("Yes, delete") }}',
+        cancelButtonText: '{{ __("Cancel") }}'
     });
 
     if (!result.isConfirmed) return;
