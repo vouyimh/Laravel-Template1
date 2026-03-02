@@ -13,11 +13,25 @@
 @endphp
 
 <style>
-  .required::after{
-    content:" *";
-    color:#dc3545;
-    font-weight:700;
+  .required::after{ content:" *"; color:#dc3545; font-weight:700; }
+  .address-wrapper { position: relative; }
+
+  #addressSuggestions{
+    position:absolute;
+    top:calc(100% + 4px);
+    left:0;
+    right:0;
+    max-height:220px;
+    overflow-y:auto;
+    background:#fff;
+    border:1px solid #dee2e6;
+    border-radius:6px;
+    z-index:2000;
+    box-shadow:0 4px 12px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.06);
   }
+  #addressSuggestions .item{ padding:8px 12px; cursor:pointer; border-bottom:1px solid #f0f0f0; }
+  #addressSuggestions .item:last-child{ border-bottom:none; }
+  #addressSuggestions .item:hover{ background:#f5f6f8; }
 </style>
 
 <div class="row">
@@ -29,11 +43,7 @@
 
     @if($errors->any())
       <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach($errors->all() as $e)
-            <li>{{ $e }}</li>
-          @endforeach
-        </ul>
+        <ul class="mb-0">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>
       </div>
     @endif
 
@@ -48,23 +58,29 @@
             id="uploadedAvatar"
           />
 
-          <input type="hidden" id="defaultAvatar"
-                 value="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : asset('assets/img/avatars/1.png') }}">
+          {{-- saved avatar url (maybe empty) --}}
+          <input type="hidden" id="savedAvatar"
+                 value="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : '' }}">
+
+          {{-- fallback default avatar url --}}
+          <input type="hidden" id="fallbackAvatar" value="{{ asset('assets/img/avatars/1.png') }}">
 
           <div class="button-wrapper">
             <label for="upload" class="btn btn-primary me-3 mb-4" tabindex="0">
               <span class="d-none d-sm-block">Upload new photo</span>
               <i class="icon-base bx bx-upload d-block d-sm-none"></i>
-              <input type="file" id="upload" name="avatar" class="account-file-input" hidden accept="image/png, image/jpeg" form="formAccountSettings" />
+              <input type="file" id="upload" name="avatar" class="account-file-input" hidden
+                     accept="image/png, image/jpeg" form="formAccountSettings" />
             </label>
 
-            <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
+            <button type="button" class="btn btn-outline-secondary mb-4" id="resetAvatarBtn">
               <i class="icon-base bx bx-reset d-block d-sm-none"></i>
               <span class="d-none d-sm-block">Reset</span>
             </button>
 
             <div>Allowed JPG, GIF or PNG. Max size of 800K</div>
           </div>
+
         </div>
       </div>
 
@@ -74,6 +90,9 @@
               action="{{ route('pages-account-settings-account.update') }}"
               enctype="multipart/form-data">
           @csrf
+
+          {{-- ✅ tells backend to remove avatar when Reset --}}
+          <input type="hidden" id="removeAvatar" name="remove_avatar" value="0">
 
           <div class="row g-6">
 
@@ -95,103 +114,120 @@
                      value="{{ old('email', $u?->email) }}" required />
             </div>
 
-            {{-- Password Change --}}
-            <div class="col-md-6">
-              <label for="currentPassword" class="form-label">Current Password</label>
-              <input class="form-control" type="password" id="currentPassword" name="current_password" autocomplete="current-password" />
-            </div>
-
-            <div class="col-md-6">
-              <label for="newPassword" class="form-label">New Password</label>
-              <input class="form-control" type="password" id="newPassword" name="password" autocomplete="new-password" />
-            </div>
-
-            <div class="col-md-6">
-              <label for="confirmPassword" class="form-label">Confirm New Password</label>
-              <input class="form-control" type="password" id="confirmPassword" name="password_confirmation" autocomplete="new-password" />
-            </div>
-
             <div class="col-md-6">
               <label for="organization" class="form-label">Organization</label>
               <input type="text" class="form-control" id="organization" name="organization"
                      value="{{ old('organization', $u?->organization) }}" />
             </div>
 
-            {{-- ✅ Phone with Country Code select --}}
+{{-- Password Change (optional) --}}
+<div class="col-md-6">
+  <label for="currentPassword" class="form-label">Current Password</label>
+  <div class="input-group">
+    <input class="form-control" type="password" id="currentPassword" name="current_password" autocomplete="current-password" />
+    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="currentPassword" aria-label="Show/hide current password">
+      <i class="bx bx-hide"></i>
+    </button>
+  </div>
+</div>
+
+<div class="col-md-6">
+  <label for="newPassword" class="form-label">New Password</label>
+  <div class="input-group">
+    <input class="form-control" type="password" id="newPassword" name="password" autocomplete="new-password" />
+    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="newPassword" aria-label="Show/hide new password">
+      <i class="bx bx-hide"></i>
+    </button>
+  </div>
+</div>
+
+<div class="col-md-6">
+  <label for="confirmPassword" class="form-label">Confirm New Password</label>
+  <div class="input-group">
+    <input class="form-control" type="password" id="confirmPassword" name="password_confirmation" autocomplete="new-password" />
+    <button type="button" class="btn btn-outline-secondary toggle-password" data-target="confirmPassword" aria-label="Show/hide confirm password">
+      <i class="bx bx-hide"></i>
+    </button>
+  </div>
+</div>
+
+
+            {{-- Phone --}}
             <div class="col-md-6">
               <label class="form-label required" for="phoneLocal">Phone Number</label>
 
+              @php $savedPhone = old('phone', $u?->phone) ?? ''; @endphp
+
               <div class="input-group">
-                <select class="form-select" id="phoneCountry" style="max-width: 210px;">
-                  <option value="+33"  data-country="France">France (+33)</option>
-                  <option value="+855" data-country="Cambodia">Cambodia (+855)</option>
-                  <option value="+44"  data-country="United Kingdom">United Kingdom (+44)</option>
-                  <option value="+1"   data-country="United States">United States (+1)</option>
-                  <option value="+82"  data-country="Korea, Republic of">Korea (+82)</option>
-                  <option value="+84"  data-country="Vietnam">Vietnam (+84)</option>
-                  <option value="+66"  data-country="Thailand">Thailand (+66)</option>
+                <select class="form-select" id="phoneCountry" style="max-width:240px;">
+                  <option value="+33" data-country="France">France (+33)</option>
+                  <option value="+44" data-country="United Kingdom">United Kingdom (+44)</option>
                 </select>
 
                 <input
-                  type="tel"
+                  type="text"
                   id="phoneLocal"
                   class="form-control"
-                  placeholder="Enter number"
-                  inputmode="tel"
+                  placeholder="Digits only"
+                  inputmode="numeric"
                   autocomplete="tel"
                   required
                 />
               </div>
 
-              {{-- ✅ This hidden input is what is saved to DB --}}
-              <input type="hidden" id="phone" name="phone" value="{{ old('phone', $u?->phone) }}">
+              {{-- ✅ ONLY ONE hidden input for phone --}}
+              <input type="hidden" id="phoneHidden" name="phone" value="{{ $savedPhone }}">
             </div>
 
-            {{-- ✅ Address with Auto Suggestion (Google Places) --}}
+            {{-- Address --}}
             <div class="col-md-6">
-            <label for="address" class="form-label">Address</label>
-            <input
-                type="text"
-                class="form-control"
-                id="address"
-                name="address"
-                value="{{ old('address', $u?->address) }}"
-                placeholder="Start typing address..."
-                autocomplete="off"
-            />
+              <label class="form-label">Address</label>
+              <div class="address-wrapper">
+                <input
+                  name="address"
+                  id="addressInput"
+                  class="form-control"
+                  placeholder="Start typing address..."
+                  autocomplete="off"
+                  value="{{ old('address', $u?->address) }}"
+                />
+                <div id="addressSuggestions" style="display:none;"></div>
+              </div>
             </div>
 
             <div class="col-md-6">
-              <label for="state" class="form-label">State</label>
+              <label for="state" class="form-label">State / Region</label>
               <input class="form-control" type="text" id="state" name="state"
-                     value="{{ old('state', $u?->state) }}" placeholder="State/Province" />
+                     value="{{ old('state', $u?->state) }}" />
             </div>
 
             <div class="col-md-6">
               <label for="zipCode" class="form-label">Zip Code</label>
-              <input type="text" class="form-control" id="zipCode" name="zip_code"
-                     value="{{ old('zip_code', $u?->zip_code) }}" maxlength="20" placeholder="Zip code" />
+              <input class="form-control" type="text" id="zipCode" name="zip_code"
+                     value="{{ old('zip_code', $u?->zip_code) }}" />
             </div>
 
             <div class="col-md-6">
               <label class="form-label" for="country">Country</label>
-              <select id="country" name="country" class="select2 form-select">
-                @php($country = old('country', $u?->country))
+              @php($country = old('country', $u?->country) ?? 'France')
+              <select id="country" name="country" class="form-select">
                 <option value="">Select</option>
-                @foreach(["Cambodia","France","United Kingdom","United States","Korea, Republic of","Vietnam","Thailand"] as $c)
+                @foreach(["France","Cambodia","United Kingdom","Korea"] as $c)
                   <option value="{{ $c }}" {{ $country === $c ? 'selected' : '' }}>{{ $c }}</option>
                 @endforeach
               </select>
             </div>
 
+            {{-- Currency --}}
             <div class="col-md-6">
-              <label for="language" class="form-label">Language</label>
-              <select id="language" name="language" class="select2 form-select">
-                @php($lang = old('language', $u?->language))
-                <option value="">Select Language</option>
-                <option value="en" {{ $lang === 'en' ? 'selected' : '' }}>English</option>
-                <option value="fr" {{ $lang === 'fr' ? 'selected' : '' }}>French</option>
-                <option value="km" {{ $lang === 'km' ? 'selected' : '' }}>Khmer</option>
+              <label for="currency" class="form-label">Currency</label>
+              @php($cur = old('currency', $u?->currency) ?? 'EUR')
+              <select id="currency" name="currency" class="form-select">
+                <option value="">Select</option>
+                <option value="EUR" {{ $cur === 'EUR' ? 'selected' : '' }}>EUR (Euro)</option>
+                <option value="USD" {{ $cur === 'USD' ? 'selected' : '' }}>USD (US Dollar)</option>
+                <option value="KHR" {{ $cur === 'KHR' ? 'selected' : '' }}>KHR (Riel)</option>
+                <option value="KRW" {{ $cur === 'KRW' ? 'selected' : '' }}>KRW (Won)</option>
               </select>
             </div>
 
@@ -201,99 +237,282 @@
             <button type="submit" class="btn btn-primary me-3">Save changes</button>
             <a href="{{ url('/') }}" class="btn btn-outline-secondary">Cancel</a>
           </div>
+
         </form>
       </div>
     </div>
 
   </div>
 </div>
-
-{{-- ✅ JS: avatar reset + phone combine + address autocomplete --}}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  // Avatar reset/preview
-  const uploadInput = document.getElementById('upload');
-  const avatarImg = document.getElementById('uploadedAvatar');
-  const resetBtn = document.querySelector('.account-image-reset');
-  const defaultAvatar = document.getElementById('defaultAvatar')?.value;
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
 
-  if (uploadInput && avatarImg) {
-    uploadInput.addEventListener('change', function () {
+      // =========================
+    // PASSWORD TOGGLE (EYE ICON)
+    // =========================
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        if (!input) return;
+
+        const icon = btn.querySelector('i');
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          if (icon) {
+            icon.classList.remove('bx-hide');
+            icon.classList.add('bx-show');
+          }
+        } else {
+          input.type = 'password';
+          if (icon) {
+            icon.classList.remove('bx-show');
+            icon.classList.add('bx-hide');
+          }
+        }
+      });
+    });
+
+  });
+  
+    // =========================
+    // AVATAR PREVIEW + RESET
+    // =========================
+    const uploadInput    = document.getElementById('upload');
+    const avatarImg      = document.getElementById('uploadedAvatar');
+    const resetBtn       = document.getElementById('resetAvatarBtn');
+    const fallbackAvatar = document.getElementById('fallbackAvatar')?.value || '';
+    const removeAvatar   = document.getElementById('removeAvatar');
+
+    uploadInput?.addEventListener('change', function () {
       const file = this.files && this.files[0];
       if (!file) return;
+      if (removeAvatar) removeAvatar.value = '0';
       avatarImg.src = URL.createObjectURL(file);
     });
-  }
 
-  if (resetBtn && avatarImg && uploadInput) {
-    resetBtn.addEventListener('click', function () {
-      uploadInput.value = '';
-      if (defaultAvatar) avatarImg.src = defaultAvatar;
+    resetBtn?.addEventListener('click', function () {
+      if (uploadInput) uploadInput.value = '';
+      if (fallbackAvatar) avatarImg.src = fallbackAvatar;
+      if (removeAvatar) removeAvatar.value = '1';
     });
-  }
 
-  // Phone combine: country code + local -> hidden "phone"
-  const phoneCountry = document.getElementById('phoneCountry');
-  const phoneLocal = document.getElementById('phoneLocal');
-  const phoneHidden = document.getElementById('phone');
-  const countrySelect = document.getElementById('country');
 
-  function setPhoneHidden() {
-    if (!phoneCountry || !phoneLocal || !phoneHidden) return;
-    const code = phoneCountry.value || '';
-    const local = (phoneLocal.value || '').replace(/\s+/g,'').replace(/^0+/, '');
-    phoneHidden.value = code + local;
-  }
+    // =========================
+    // PHONE: DIGITS ONLY + LENGTH RULES
+    // =========================
+    const form          = document.getElementById('formAccountSettings');
+    const phoneCountry  = document.getElementById('phoneCountry');
+    const phoneLocal    = document.getElementById('phoneLocal');
+    const phoneHidden   = document.getElementById('phoneHidden');
+    const countrySelect = document.getElementById('country');
 
-  function syncCountryFromPhoneCountry() {
-    if (!phoneCountry || !countrySelect) return;
-    const selected = phoneCountry.options[phoneCountry.selectedIndex];
-    const c = selected?.dataset?.country;
-    if (c) countrySelect.value = c;
-  }
+    function digitsOnly(v) { return (v || '').replace(/\D/g, ''); }
 
-  // If DB already has phone like +85512345678 -> split it
-  const existingPhone = phoneHidden?.value || '';
-  if (existingPhone.startsWith('+')) {
-    const codes = Array.from(phoneCountry.options).map(o => o.value).sort((a,b)=>b.length-a.length);
-    const match = codes.find(code => existingPhone.startsWith(code));
-    if (match) {
-      phoneCountry.value = match;
-      phoneLocal.value = existingPhone.replace(match, '');
-      syncCountryFromPhoneCountry();
+    function getRule() {
+      const code = phoneCountry?.value;
+      if (code === '+33') return { max: 9,  country: 'France' };
+      if (code === '+44') return { max: 10, country: 'United Kingdom' };
+      return { max: 15, country: '' };
     }
-  }
 
-  if (phoneCountry) phoneCountry.addEventListener('change', () => { setPhoneHidden(); syncCountryFromPhoneCountry(); });
-  if (phoneLocal) phoneLocal.addEventListener('input', setPhoneHidden);
-  setPhoneHidden();
+    function syncCountryFromPhoneCountry() {
+      if (!countrySelect || !phoneCountry) return;
+      const opt = phoneCountry.options[phoneCountry.selectedIndex];
+      const c = opt?.dataset?.country;
+      if (c) countrySelect.value = c;
+    }
 
-});
-</script>
+    function applyPhone() {
+      if (!phoneCountry || !phoneLocal || !phoneHidden) return;
+      const r = getRule();
+      phoneLocal.maxLength = r.max;
+      phoneLocal.value = digitsOnly(phoneLocal.value).slice(0, r.max);
+      phoneHidden.value = phoneCountry.value + phoneLocal.value;
+    }
 
-{{-- ✅ Google Places Autocomplete (Address Suggestions)
-     1) Create Google API key
-     2) Enable: Places API
-     3) Replace YOUR_GOOGLE_API_KEY below
---}}
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initAddressAutocomplete"
-  async defer></script>
+    phoneLocal?.addEventListener('keydown', (e) => {
+      const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','Tab','Home','End'];
+      if (allowed.includes(e.key)) return;
+      if (e.ctrlKey || e.metaKey) return;
+      if (!/^\d$/.test(e.key)) e.preventDefault();
+    });
 
-<script>
-function initAddressAutocomplete() {
-  const input = document.getElementById('address');
-  if (!input || !window.google || !google.maps || !google.maps.places) return;
+    phoneLocal?.addEventListener('paste', (e) => {
+      const pasted = (e.clipboardData || window.clipboardData).getData('text');
+      if (/\D/.test(pasted)) e.preventDefault();
+    });
 
-  const autocomplete = new google.maps.places.Autocomplete(input, {
-    types: ['geocode'],
-  });
+    phoneLocal?.addEventListener('input', applyPhone);
 
-  autocomplete.addListener('place_changed', function () {
-    const place = autocomplete.getPlace();
-    // You can also parse place.address_components if you want to auto-fill state/zip/country.
-  });
+    phoneCountry?.addEventListener('change', () => {
+      syncCountryFromPhoneCountry();
+      applyPhone();
+    });
+
+    const existing = phoneHidden?.value || '';
+    if (phoneCountry && phoneLocal) {
+      if (existing.startsWith('+33')) {
+        phoneCountry.value = '+33';
+        phoneLocal.value = digitsOnly(existing.replace('+33', ''));
+      } else if (existing.startsWith('+44')) {
+        phoneCountry.value = '+44';
+        phoneLocal.value = digitsOnly(existing.replace('+44', ''));
+      } else {
+        phoneCountry.value = '+33';
+        phoneLocal.value = digitsOnly(existing);
+      }
+    }
+
+    syncCountryFromPhoneCountry();
+    applyPhone();
+
+    form?.addEventListener('submit', (e) => {
+      const r = getRule();
+      const len = digitsOnly(phoneLocal?.value || '').length;
+
+      if ((phoneCountry.value === '+33' || phoneCountry.value === '+44') && len !== r.max) {
+        e.preventDefault();
+        alert(`Phone number must be exactly ${r.max} digits for ${r.country}.`);
+        phoneLocal?.focus();
+        return;
+      }
+      applyPhone();
+    });
+
+// =========================
+// ADDRESS AUTOCOMPLETE (NOMINATIM)
+// ✅ show SHORT street suggestions (not full)
+// ✅ fill State with CITY (ex: Joué-lès-Tours)
+// =========================
+const addressInput  = document.getElementById('addressInput');
+const suggestionBox = document.getElementById('addressSuggestions');
+const stateEl       = document.getElementById('state');
+const zipEl         = document.getElementById('zipCode');
+const countryEl     = document.getElementById('country');
+
+let timer;
+
+function pickCity(a) {
+  return (
+    a.city ||
+    a.town ||
+    a.village ||
+    a.municipality ||
+    a.hamlet ||
+    a.suburb ||
+    a.city_district ||
+    ''
+  );
 }
+
+function buildShortAddress(a, fallback) {
+  return (
+    [a.house_number, a.road].filter(Boolean).join(' ') ||
+    a.road ||
+    a.name ||
+    fallback ||
+    ''
+  );
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+addressInput?.addEventListener('input', function () {
+  clearTimeout(timer);
+  const q = this.value.trim();
+  if (q.length < 2) {
+    if (suggestionBox) suggestionBox.style.display = 'none';
+    return;
+  }
+  timer = setTimeout(() => searchAddress(q), 250);
+});
+
+async function searchAddress(q) {
+  if (!suggestionBox) return;
+
+  try {
+    // ✅ France only
+    // ✅ add countrycodes=fr (better results)
+    const url =
+      `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=fr&countrycodes=fr&q=${encodeURIComponent(q)}`;
+
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+
+    suggestionBox.innerHTML = '';
+
+    (Array.isArray(data) ? data : []).forEach(item => {
+      const a = item.address || {};
+
+      // ✅ short title like "5 Rue Fizeau"
+      const title = buildShortAddress(a, item.display_name);
+
+      // ✅ subtitle like "Joué-lès-Tours 37300"
+      const city = pickCity(a);
+      const zip  = a.postcode || '';
+      const sub  = [city, zip].filter(Boolean).join('  ');
+
+      if (!title) return;
+
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div style="font-weight:600;">${escapeHtml(title)}</div>
+        ${sub ? `<div style="font-size:12px;color:#6c757d;">${escapeHtml(sub)}</div>` : ''}
+      `;
+
+      div.addEventListener('click', () => {
+        // ✅ set Address to short (not full)
+        addressInput.value = title;
+        suggestionBox.style.display = 'none';
+
+        // ✅ State should be CITY (not region)
+        if (stateEl && city) stateEl.value = city;
+
+        // zip
+        if (zipEl && zip) zipEl.value = zip;
+
+        // country select
+        const country = (a.country || '').trim();
+        if (countryEl && country) {
+          const opts = Array.from(countryEl.options).map(o => o.value);
+          const found = opts.find(v => v.toLowerCase() === country.toLowerCase());
+          if (found) countryEl.value = found;
+        }
+      });
+
+      suggestionBox.appendChild(div);
+    });
+
+    suggestionBox.style.display = suggestionBox.childElementCount ? 'block' : 'none';
+  } catch (e) {
+    console.error(e);
+    suggestionBox.style.display = 'none';
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (!addressInput || !suggestionBox) return;
+  if (!addressInput.contains(e.target) && !suggestionBox.contains(e.target)) {
+    suggestionBox.style.display = 'none';
+  }
+});
+
+
+  });
+})();
 </script>
+
+
 
 @endsection

@@ -33,6 +33,26 @@
     #viewClientModal table td {
         width: 70%;
     }
+
+    .address-suggestions {
+        max-height: 220px;
+        overflow-y: auto;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        z-index: 2000;
+        box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+
+    .address-suggestions .item {
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+
+    .address-suggestions .item:hover {
+        background: #f5f6f8;
+    }
+
 </style>
 <script>
     $(document).ready(function() {
@@ -114,12 +134,7 @@
                 $('#viewCompanyType').val(client.company_type || '');
 
                 // Company Address
-                if (client.company_address) {
-                    $('#viewStreet').val(client.company_address.street_name || '');
-                    $('#viewLocalCode').val(client.company_address.local_code || '');
-                    $('#viewVillage').val(client.company_address.village || '');
-                    $('#viewHouseNumber').val(client.company_address.house_number || '');
-                }
+                $('#viewCompanyAddress').val(client.company_address || '');
 
                 // Houses
                 const housesContainer = $('#viewHousesContainer');
@@ -129,10 +144,7 @@
                         const houseHTML = `
                         <div class="card mb-2 p-2 border border-secondary">
                             <h6>House #${i + 1}</h6>
-                            <div class="mb-1"><strong>Street Name:</strong> ${h.street_name}</div>
-                            <div class="mb-1"><strong>Local Code:</strong> ${h.local_code}</div>
-                            <div class="mb-1"><strong>Village:</strong> ${h.village}</div>
-                            <div class="mb-1"><strong>House Number:</strong> ${h.house_number}</div>
+                            <div class="mb-1"><strong>Address:</strong> ${h.house_address}</div>
                             <div class="mb-1"><strong>Total Number of Rooms:</strong> ${h.room}</div>
                             <div class="mb-1"><strong>Size:</strong> ${h.size}</div>
                             <div class="mb-1"><strong>Total Time for Cleaning:</strong> ${h.time}</div>
@@ -167,13 +179,7 @@
                 $('#editTax').prop('checked', client.tax || false);
                 $('#editLockbox').val(client.lockbox || '');
                 $('#editCompanyType').val(client.company_type || '');
-
-                if (client.company_address) {
-                    $('#editStreet').val(client.company_address.street_name || '');
-                    $('#editLocalCode').val(client.company_address.local_code || '');
-                    $('#editVillage').val(client.company_address.village || '');
-                    $('#editHouseNumber').val(client.company_address.house_number || '');
-                }
+                $('#editCompanyAddress').val(client.company_address || '');
 
                 // Reset houses
                 $('#edit-houses-container').html('');
@@ -198,10 +204,7 @@
             $('#edit-houses-container .house-item').each(function() {
                 houses.push({
                     id: $(this).find('.house-id').val() || null,
-                    street_name: $(this).find('.house-street').val(),
-                    local_code: $(this).find('.house-local').val(),
-                    village: $(this).find('.house-village').val(),
-                    house_number: $(this).find('.house-number').val(),
+                    house_address: $(this).find('.house_address').val(),
                     room: $(this).find('.room').val(),
                     size: $(this).find('.size').val(),
                     time: $(this).find('.time').val(),
@@ -218,12 +221,7 @@
                 tax: $('#editTax').is(':checked') ? true : false,
                 lockbox: $('#editLockbox').val(),
                 company_type: $('#editCompanyType').val(),
-                company_address: {
-                    street_name: $('#editStreet').val(),
-                    local_code: $('#editLocalCode').val(),
-                    village: $('#editVillage').val(),
-                    house_number: $('#editHouseNumber').val()
-                },
+                company_address:  $('#editCompanyAddress').val(),
                 houses: houses
             };
 
@@ -264,6 +262,92 @@
             });
         });
 
+        // ===== ADDRESS AUTOCOMPLETE =====
+        let timer;
+
+        // Works for static + dynamically added inputs
+        $(document).on('input', '.address-autocomplete', function () {
+            const input = this;
+            const query = input.value.trim();
+            const suggestionBox = $(input).next('.address-suggestions');
+
+            clearTimeout(timer);
+
+            if (query.length < 1) {
+                suggestionBox.hide();
+                return;
+            }
+
+            timer = setTimeout(() => {
+                searchAddress(query, input, suggestionBox);
+            }, 300);
+        });
+
+        async function searchAddress(query, input, suggestionBox) {
+            try {
+                const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&accept-language=fr&q=${encodeURIComponent(query)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                suggestionBox.empty();
+
+                data.forEach(item => {
+                    const a = item.address;
+                    const parts = [];
+
+                    // ===== YOUR EXACT FORMATTING LOGIC =====
+
+                    // House number + street
+                    if (a.house_number && a.road) {
+                        parts.push(`${a.house_number} ${a.road}`);
+                    } else if (a.road) {
+                        parts.push(a.road);
+                    }
+
+                    // Additional local info
+                    if (a.neighbourhood) parts.push(a.neighbourhood);
+                    if (a.suburb) parts.push(a.suburb);
+                    if (a.village) parts.push(a.village);
+                    if (a.town) parts.push(a.town);
+                    if (a.city) parts.push(a.city);
+
+                    // Postal code, district, state, country
+                    if (a.postcode) parts.push(a.postcode);
+                    if (a.district) parts.push(a.district);
+                    if (a.state) parts.push(a.state);
+                    if (a.country) parts.push(a.country);
+
+                    const text = parts.join(', ') || item.display_name;
+
+                    // =====================================
+
+                    const div = $('<div class="item"></div>').text(text);
+
+                    div.on('click', function () {
+                        input.value = text;
+                        input.dataset.lat = item.lat;
+                        input.dataset.lon = item.lon;
+                        suggestionBox.hide();
+                    });
+
+                    suggestionBox.append(div);
+                });
+
+                suggestionBox.toggle(data.length > 0);
+
+            } catch (err) {
+                console.error(err);
+                suggestionBox.hide();
+            }
+        }
+
+        // Close suggestions when clicking outside
+        $(document).on('click', function (e) {
+            if (!$(e.target).closest('.address-autocomplete, .address-suggestions').length) {
+                $('.address-suggestions').hide();
+            }
+        });
+
     });
 
 
@@ -285,33 +369,10 @@
         <div class="mb-3">
             <label class="form-label">Street Name</label>
             <input type="text"
-                   class="form-control house-street"
-                   value="${house?.street_name ?? ''}"
+                   class="form-control house_address address-autocomplete"
+                   value="${house?.house_address ?? ''}"
                    required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Local Code</label>
-            <input type="text"
-                   class="form-control house-local"
-                   value="${house?.local_code ?? ''}"
-                   required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Village</label>
-            <input type="text"
-                   class="form-control house-village"
-                   value="${house?.village ?? ''}"
-                   required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">House Number</label>
-            <input type="text"
-                   class="form-control house-number"
-                   value="${house?.house_number ?? ''}"
-                   required>
+            <div class="address-suggestions" style="display:none;"></div>
         </div>
 
         <div class="mb-3">
@@ -441,20 +502,8 @@
                     <!-- Company Address -->
                     <h4>Company Address</h4>
                     <div class="mb-3">
-                        <label class="form-label">Street Name</label>
-                        <input type="text" class="form-control" id="viewStreet" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Local Code</label>
-                        <input type="text" class="form-control" id="viewLocalCode" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Village</label>
-                        <input type="text" class="form-control" id="viewVillage" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">House Number</label>
-                        <input type="text" class="form-control" id="viewHouseNumber" readonly>
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" id="viewCompanyAddress" readonly>
                     </div>
 
                     <!-- Houses -->
@@ -531,20 +580,9 @@
                     <!-- Company Address -->
                     <h4>Company Address</h4>
                     <div class="mb-3">
-                        <label class="form-label">Street Name</label>
-                        <input type="text" class="form-control" id="editStreet" name="street_name">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Local Code</label>
-                        <input type="text" class="form-control" id="editLocalCode" name="local_code">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Village</label>
-                        <input type="text" class="form-control" id="editVillage" name="village">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">House Number</label>
-                        <input type="text" class="form-control" id="editHouseNumber" name="house_number">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control address-autocomplete" id="editCompanyAddress" name="company_address">
+                        <div class="address-suggestions" style="display:none;"></div>
                     </div>
 
                     <!-- Houses -->

@@ -20,9 +20,10 @@ $navUser = \App\Models\User::where('role', 'admin')->first();
 <div class="navbar-brand app-brand demo d-none d-xl-flex py-0 me-4">
   <a href="{{ url('/') }}" class="app-brand-link gap-2">
     <span class="app-brand-logo demo">@include('_partials.macros')</span>
-    <span class="app-brand-text demo menu-text fw-bold text-heading">
-      {{ config('variables.templateName') }}
-    </span>
+<span class="app-brand-text demo menu-text fw-bold text-heading">
+  {{ config('variables.templateName') }}<span class="tm-symbol">™</span>
+</span>
+
   </a>
 </div>
 @endif
@@ -97,12 +98,17 @@ $navUser = \App\Models\User::where('role', 'admin')->first();
 
         <!-- LOGOUT -->
         {{-- For real login, replace with POST logout --}}
-        <li>
-          <a class="dropdown-item" href="javascript:void(0);">
-            <i class="icon-base bx bx-power-off icon-md me-3"></i>
-            <span>Log Out</span>
-          </a>
-        </li>
+         <li>
+                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
+                        @csrf
+
+                        <a class="dropdown-item" href="#"
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="icon-base bx bx-power-off icon-md me-3"></i>
+                            <span>Log Out</span>
+                        </a>
+                    </form>
+                </li>
 
       </ul>
     </li>

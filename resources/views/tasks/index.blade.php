@@ -1,5 +1,11 @@
 @extends('layouts/contentNavbarLayout')
 
+@php
+    $role = auth()->user()->role;
+    $routePrefix = $role . '.tasks.';
+@endphp
+
+
 @section('title', 'Client')
 
 @section('content')
@@ -19,7 +25,12 @@
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <h4>Tasks List</h4>
-                                        <a href="{{ route('tasks.create') }}" class="btn btn-primary">Add New Task</a>
+                                        <!-- <a href="{{ route('tasks.create') }}" class="btn btn-primary">Add New Task</a> -->
+                                            @if(auth()->check() && auth()->user()->role === 'admin')
+                                                <a href="{{ route('tasks.create') }}" class="btn btn-primary">
+                                                    Add New Task
+                                                </a>
+                                            @endif
                                     </div>
                                     <div class="card-body">
                                         @if ($tasks->count() > 0)
@@ -58,21 +69,30 @@
                                                                 </td>
                                                                 <td>
                                                                     <div class="btn-group" role="group">
-                                                                        <a href="{{ route('tasks.show', $task->id) }}"
-                                                                            class="btn btn-info btn-sm">View</a>
-                                                                        <a href="{{ route('tasks.edit', $task->id) }}"
-                                                                            class="btn btn-warning btn-sm">Edit</a>
-                                                                        <form
-                                                                            action="{{ route('tasks.destroy', $task->id) }}"
-                                                                            method="POST" style="display: inline;">
-                                                                            @csrf
-                                                                            @method('DELETE')
-                                                                            <button type="submit"
-                                                                                class="btn btn-danger btn-sm"
-                                                                                onclick="return confirm('Are you sure you want to delete this task?')">
-                                                                                Delete
-                                                                            </button>
-                                                                        </form>
+                                                                        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff', 'client']))
+                                                                            <a href="{{ route('tasks.show', $task->id) }}"
+                                                                                class="btn btn-info btn-sm">View</a>
+                                                                        
+                                                                        @endif
+
+                                                                        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
+                                                                            <a href="{{ route('tasks.edit', $task->id) }}"
+                                                                                class="btn btn-warning btn-sm">Edit</a>
+                                                                        @endif
+
+                                                                        @if(auth()->check() && auth()->user()->role === 'admin')
+                                                                            <form
+                                                                                action="{{ route('tasks.destroy', $task->id) }}"
+                                                                                method="POST" style="display: inline;">
+                                                                                @csrf
+                                                                                @method('DELETE')
+                                                                                <button type="submit"
+                                                                                    class="btn btn-danger btn-sm"
+                                                                                    onclick="return confirm('Are you sure you want to delete this task?')">
+                                                                                    Delete
+                                                                                </button>
+                                                                            </form>
+                                                                        @endif
                                                                     </div>
                                                                 </td>
                                                             </tr>
