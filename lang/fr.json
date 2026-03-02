@@ -1,0 +1,98 @@
+{
+  "Account settings - Account": "Paramètres du compte - Compte",
+  "Upload new photo": "Téléverser une nouvelle photo",
+  "Reset": "Réinitialiser",
+  "Allowed JPG, GIF or PNG. Max size of 800K": "JPG, GIF ou PNG autorisés. Taille maximale : 800 Ko",
+
+  "First Name": "Prénom",
+  "Last Name": "Nom",
+  "E-mail": "E-mail",
+  "Organization": "Organisation",
+
+  "Current Password": "Mot de passe actuel",
+  "New Password": "Nouveau mot de passe",
+  "Confirm New Password": "Confirmer le nouveau mot de passe",
+  "Show/hide current password": "Afficher/masquer le mot de passe actuel",
+  "Show/hide new password": "Afficher/masquer le nouveau mot de passe",
+  "Show/hide confirm password": "Afficher/masquer la confirmation du mot de passe",
+
+  "Phone Number": "Numéro de téléphone",
+  "Digits only": "Chiffres uniquement",
+
+  "Address": "Adresse",
+  "Start typing address...": "Commencez à saisir l’adresse...",
+  "State / Region": "Région / État",
+  "Zip Code": "Code postal",
+  "Country": "Pays",
+  "Select": "Sélectionner",
+
+  "Currency": "Devise",
+  "Euro": "Euro",
+  "US Dollar": "Dollar américain",
+  "Riel": "Riel",
+  "Won": "Won",
+
+  "Save changes": "Enregistrer les modifications",
+  "Cancel": "Annuler",
+
+  "My Profile": "Mon profil",
+  "Language": "Langue",
+  "Log Out": "Se déconnecter",
+  "Login": "Se connecter",
+
+  "France": "France",
+  "United Kingdom": "Royaume-Uni",
+  "Cambodia": "Cambodge",
+  "Korea": "Corée",
+
+
+
+
+  "_staff_list_section": "===== Liste du personnel =====",
+
+  "Staff List": "Liste du personnel",
+  "Staff Management": "Gestion du personnel",
+  "Search, filter by role, and manage staff accounts.": "Rechercher, filtrer par rôle et gérer les comptes du personnel.",
+  "Add New Staff": "Ajouter un membre du personnel",
+
+  "Role": "Rôle",
+  "All Roles": "Tous les rôles",
+  "Show": "Afficher",
+  "rows": "lignes",
+  "Search": "Rechercher",
+  "Search staff...": "Rechercher un membre du personnel...",
+
+  "ID": "ID",
+  "Staff": "Personnel",
+  "Email": "E-mail",
+  "Phone": "Téléphone",
+  "Actions": "Actions",
+
+  "Delete staff?": "Supprimer ce membre du personnel ?",
+  "This action cannot be undone.": "Cette action est irréversible.",
+  "Yes, delete": "Oui, supprimer",
+
+  "Showing _START_ to _END_ of _TOTAL_ entries": "Affichage de _START_ à _END_ sur _TOTAL_ entrées",
+  "Showing 0 to 0 of 0 entries": "Affichage de 0 à 0 sur 0 entrées",
+  "No matching staff found": "Aucun membre du personnel trouvé",
+
+
+
+  "_add_staff_section": "===== Ajouter du personnel =====",
+  "Add Staff": "Ajouter un membre du personnel",
+  "Create a new staff account and upload a profile photo.": "Créer un nouveau compte du personnel et téléverser une photo de profil.",
+  "Back to List": "Retour à la liste",
+  "Please fix the errors below:": "Veuillez corriger les erreurs ci-dessous :",
+
+  "Change": "Modifier",
+  "Remove": "Supprimer",
+
+  "Work Type": "Type de travail",
+  "Username": "Nom d'utilisateur",
+  "Password": "Mot de passe",
+
+  "-- Select Role --": "-- Sélectionner un rôle --",
+  "-- Select Work Type --": "-- Sélectionner un type de travail --",
+
+  "Save": "Enregistrer"
+}
