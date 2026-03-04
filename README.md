@@ -258,3 +258,4 @@ If you want to [Download Free Admin Templates](https://themeselection.com/produc
 npm run dev
 php artisan reverb:start
 php artisan serve
+composer require laravel/reverb
