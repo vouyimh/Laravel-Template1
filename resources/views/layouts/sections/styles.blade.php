@@ -8,7 +8,7 @@
 @vite(['resources/assets/vendor/fonts/iconify/iconify.css'])
 
 <!-- Fonts Icons -->
-@vite(['public/css/font_awesome/all.min.css'])
+@vite(['public/CSS/font_awesome/all.min.css'])
 
 <!-- Core CSS -->
 @vite(['resources/assets/vendor/scss/core.scss', 'resources/assets/css/demo.css'])
