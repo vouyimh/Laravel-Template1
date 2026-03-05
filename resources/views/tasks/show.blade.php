@@ -12,9 +12,9 @@
                             <div class="card shadow">
                                 <div
                                     class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                                    <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>Task Details</h4>
+                                    <h4 class="mb-0"><i class="fas fa-tasks me-2"></i>{{ __('Task Details') }}</h4>
                                     <a href="{{ route('tasks.index') }}" class="btn btn-light btn-sm">
-                                        <i class="fas fa-arrow-left me-1"></i>Back to Tasks
+                                        <i class="fas fa-arrow-left me-1"></i>{{ __('Back to Tasks') }}
                                     </a>
                                 </div>
                                 <div class="card-body">
@@ -33,7 +33,7 @@
                                             <div class="card border-0 bg-light h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-info-circle me-2"></i>Status
+                                                        <i class="fas fa-info-circle me-2"></i>{{ __('Status') }} 
                                                     </h5>
                                                     <span
                                                         class="badge fs-6 {{ $task->status == 'completed'
@@ -56,7 +56,7 @@
                                             <div class="card border-0 bg-light h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-exclamation-triangle me-2"></i>Priority
+                                                        <i class="fas fa-exclamation-triangle me-2"></i>{{ __('Priority') }}
                                                     </h5>
                                                     <span
                                                         class="badge fs-6 {{ ($task->priority ?? 'medium') == 'high'
@@ -83,13 +83,13 @@
                                             <div class="card border-0 bg-light">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-align-left me-2"></i>Description
+                                                        <i class="fas fa-align-left me-2"></i>{{ __('Description') }}
                                                     </h5>
                                                     @if ($task->description)
                                                         <p class="card-text">{{ $task->description }}</p>
                                                     @else
                                                         <p class="card-text text-muted fst-italic">
-                                                            <i class="fas fa-info-circle me-1"></i>No description provided
+                                                            <i class="fas fa-info-circle me-1"></i>{{ __('No description provided') }}
                                                         </p>
                                                     @endif
                                                 </div>
@@ -103,7 +103,7 @@
                                             <div class="card border-0 bg-light h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-calendar-alt me-2"></i>Due Date
+                                                        <i class="fas fa-calendar-alt me-2"></i>{{ __('Due Date') }} 
                                                     </h5>
                                                     @if ($task->due_date)
                                                         @php
@@ -135,7 +135,7 @@
                                                         </small>
                                                     @else
                                                         <p class="text-muted fst-italic">
-                                                            <i class="fas fa-info-circle me-1"></i>No due date set
+                                                            <i class="fas fa-info-circle me-1"></i>{{ __('No due date set') }} 
                                                         </p>
                                                     @endif
                                                 </div>
@@ -145,7 +145,7 @@
                                             <div class="card border-0 bg-light h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-hashtag me-2"></i>Task ID
+                                                        <i class="fas fa-hashtag me-2"></i>{{ __('Task ID') }} 
                                                     </h5>
                                                     <p class="mb-0">
                                                         <span class="badge bg-dark fs-6">
@@ -163,7 +163,7 @@
                                             <div class="card border-0 bg-light h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-plus-circle me-2"></i>Created
+                                                        <i class="fas fa-plus-circle me-2"></i>{{ __('Created') }}
                                                     </h5>
                                                     <p class="mb-1">
                                                         {{ $task->created_at ? $task->created_at->format('M d, Y \a\t g:i A') : 'N/A' }}
@@ -181,7 +181,7 @@
                                             <div class="card border-0 bg-light h-100">
                                                 <div class="card-body">
                                                     <h5 class="card-title text-secondary">
-                                                        <i class="fas fa-edit me-2"></i>Last Updated
+                                                        <i class="fas fa-edit me-2"></i>{{ __('Last Updated') }} 
                                                     </h5>
                                                     <p class="mb-1">
                                                         {{ $task->updated_at ? $task->updated_at->format('M d, Y \a\t g:i A') : 'N/A' }}
@@ -203,10 +203,10 @@
                                         <div class="col-12">
                                             <div class="d-flex gap-2 justify-content-end flex-wrap">
                                                 <a href="{{ route('tasks.index') }}" class="btn btn-secondary">
-                                                    <i class="fas fa-list me-1"></i>All Tasks
+                                                    <i class="fas fa-list me-1"></i>{{ __('All Tasks') }} 
                                                 </a>
                                                 <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-warning">
-                                                    <i class="fas fa-edit me-1"></i>Edit Task
+                                                    <i class="fas fa-edit me-1"></i>{{ __('Edit Task') }} 
                                                 </a>
                                                 @if ($task->status !== 'completed')
                                                     <form action="{{ route('tasks.update', $task->id) }}" method="POST"
@@ -222,7 +222,7 @@
                                                         <input type="hidden" name="due_date"
                                                             value="{{ $task->due_date }}">
                                                         <button type="submit" class="btn btn-success">
-                                                            <i class="fas fa-check me-1"></i>Mark Complete
+                                                            <i class="fas fa-check me-1"></i>{{ __('Mark Complete') }} 
                                                         </button>
                                                     </form>
                                                 @endif
@@ -235,7 +235,7 @@
                                                     @method('DELETE')
                                                     <button type="submit" class="btn btn-danger"
                                                         onclick="return confirm('Are you sure you want to delete this task? This action cannot be undone.')">
-                                                        <i class="fas fa-trash me-1"></i>Delete Task
+                                                        <i class="fas fa-trash me-1"></i>{{ __('Delete Task') }} 
                                                     </button>
                                                 </form>
                                             @endif
