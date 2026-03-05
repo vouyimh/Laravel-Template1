@@ -81,6 +81,15 @@
     "src": "resources/assets/js/ui-toasts.js",
     "isEntry": true
   },
+  "resources/assets/vendor/fonts/iconify/all.min.css": {
+    "file": "assets/all-CKy-F9FM.css",
+    "src": "resources/assets/vendor/fonts/iconify/all.min.css",
+    "isEntry": true,
+    "name": "all.min",
+    "names": [
+      "all.css"
+    ]
+  },
   "resources/assets/vendor/fonts/iconify/iconify.css": {
     "file": "assets/iconify-DDZnTNbY.css",
     "src": "resources/assets/vendor/fonts/iconify/iconify.css",
