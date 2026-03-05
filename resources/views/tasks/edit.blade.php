@@ -11,8 +11,8 @@
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h4>Edit Task</h4>
-                                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Back to Tasks</a>
+                                    <h4>{{ __('Edit Task') }}</h4>
+                                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">{{ __('Back to Tasks') }}</a>
                                 </div>
                                 <div class="card-body">
                                     @if ($errors->any())
@@ -30,7 +30,7 @@
                                         @method('PUT')
 
                                         <div class="mb-3">
-                                            <label for="title" class="form-label">Task Title <span
+                                            <label for="title" class="form-label">{{ __('Task Title') }}<span
                                                     class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('title') is-invalid @enderror"
                                                 id="title" name="title" value="{{ old('title', $task->title) }}"
@@ -43,7 +43,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="description" class="form-label">Task Description</label>
+                                            <label for="description" class="form-label">{{ __('Task Description') }}</label>
                                             <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
                                                 rows="4" placeholder="Enter task description (optional)">{{ old('description', $task->description) }}</textarea>
                                             @error('description')
@@ -54,7 +54,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="status" class="form-label">Status</label>
+                                            <label for="status" class="form-label">{{ __('Status') }}</label>
                                             <select class="form-select @error('status') is-invalid @enderror" id="status"
                                                 name="status">
                                                 <option value="pending"
@@ -75,7 +75,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="priority" class="form-label">Priority</label>
+                                            <label for="priority" class="form-label">{{ __('Priority') }}</label>
                                             <select class="form-select @error('priority') is-invalid @enderror"
                                                 id="priority" name="priority">
                                                 <option value="low"
@@ -96,7 +96,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="due_date" class="form-label">Due Date</label>
+                                            <label for="due_date" class="form-label">{{ __('Due Date') }}</label>
                                             <input type="date"
                                                 class="form-control @error('due_date') is-invalid @enderror" id="due_date"
                                                 name="due_date"
@@ -111,7 +111,7 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label text-muted">Created At</label>
+                                                    <label class="form-label text-muted">{{ __('Created At') }}</label>
                                                     <div class="form-control-plaintext">
                                                         {{ $task->created_at ? $task->created_at->format('M d, Y \a\t g:i A') : 'N/A' }}
                                                     </div>
@@ -119,7 +119,7 @@
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="mb-3">
-                                                    <label class="form-label text-muted">Last Updated</label>
+                                                    <label class="form-label text-muted">{{ __('Last Updated') }}</label>
                                                     <div class="form-control-plaintext">
                                                         {{ $task->updated_at ? $task->updated_at->format('M d, Y \a\t g:i A') : 'N/A' }}
                                                     </div>
@@ -128,7 +128,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="assignees" class="form-label">Assign Users</label>
+                                            <label for="assignees" class="form-label">{{ __('Assign Users') }}</label>
 
                                             <select name="assignees[]" id="assignees"
                                                 class="form-select @error('assignees') is-invalid @enderror" multiple>
@@ -147,11 +147,10 @@
 
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <a href="{{ route('tasks.index') }}"
-                                                class="btn btn-secondary me-md-2">Cancel</a>
+                                                class="btn btn-secondary me-md-2">{{ __('Cancel') }}</a>
                                             <a href="{{ route('tasks.show', $task->id) }}"
-                                                class="btn btn-info me-md-2">View
-                                                Task</a>
-                                            <button type="submit" class="btn btn-primary">Update Task</button>
+                                                class="btn btn-info me-md-2">{{ __('View Task') }}</a>
+                                            <button type="submit" class="btn btn-primary">{{ __('Update Task') }}</button>
                                         </div>
                                     </form>
                                 </div>

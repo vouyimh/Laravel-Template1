@@ -94,5 +94,92 @@
   "-- Select Role --": "-- Sélectionner un rôle --",
   "-- Select Work Type --": "-- Sélectionner un type de travail --",
 
-  "Save": "Enregistrer"
+  "Save": "Enregistrer",
+
+
+  "List Clients": "Liste des clients",
+  "Company Name": "Nom de l’entreprise",
+  "Owner Name": "Nom du propriétaire",
+  "Created At": "Créé le",
+
+  "Client Details": "Détails du client",
+  "Company Info": "Informations sur l’entreprise",
+  "Lockbox Number": "Numéro du boîtier à clés",
+  "Company Type": "Type d’entreprise",
+  "Tax Registered": "Immatriculé à la TVA",
+  "Company Address": "Adresse de l’entreprise",
+  "Houses": "Maisons",
+  "Close": "Fermer",
+
+  "Edit Client": "Modifier le client",
+  "Personal": "Personnel",
+  "Company": "Entreprise",
+
+  "Add House": "Ajouter une maison",
+  "Save Changes": "Enregistrer",
+
+  "House": "Maison",
+  "Street Name": "Nom de la rue",
+  "Total Number of Rooms": "Nombre total de chambres",
+  "Size": "Taille",
+  "Total Time for Cleaning": "Durée totale du nettoyage",
+  "Total Tools": "Nombre total d’outils",
+  "Task To Do": "Tâche à faire",
+  "Remove House": "Supprimer la maison",
+  "No houses found.": "Aucune maison trouvée.",
+
+  "Add Client": "Ajouter un client",
+
+
+  "Daily Tasks Manager": "Gestionnaire de tâches quotidiennes",
+  "Here you can view, create, edit, and delete your daily tasks.": "Ici, vous pouvez consulter, créer, modifier et supprimer vos tâches quotidiennes.",
+  "Tasks List": "Liste des tâches",
+  "Add New Task": "Ajouter une nouvelle tâche",
+  "Title": "Titre",
+  "Description": "Description",
+  "Status": "Statut",
+
+  "View": "Ouvrir",
+  "Edit": "Éditer",
+  "Delete": "Effacer",
+
+  "No tasks found": "Aucune tâche trouvée",
+  "You have not created any tasks yet.": "Vous n'avez encore créé aucune tâche.",
+  "Create your first task": "Créez votre première tâche",
+
+  "Task Details": "Détails de la tâche",
+  "Back to Tasks": "Retour aux tâches",
+
+  "Priority": "Priorité",
+  "No description provided": "Aucune description fournie",
+
+  "Due Date": "Date d'échéance",
+  "No due date set": "Aucune date d'échéance définie",
+  "Task ID": "ID de tâche",
+  "Created": "Créé",
+  "Last Updated": "Dernière mise à jour",
+
+  "All Tasks": "Toutes les tâches",
+  "Edit Task": "Modifier la tâche",
+  "Mark Complete": "Marquer comme terminé",
+  "Delete Task": "Supprimer la tâche",
+
+  "Create New Task": "Créer une nouvelle tâche",
+  "Task Title": "Titre de la tâche",
+  "Task Description": "Description de la tâche",
+  "Assign Users": "Attribuer des utilisateurs",
+  "Create Task": "Créer une tâche",
+  "View Task": "Voir la tâche",
+  "Update Task": "Mettre à jour la tâche",
+
+  "Dashboards": "Tableau de bord",
+  "Authentications": "Authentification",
+  "Calendar": "Calendrier",
+  "Client": "Client",
+  "List Client": "Liste des clients",
+  "List Staff": "Liste du personnel",
+  "Support Chat": "Chat de support",
+  "Manage Staff Work": "Gestion du personnel",
+  "Account": "Compte"
+
 }

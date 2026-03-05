@@ -143,19 +143,19 @@
                     client.houses.forEach((h, i) => {
                         const houseHTML = `
                         <div class="card mb-2 p-2 border border-secondary">
-                            <h6>House #${i + 1}</h6>
-                            <div class="mb-1"><strong>Address:</strong> ${h.house_address}</div>
-                            <div class="mb-1"><strong>Total Number of Rooms:</strong> ${h.room}</div>
-                            <div class="mb-1"><strong>Size:</strong> ${h.size}</div>
-                            <div class="mb-1"><strong>Total Time for Cleaning:</strong> ${h.time}</div>
-                            <div class="mb-1"><strong>Total Tools:</strong> ${h.tools}</div>
-                            <div class="mb-1"><strong>Task To Do:</strong> ${h.tasks}</div>
+                            <h6>{{ __('House') }} #${i + 1}</h6>
+                            <div class="mb-1"><strong>{{ __('Address') }}:</strong> ${h.house_address}</div>
+                            <div class="mb-1"><strong>{{ __('Total Number of Rooms') }}:</strong> ${h.room}</div>
+                            <div class="mb-1"><strong>{{ __('Size') }}:</strong> ${h.size}</div>
+                            <div class="mb-1"><strong>{{ __('Total Time for Cleaning') }}:</strong> ${h.time}</div>
+                            <div class="mb-1"><strong>{{ __('Total Tools') }}:</strong> ${h.tools}</div>
+                            <div class="mb-1"><strong>{{ __('Task To Do') }}:</strong> ${h.tasks}</div>
                         </div>
                         `;
                         housesContainer.append(houseHTML);
                     });
                 } else {
-                    housesContainer.html('<p>No houses found.</p>');
+                    housesContainer.html('<p>{{ __('No houses found.') }}</p>');
                 }
 
                 // Show the modal
@@ -358,7 +358,7 @@
 
         const html = `
     <div class="card house-item mb-3 p-3 border border-secondary">
-        <h5>House #${index + 1}</h5>
+        <h5>{{ __('House') }} #${index + 1}</h5>
 
         ${house?.id ? `
             <input type="hidden"
@@ -367,7 +367,7 @@
         ` : ''}
 
         <div class="mb-3">
-            <label class="form-label">Street Name</label>
+            <label class="form-label">{{ __('Street Name') }}</label>
             <input type="text"
                    class="form-control house_address address-autocomplete"
                    value="${house?.house_address ?? ''}"
@@ -376,7 +376,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Total Number of Rooms</label>
+            <label class="form-label">{{ __('Total Number of Rooms') }}</label>
             <input type="text"
                    class="form-control room"
                    value="${house?.room ?? ''}"
@@ -384,7 +384,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Size</label>
+            <label class="form-label">{{ __('Size') }}</label>
             <input type="text"
                    class="form-control size"
                    value="${house?.size ?? ''}"
@@ -392,7 +392,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Total Time for Cleaning</label>
+            <label class="form-label">{{ __('Total Time for Cleaning') }}</label>
             <input type="text"
                    class="form-control time"
                    value="${house?.time ?? ''}"
@@ -400,7 +400,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Total Tools</label>
+            <label class="form-label">{{ __('Total Tools') }}</label>
             <input type="text"
                    class="form-control tools"
                    value="${house?.tools ?? ''}"
@@ -408,7 +408,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Task To Do</label>
+            <label class="form-label">{{ __('Task To Do') }}</label>
             <input type="text"
                    class="form-control tasks"
                    value="${house?.tasks ?? ''}"
@@ -418,7 +418,7 @@
         <button type="button"
                 class="btn btn-danger"
                 onclick="this.closest('.house-item').remove()">
-            Remove House
+            {{ __('Remove House') }}
         </button>
     </div>`;
 
@@ -431,17 +431,17 @@
 <div class="row">
     <div class="col-md-12">
         <div class="card mb-6">
-            <h1 class="text-center fw-bold mb-4">List Clients</h1>
+            <h1 class="text-center fw-bold mb-4">{{ __('List Clients') }}</h1>
             <div class="card-body">
                 <!-- DataTable -->
                 <table id="clients-table" class="display table table-striped" style="width:100%">
                     <thead>
                         <tr>
-                            <th>Company Name</th>
-                            <th>Owner Name</th>
-                            <th>Email</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
+                            <th>{{ __('Company Name') }}</th>
+                            <th>{{ __('Owner Name') }}</th>
+                            <th>{{ __('Email') }}</th>
+                            <th>{{ __('Created At') }}</th>
+                            <th>{{ __('Actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -458,7 +458,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title" id="viewClientLabel">Client Details</h1>
+                <h1 class="modal-title" id="viewClientLabel">{{ __('Client Details') }}</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
@@ -466,54 +466,54 @@
                 <form>
                     @csrf
                     <!-- Company Info -->
-                    <h4>Company Info</h4>
+                    <h4>{{ __('Company Info') }}</h4>
                     <div class="mb-3">
-                        <label class="form-label">Company Name</label>
+                        <label class="form-label">{{ __('Company Name') }}</label>
                         <input type="text" class="form-control" id="viewCompanyName" readonly>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Owner Name</label>
+                        <label class="form-label">{{ __('Owner Name') }}</label>
                         <input type="text" class="form-control" id="viewOwnerName" readonly>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">{{ __('Email') }}</label>
                         <input type="email" class="form-control" id="viewEmail" readonly>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
+                        <label class="form-label">{{ __('Phone Number') }}</label>
                         <input type="text" class="form-control" id="viewPhone" readonly>
                     </div>
                     <!-- Lockbox -->
                     <div class="mb-3">
-                        <label class="form-label">Lockbox Number</label>
+                        <label class="form-label">{{ __('Lockbox Number') }}</label>
                         <input type="text" class="form-control" id="viewLockbox" readonly>
                     </div>
                     <!-- Company Type -->
                     <div class="mb-3">
-                        <label class="form-label">Company Type</label>
+                        <label class="form-label">{{ __('Company Type') }}</label>
                         <input type="text" class="form-control" id="viewCompanyType" readonly>
                     </div>
                     <!-- Tax -->
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="viewTax" disabled>
-                        <label class="form-check-label" for="viewTax">Tax Registered</label>
+                        <label class="form-check-label" for="viewTax">{{ __('Tax Registered') }}</label>
                     </div>
 
                     <!-- Company Address -->
-                    <h4>Company Address</h4>
+                    <h4>{{ __('Company Address') }}</h4>
                     <div class="mb-3">
-                        <label class="form-label">Address</label>
+                        <label class="form-label">{{ __('Address') }}</label>
                         <input type="text" class="form-control" id="viewCompanyAddress" readonly>
                     </div>
 
                     <!-- Houses -->
-                    <h4>Houses</h4>
+                    <h4>{{ __('Houses') }}</h4>
                     <div id="viewHousesContainer">
                         <!-- Dynamic houses will appear here -->
                     </div>
 
                     <div class="mt-3 text-end">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
                     </div>
                 </form>
             </div>
@@ -527,7 +527,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title">Edit Client</h1>
+                <h1 class="modal-title">{{ __('Edit Client') }}</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
@@ -537,65 +537,65 @@
                     <input type="hidden" id="editClientId">
 
                     <!-- Company Info -->
-                    <h4>Company Info</h4>
+                    <h4>{{ __('Company Info') }}</h4>
                     <div class="mb-3">
-                        <label class="form-label">Company Name</label>
+                        <label class="form-label">{{ __('Company Name') }}</label>
                         <input type="text" id="editCompanyName" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Owner Name</label>
+                        <label class="form-label">{{ __('Owner Name') }}</label>
                         <input type="text" id="editOwnerName" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">{{ __('Email') }}</label>
                         <input type="text" id="editEmail" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Phone Number</label>
+                        <label class="form-label">{{ __('Phone Number') }}</label>
                         <input type="text" id="editPhone" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Lockbox Number</label>
+                        <label class="form-label">{{ __('Lockbox Number') }}</label>
                         <input type="text" id="editLockbox" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Company Type</label>
+                        <label class="form-label">{{ __('Company Type') }}</label>
                         <select name="company_type" id="editCompanyType" class="form-select " required="">
-                            <option value="Personal">Personal</option>
-                            <option value="Company">Company</option>
+                            <option value="Personal">{{ __('Personal') }}</option>
+                            <option value="Company">{{ __('Company') }}</option>
                         </select>
                     </div>
 
                     <!-- Tax -->
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" name="tax" id="editTax">
-                        <label class="form-check-label" for="tax">Tax Registered</label>
+                        <label class="form-check-label" for="tax">{{ __('Tax Registered') }}</label>
                     </div>
 
                     <!-- Company Address -->
-                    <h4>Company Address</h4>
+                    <h4>{{ __('Company Address') }}</h4>
                     <div class="mb-3">
-                        <label class="form-label">Address</label>
+                        <label class="form-label">{{ __('Address') }}</label>
                         <input type="text" class="form-control address-autocomplete" id="editCompanyAddress" name="company_address">
                         <div class="address-suggestions" style="display:none;"></div>
                     </div>
 
                     <!-- Houses -->
-                    <h4>Houses</h4>
+                    <h4>{{ __('Houses') }}</h4>
                     <div id="edit-houses-container"></div>
 
                     <button type="button" class="btn btn-secondary mb-3" onclick="addEditHouse()">
-                        Add House
+                        {{ __('Add House') }}
                     </button>
 
                     <div class="text-end">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                        <button type="submit" class="btn btn-primary">{{ __('Save Changes') }}</button>
                     </div>
                 </form>
             </div>
