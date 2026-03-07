@@ -16,25 +16,24 @@ const route = useRoute();
 const currentRoom = ref({});
 const selectedUser = ref(null);
 const usersOnline = ref([]);
+const allUsers = ref([])
 const privateRoomId = ref(null);
 const rooms = inject("$rooms");
 const user = inject("$user");
+const roomId = inject("$roomId");
 const appName = inject("$appName");
 const showToast = inject("$showToast");
 
-const props = defineProps({
-  roomId: Number
-})
-
 onBeforeMount(() => {
   const index = rooms.findIndex(
-    (item) => item.id === parseInt(props.roomId)
+    (item) => item.id === parseInt(roomId)
   );
   if (index > -1) {
     currentRoom.value = rooms[index];
     Echo
       .join(`room.${currentRoom.value.id}`) // listen to the shared room
       .here((users) => {
+        console.log(users)
         usersOnline.value = users;
       })
       .joining((user) => {
@@ -56,18 +55,21 @@ onBeforeMount(() => {
           selectedUser.value.isOnline = false;
         }
       });
-
+Echo.private(`room.${user.id}`)
+    .subscribed(() => {
+        console.log("Joined channel");
+    });
     // listen to user's own room (in order to receive all private messages from other users)
-    // Echo.private(`room.${user.id}`).listen("MessagePosted", (e) => {
-    //   if (!selectedUser.value) {
-    //     const index = usersOnline.value.findIndex(
-    //       (item) => item.id === e.message.user.id
-    //     );
-    //     if (index > -1) {
-    //       usersOnline.value[index].new_messages++;
-    //     }
-    //   }
-    // });
+    Echo.private(`room.${user.id}`).listen("MessagePosted", (e) => {
+      if (!selectedUser.value) {
+        const index = usersOnline.value.findIndex(
+          (item) => item.id === e.message.user.id
+        );
+        if (index > -1) {
+          usersOnline.value[index].new_messages++;
+        }
+      }
+    });
   }
 });
 
@@ -99,10 +101,10 @@ async function selectReceiver(receiver) {
       isOnline: usersOnline.value.find(item => item.id === receiver.id),
     };
 
-    // const user = usersOnline.value.find((item) => item.id === receiver.id);
-    // if (user) {
-    //   user.new_messages = 0;
-    // }
+    const user = usersOnline.value.find((item) => item.id === receiver.id);
+    if (user) {
+      user.new_messages = 0;
+    }
   } catch (error) {
     console.error(error);
   }
@@ -113,6 +115,28 @@ function closeChat() {
   privateRoomId.value = null;
 }
 
+const totalUnreadPrivateMessages = computed(() => {
+  let count = 0;
+  usersOnline.value.forEach((item) => {
+    count += item.new_messages;
+  });
+  return count;
+});
+
+watch(totalUnreadPrivateMessages, () => {
+  if (totalUnreadPrivateMessages.value > 0) {
+    document.title = `${totalUnreadPrivateMessages.value > 0
+        ? "(" + totalUnreadPrivateMessages.value + ")"
+        : ""
+      } - ${appName}`;
+  } else {
+    document.title = appName;
+  }
+});
+
+axios.get('/users').then(res=>{
+  allUsers.value = res.data
+})
 </script>
 
 <template>
@@ -123,7 +147,7 @@ function closeChat() {
           @selectReceiver="selectReceiver" />
       </div>
       <div class="col-md-4 chat">
-        <ListUser :usersOnline="usersOnline" @selectReceiver="selectReceiver" />
+        <ListUser :usersOnline="usersOnline" :allUsers="allUsers" @selectReceiver="selectReceiver" />
       </div>
     </div>
 
@@ -132,5 +156,3 @@ function closeChat() {
       @closeChat="closeChat" />
   </div>
 </template>
-
-

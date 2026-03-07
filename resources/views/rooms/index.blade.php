@@ -12,10 +12,9 @@
         emojis: @json($data['emojis']),
         appName: @json($data['appName']),
         confettiWords: @json($data['confettiWords']),
-        roomId: @json($roomId)
     };
     function showToast(title, message) {
-  toastMsg.value = {
+    toastMsg.value = {
     title,
     message,
   };
@@ -27,14 +26,14 @@
 </script>
 </script>
 
-@section('title', 'Message')
+@section('title', 'Room')
 
 @section('content')
     <div class="row">
         <div class="col-md-12">
             <div style="height:550px" class="card mb-6">
                     <div class="container mt-5">
-                        <div id="chat-app" data-room-id="{{ $roomId }}"> </div>
+                        <div id="room-app" > </div>
                     </div>
             </div>
         </div>

@@ -35,22 +35,35 @@ import 'select2/dist/css/select2.min.css';
 
 import { createApp } from 'vue'
 import Room from './pages/Room.vue'
+import ListRoom from './pages/ListRoom.vue'
 
-const chatEl = document.getElementById('chat-app')
+const chatEl = document.getElementById('room-app')
+const chatE2 = document.getElementById('chat-app')
 
 if (chatEl) {
-   const roomId = chatEl.dataset.roomId
-
-   const app = createApp(Room, { roomId })
-
+  //  const roomId = chatEl.dataset.roomId
+   const app = createApp(ListRoom)
+   app.provide('$showToast', showToast)
    app.provide('$rooms', window.__app__.rooms)
    app.provide('$user', window.__app__.user)
    app.provide('$emojis', window.__app__.emojis)
    app.provide('$appName', window.__app__.appName)
    app.provide('$confettiWords', window.__app__.confettiWords)
-   app.provide('$showToast', showToast)
 
    app.mount(chatEl)
+}
+
+if (chatE2) {
+  //  const roomId = chatEl.dataset.roomId
+   const app = createApp(Room)
+   app.provide('$showToast', showToast)
+   app.provide('$rooms', window.__app__.rooms)
+   app.provide('$user', window.__app__.user)
+   app.provide('$emojis', window.__app__.emojis)
+   app.provide('$appName', window.__app__.appName)
+   app.provide("$roomId", window.__app__.roomId);
+   app.provide('$confettiWords', window.__app__.confettiWords)
+   app.mount(chatE2)
 }
 
 /**

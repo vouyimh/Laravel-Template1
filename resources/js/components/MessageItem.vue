@@ -118,7 +118,7 @@ function celebrate(event) {
 </template>
 
 <style lang="scss">
-#chat-app{
+#chat-app, #room-app{
 .bot-notification {
   max-width: 100% !important;
   width: 100%;

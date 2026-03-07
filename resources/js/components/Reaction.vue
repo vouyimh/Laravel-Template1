@@ -51,7 +51,7 @@ const reactionFormat = computed(() => {
 </template>
 
 <style lang="scss">
-#chat-app{
+#chat-app, #room-app{
 .reaction-container {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   background: #fff;
