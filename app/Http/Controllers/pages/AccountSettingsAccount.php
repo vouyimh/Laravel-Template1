@@ -65,7 +65,7 @@ class AccountSettingsAccount extends Controller
                 Storage::disk('public')->delete($user->avatar_path);
             }
 
-            $data['avatar_path'] = $request->file('avatar')->store('storage', 'public');
+            $data['avatar_path'] = $request->file('avatar')->store('', 'public');
         }
 
         unset($data['avatar'], $data['current_password']);
