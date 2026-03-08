@@ -49,13 +49,12 @@
     <div class="card mb-6">
       <div class="card-body">
         <div class="d-flex align-items-start align-items-sm-center gap-6 pb-4 border-bottom">
-
-          <img
-            src="{{ $u && $u->avatar_path ? asset('storage/'.$u->avatar_path) : asset('assets/img/avatars/1.png') }}"
-            alt="user-avatar"
-            class="d-block w-px-100 h-px-100 rounded"
-            id="uploadedAvatar"
-          />
+        <img
+          src="{{ $u && $u->avatar_path ? Storage::url($u->avatar_path) : asset('assets/img/avatars/1.png') }}"
+          alt="user-avatar"
+          class="d-block w-px-100 h-px-100 rounded"
+          id="uploadedAvatar"
+        />
 
           {{-- saved avatar url (maybe empty) --}}
           <input type="hidden" id="savedAvatar"
@@ -69,7 +68,7 @@
               <span class="d-none d-sm-block">{{ __('Upload new photo') }}</span>
               <i class="icon-base bx bx-upload d-block d-sm-none"></i>
               <input type="file" id="upload" name="avatar" class="account-file-input" hidden
-                     accept="image/png, image/jpeg" form="formAccountSettings" />
+                    accept="image/png, image/jpeg, image/gif" form="formAccountSettings" />
             </label>
 
             <button type="button" class="btn btn-outline-secondary mb-4" id="resetAvatarBtn">
