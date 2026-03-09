@@ -23,5 +23,5 @@ return Application::configure(basePath: dirname(__DIR__))
     ]);
   })
   ->withExceptions(function (Exceptions $exceptions) {
-    //
+        $exceptions->handler(\App\Exceptions\Handler::class);
   })->create();
