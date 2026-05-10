@@ -186,10 +186,10 @@
 
         const houseHTML = `
             <div class="card mb-3 p-3 border border-secondary">
-                <h5>House #${index + 1}</h5>
+                <h5>{{ __('House') }} #${index + 1}</h5>
 
                 <div class="mb-3">
-                    <label class="form-label">Address</label>
+                    <label class="form-label">{{ __('Address') }}</label>
                     <input type="text"
                         name="houses[${index}][house_address]"
                         class="form-control house_address address-autocomplete"
@@ -199,7 +199,7 @@
                 
 
                 <div class="mb-3">
-                    <label class="form-label">Total Number of Rooms</label>
+                    <label class="form-label">{{ __('Total Number of Rooms') }}</label>
                     <input type="number"
                         name="houses[${index}][room]"
                         class="form-control house-room"
@@ -207,7 +207,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Size</label>
+                    <label class="form-label">{{ __('Size') }}</label>
                     <input type="text"
                         name="houses[${index}][size]"
                         class="form-control house-size"
@@ -215,7 +215,7 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Total Time for Cleaning</label>
+                    <label class="form-label">{{ __('Total Time for Cleaning') }}</label>
                     <input type="text"
                         name="houses[${index}][time]"
                         class="form-control house-time"
@@ -223,14 +223,14 @@
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Total Tools</label>
+                    <label class="form-label">{{ __('Total Tools') }}</label>
                     <textarea name="houses[${index}][tools]"
                             class="form-control house-tools"
                             required></textarea>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label">Task To Do</label>
+                    <label class="form-label">{{ __('Task To Do') }}</label>
                     <textarea name="houses[${index}][tasks]"
                             class="form-control house-tasks"
                             required></textarea>
@@ -239,7 +239,7 @@
                 <button type="button"
                         class="btn btn-danger"
                         onclick="this.parentElement.remove()">
-                    Remove House
+                    {{ __('Remove House') }}
                 </button>
             </div>
             `;
@@ -254,79 +254,79 @@
 <div class="row">
     <div class="col-md-12">
         <div class="card mb-6 p-3">
-            <h1 class="text-center fw-bold mb-4">Add Client</h1>
+            <h1 class="text-center fw-bold mb-4">{{ __('Add Client') }}</h1>
 
             <form id="add-client-form" method="POST">
 
                 <!-- Company Name -->
                 <div class="mb-3">
-                    <label class="form-label">Company Name</label>
+                    <label class="form-label">{{ __('Company Name') }}</label>
                     <input type="text" name="company_name" class="form-control" required>
                 </div>
 
                 <!-- Owner Name -->
                 <div class="mb-3">
-                    <label class="form-label">Owner Name</label>
+                    <label class="form-label">{{ __('Owner Name') }}</label>
                     <input type="text" name="owner_name" class="form-control" required>
                 </div>
 
                 <!-- Email -->
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
+                    <label class="form-label">{{ __('Email') }}</label>
                     <input type="email" name="email" class="form-control" required>
                 </div>
 
                 <!-- Password -->
                 <div class="mb-3">
-                    <label class="form-label">Password</label>
+                    <label class="form-label">{{ __('Password') }}</label>
                     <input type="password" name="password" class="form-control" required>
                 </div>
 
                 <!-- Phone Number -->
                 <div class="mb-3">
-                    <label class="form-label">Phone Number</label>
+                    <label class="form-label">{{ __('Phone Number') }}</label>
                     <input type="text" name="phone_number" class="form-control" required>
                 </div>
 
                 <!-- Lockbox -->
                 <div class="mb-3">
-                    <label class="form-label">Lockbox Number</label>
+                    <label class="form-label">{{ __('Lockbox Number') }}</label>
                     <input type="text" name="lockbox_number" class="form-control" required>
                 </div>
 
                 <!-- Company Type -->
                 <div class="mb-6">
-                    <label class="form-label">Company Type</label>
+                    <label class="form-label">{{ __('Company Type') }}</label>
                     <select name="company_type" class="form-select " required="">
-                        <option value="Personal">Personal</option>
-                        <option value="Company">Company</option>
+                        <option value="Personal">{{ __('Personal') }}</option>
+                        <option value="Company">{{ __('Company') }}</option>
                     </select>
                 </div>
 
                 <!-- Tax -->
                 <div class="form-check mb-9">
                     <input class="form-check-input" type="checkbox" name="tax" id="tax">
-                    <label class="form-check-label" for="tax">Tax Registered</label>
+                    <label class="form-check-label" for="tax">{{ __('Tax Registered') }}</label>
                 </div>
 
                 <!-- Company Address -->
-                <h4>Company Address</h4>
+                <h4>{{ __('Company Address') }}</h4>
                 <div class="mb-3">
-                    <label class="form-label">Address</label>
+                    <label class="form-label">{{ __('Address') }}</label>
                     <input type="text" name="company_address" class="form-control address-autocomplete" required>
                     <div class="address-suggestions" style="display:none;"></div>
                 </div>
 
                 <!-- Houses -->
-                <h4>Houses</h4>
+                <h4>{{ __('Houses') }}</h4>
                 <div id="houses-container">
                     <!-- Initial house can be added here if needed -->
                 </div>
-                <button type="button" class="btn btn-secondary mb-3" onclick="addHouse()">Add House</button>
+                <button type="button" class="btn btn-secondary mb-3" onclick="addHouse()">{{ __('Add House') }}</button>
 
                 <div class="text-end">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
+                    <button type="submit" class="btn btn-primary">{{ __('Save') }}</button>
                 </div>
             </form>
         </div>

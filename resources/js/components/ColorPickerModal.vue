@@ -72,7 +72,7 @@ const colors = ref([
 </template>
 
 <style lang="scss">
-#chat-app{
+#chat-app, #room-app{
 .color-palette {
   position: fixed;
   top: 0;

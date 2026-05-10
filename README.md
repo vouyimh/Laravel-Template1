@@ -256,5 +256,13 @@ If you want to [Download Free Admin Templates](https://themeselection.com/produc
 //////////
 
 npm run dev
-php artisan reverb:start
+
 php artisan serve
+composer require laravel/reverb
+
+## How to install reverb
+composer require laravel/reverb
+
+php artisan reverb:install
+
+php artisan reverb:start

@@ -85,7 +85,7 @@ Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
 
     Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    })->middleware(['auth', 'verified'])->name('dashboard');
         
     Route::get('admin/client', [ClientController::class, 'index'])
         ->name('admin.client.index');
@@ -131,10 +131,18 @@ Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
 
 Route::middleware(['auth', '2fa'])->group(function () {
     Route::resource('/tasks', TaskController::class);
-    Route::get('/chat/{roomId}', function ($roomId) {
-    return view('chat.index',['roomId' => $roomId]);
-    });
+    Route::get('/room/{roomId}', [App\Http\Controllers\RoomController::class, 'oneRoom']);
+    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index']);
+    Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
+    Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
+    Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
+    Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
+
 });
+
+    Route::get('/users', function () {
+    return \App\Models\User::select('id','name')->get();
+  });
 
 // Main Page Route
 

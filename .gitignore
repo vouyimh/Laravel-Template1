@@ -1,9 +1,9 @@
 /.phpunit.cache
 /node_modules
 
-/public/build
+
 /public/hot
-/public/storage
+# /public/storage
 /storage/*.key
 /vendor
 
@@ -25,5 +25,3 @@ yarn-error.log
 
 !/public/assets
 !/public/assets/*
-/public/css
-/public/js

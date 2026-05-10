@@ -11,8 +11,8 @@
                         <div class="col-md-8">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h4>Create New Task</h4>
-                                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">Back to Tasks</a>
+                                    <h4>{{ __('Create New Task') }}</h4>
+                                    <a href="{{ route('tasks.index') }}" class="btn btn-secondary">{{ __('Back to Tasks') }}</a>
                                 </div>
                                 <div class="card-body">
                                     @if ($errors->any())
@@ -29,7 +29,7 @@
                                         @csrf
 
                                         <div class="mb-3">
-                                            <label for="title" class="form-label">Task Title <span
+                                            <label for="title" class="form-label">{{ __('Task Title') }}<span
                                                     class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('title') is-invalid @enderror"
                                                 id="title" name="title" value="{{ old('title') }}"
@@ -42,7 +42,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="description" class="form-label">Task Description</label>
+                                            <label for="description" class="form-label">{{ __('Task Description') }}</label>
                                             <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
                                                 rows="4" placeholder="Enter task description (optional)">{{ old('description') }}</textarea>
                                             @error('description')
@@ -53,7 +53,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="status" class="form-label">Status</label>
+                                            <label for="status" class="form-label">{{ __('Status') }}</label>
                                             <select class="form-select @error('status') is-invalid @enderror" id="status"
                                                 name="status">
                                                 <option value="pending" {{ old('status') == 'pending' ? 'selected' : '' }}>
@@ -74,7 +74,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="priority" class="form-label">Priority</label>
+                                            <label for="priority" class="form-label">{{ __('Priority') }}</label>
                                             <select class="form-select @error('priority') is-invalid @enderror"
                                                 id="priority" name="priority">
                                                 <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low
@@ -93,7 +93,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label for="due_date" class="form-label">Due Date</label>
+                                            <label for="due_date" class="form-label">{{ __('Due Date') }}</label>
                                             <input type="date"
                                                 class="form-control @error('due_date') is-invalid @enderror" id="due_date"
                                                 name="due_date" value="{{ old('due_date') }}" min="{{ date('Y-m-d') }}">
@@ -104,7 +104,7 @@
                                             @enderror
                                         </div>
                                         <div class="mb-3">
-                                            <label for="assignees" class="form-label">Assign Users</label>
+                                            <label for="assignees" class="form-label">{{ __('Assign Users') }}</label>
 
                                             <select name="assignees[]" id="assignees"
                                                 class="form-select @error('assignees') is-invalid @enderror" multiple>
@@ -124,8 +124,8 @@
 
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                             <a href="{{ route('tasks.index') }}"
-                                                class="btn btn-secondary me-md-2">Cancel</a>
-                                            <button type="submit" class="btn btn-primary">Create Task</button>
+                                                class="btn btn-secondary me-md-2">{{ __('Cancel') }}</a>
+                                            <button type="submit" class="btn btn-primary">{{ __('Create Task') }}</button>
                                         </div>
                                     </form>
                                 </div>

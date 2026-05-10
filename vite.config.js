@@ -35,6 +35,7 @@ const CoreScssFiles = GetFilesArray('resources/assets/vendor/scss/**/!(_)*.scss'
 const FontsScssFiles = GetFilesArray('resources/assets/vendor/fonts/!(_)*.scss');
 const FontsJsFiles = GetFilesArray('resources/assets/vendor/fonts/**/!(_)*.js');
 const FontsCssFiles = GetFilesArray('resources/assets/vendor/fonts/**/!(_)*.css');
+const ScssSass = GetFilesArray('resources/sass/*.scss');
 
 export default defineConfig({
   plugins: [
@@ -51,7 +52,8 @@ export default defineConfig({
         ...LibsCssFiles,
         ...FontsScssFiles,
         ...FontsJsFiles,
-        ...FontsCssFiles
+        ...FontsCssFiles,
+        ...ScssSass
       ],
       refresh: true
     }),

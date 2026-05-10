@@ -15,7 +15,7 @@
 </template>
 
 <style >
-#chat-app{
+#chat-app, #room-app{
 footer {
   background: #1c5986;
   color: white;

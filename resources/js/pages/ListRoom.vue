@@ -38,14 +38,14 @@ const filteredRooms = computed(() => {
         <div class="card-body contacts_body">
           <div class="contacts">
             <li v-for="room in filteredRooms" :key="room.id">
-              <router-link :to="`/rooms/${room.id}`">
-                <div class="d-flex bd-highlight">
-                  <div class="user_info">
-                    <span>{{ room.name }}</span>
-                    <p v-if="room.description">{{ room.description }}</p>
+                <a :href="`/room/${room.id}`" class="room-link">
+                  <div class="d-flex bd-highlight">
+                    <div class="user_info">
+                      <span>{{ room.name }}</span>
+                      <p v-if="room.description">{{ room.description }}</p>
+                    </div>
                   </div>
-                </div>
-              </router-link>
+                </a>
             </li>
           </div>
         </div>

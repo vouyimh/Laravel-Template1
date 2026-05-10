@@ -7,11 +7,12 @@
 
 <script>
     window.__app__ = {
-        rooms: @json($rooms ?? [['id' => 1]]),
-        user: @json(auth()->user()),
-        emojis: @json($emojis ?? []),
-        appName: "My App",
-        confettiWords: ["wow", "nice", "good"],
+        rooms: @json($data['rooms']),
+        user: @json($data['user']),
+        emojis: @json($data['emojis']),
+        appName: @json($data['appName']),
+        confettiWords: @json($data['confettiWords']),
+        roomId: @json($roomId)
     };
     function showToast(title, message) {
   toastMsg.value = {
