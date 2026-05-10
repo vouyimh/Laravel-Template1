@@ -223,12 +223,12 @@ Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
 // });
  
 
- Route::middleware('auth')->group(function () {
-// Route::get('/{any}', [App\Http\Controllers\AppController::class, 'index'])
-//     ->where('any', '^(rooms|chat)(/.*)?$');
+Route::middleware(['auth', '2fa'])->group(function () {
   Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
   Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
   Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
+  Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
+  Route::get('/chat-users', [App\Http\Controllers\MessageController::class, 'getUserListForChat']);
 });
 
 require __DIR__ . '/auth.php';

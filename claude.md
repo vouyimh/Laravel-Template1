@@ -120,6 +120,115 @@ This is a comprehensive Laravel-based web application for managing **staff** (cl
   - Emoji system with separate table for emoji storage
   - Reaction model links users, messages, and emojis
 
+### **Chat Navigation & Visibility Rules** ⚙️ IMPLEMENTED
+
+The chat interface has **two main paths** for communication with **role-based access control**:
+
+#### **Path 1: Middle/Center - Group Chat Rooms**
+Group chat rooms are visible and available based on user role. Filtering happens in `MessageController::getVisibleRooms()`:
+
+- **Admin**: ✅ **Can see and access** all group chat rooms
+  - Communicate with staff and clients in team channels
+- **Staff**: ✅ **Can see and access** all group chat rooms  
+  - Communicate with admin and other staff in team channels
+- **Client**: ❌ **HIDDEN** - Group chat is completely hidden
+  - Returns empty array - No group rooms visible
+  - Clients can only use individual/private chats
+
+**Implementation**: `MessageController::chat()` → `getVisibleRooms($user)`
+- Returns all group chatrooms (where `private_room_id` is null) for admin/staff
+- Returns empty array for clients
+
+#### **Path 2: Left Sidebar - Individual/Private Chat (User List)**
+Individual private chats show filtered user lists based on current user's role. Filtering happens in `MessageController::getUserListForChat()`:
+
+- **Admin** 👤:
+  - **Can see**: All users (all staff + all clients)
+  - **Can initiate chat with**: Anyone
+  - **Use case**: Manage team and client communications
+
+- **Staff** 👤:
+  - **Can see**: Only admins
+  - **Can initiate chat with**: Admins only
+  - **Cannot see**: Other staff or clients
+  - **Use case**: Direct communication with admin for task coordination
+
+- **Client** 👤:
+  - **Can see**: Other clients + admins (NO staff)
+  - **Can initiate chat with**: Other clients and admins
+  - **Cannot see**: Staff members
+  - **Use case**: Communication with other clients and admin support
+
+**Implementation**: `MessageController::getUserListForChat()`
+```php
+// Admin: See all users
+WHERE id != current_user_id
+
+// Staff: See only admins
+WHERE id != current_user_id AND role = 'admin'
+
+// Client: See clients and admins (NOT staff)
+WHERE id != current_user_id AND role IN ('client', 'admin')
+```
+
+#### **Chat Visibility Summary Table** 📋
+
+| User Role | Group Chat | Private Chat Allowed With | Visible Users in List |
+|-----------|-----------|---------------------------|----------------------|
+| **Admin** | ✅ Visible | Staff & Clients | All staff + all clients |
+| **Staff** | ✅ Visible | Admin only | Only admins |
+| **Client** | ❌ HIDDEN | Clients & Admins | Other clients + admins |
+
+#### **Private Chat Creation & Validation**
+Implemented in `MessageController::startChat()` with validation:
+
+1. **User Validation**: Receiver must exist in database
+2. **Role-Based Validation**: Check if chat is allowed using `isPrivateChatAllowed()`
+   - Admin ↔ Staff/Client ✅
+   - Staff ↔ Admin only ✅
+   - Client ↔ Clients/Admin (NOT Staff) ✅
+3. **Room ID Creation**: `smaller_user_id-larger_user_id` format
+4. **Persistence**: Creates/retrieves chatroom with `private_room_id`
+
+**Validation Method**: `MessageController::isPrivateChatAllowed($currentUser, $receiver)`
+- Returns `403 Forbidden` if chat not allowed
+- Returns `404 Not Found` if receiver doesn't exist
+
+#### **API Endpoints** 🔌
+
+| Endpoint | Method | Purpose | Role Filter |
+|----------|--------|---------|------------|
+| `/chat-users` | GET | Get filtered user list for private chat | ✅ Role-based |
+| `/start_chat` | POST | Create/get private chat room | ✅ Role validation |
+| `/messages` | GET | Fetch messages for a room | Backend validates room access |
+| `/messages` | POST | Post new message | No role filter (room-level) |
+| `/reactions` | POST | React to message | No role filter |
+
+#### **Frontend Implementation Details** 🎨
+
+1. **Room.vue** (Group chat page):
+   - Line 20: `const rooms = inject("$rooms");` - Uses filtered rooms from controller
+   - Shows only rooms available to current user's role
+
+2. **ListUser.vue** (Online users list):
+   - Line 47-49: Maps through `usersOnline` array
+   - Currently shows all online users in a room (should be filtered by role on join)
+   - Can be enhanced to use `/chat-users` endpoint
+
+3. **startChat Flow**:
+   - User clicks on another user in ListUser component
+   - `selectReceiver()` function calls `POST /start_chat` with receiver_id
+   - Backend validates role-based access
+   - If allowed, creates private room; if not, returns 403
+
+#### **Current Status** ✅
+- ✅ Group chat filtering implemented in `MessageController::getVisibleRooms()`
+- ✅ Private chat user list filtering implemented in `MessageController::getUserListForChat()`
+- ✅ Chat validation implemented in `MessageController::isPrivateChatAllowed()`
+- ✅ Routes added: `/chat-users` and `/start_chat`
+- ⏳ Frontend can optionally call `/chat-users` endpoint for dynamic filtering
+- ⏳ Frontend could enhance ListUser component to show role-filtered users in real-time
+
 ### 7. **Comments System**
 - **Task Comments**: Users can comment on tasks
 - **Comment Files**: Ability to attach files to comments
