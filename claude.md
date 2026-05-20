@@ -88,13 +88,19 @@ This is a comprehensive Laravel-based web application for managing **staff** (cl
   - `PUT /tasks/{id}` - Update task
   - `DELETE /tasks/{id}` - Delete task
 
-### 6. **Real-Time Chat System**
+### 6. **Real-Time Chat System** 💬
 - **Multi-user Chat**: Staff, clients, and admins can communicate together
 - **Chat Features**:
-  - Message posting with content validation (max 2000 characters)
-  - Emoji reactions on messages (like/react to messages)
-  - Private direct messages between users
-  - Broadcast messaging using Laravel events
+  - ✅ Text messages with content validation (max 2000 characters)
+  - ✅ Emoji reactions on messages (like/react to messages)
+  - ✅ Private direct messages between users
+  - ✅ Broadcast messaging using Laravel events
+  - 🆕 **File Sharing**: Upload and share files in chat (documents, PDFs, etc.)
+  - 🆕 **Image Messages**: Send and display images inline
+  - 🆕 **Video Messages**: Upload and play videos in chat
+  - 🆕 **Voice Messages**: Record and send voice/audio messages
+  - 🆕 **WhatsApp-Style Quick Chat**: Open chat window by entering phone number
+  - 🆕 **Rich Message Types**: Support for mixed content (text + files)
 - **Chat Rooms**:
   - **Group Rooms**: Public chat rooms for team communication
   - **Private Rooms**: One-to-one chat rooms (private_room_id format: smaller_id-larger_id)
@@ -108,9 +114,11 @@ This is a comprehensive Laravel-based web application for managing **staff** (cl
   - `MessageReacted`: Broadcast when user reacts to a message
 - **Chat Routes** (Authenticated, requires 2FA):
   - `GET /messages` - Get paginated messages (50 per page) for a room
-  - `POST /messages` - Post new message
+  - `POST /messages` - Post new message (with file upload support)
   - `POST /reactions` - React to a message with emoji
   - `POST /start_chat` - Create or get private chat room
+  - `GET /chat-by-phone` - Find/start chat by phone number (WhatsApp-style)
+  - `POST /upload-file` - Upload file/image/video/voice message
   - `GET /rooms` - Get all available rooms
   - `GET /room/{roomId}` - Get specific room
   - Chat UI: `GET /chat` (via MessageController::chat)
@@ -143,41 +151,41 @@ Group chat rooms are visible and available based on user role. Filtering happens
 Individual private chats show filtered user lists based on current user's role. Filtering happens in `MessageController::getUserListForChat()`:
 
 - **Admin** 👤:
-  - **Can see**: All users (all staff + all clients)
+  - **Can see**: Everyone (all staff + all clients + other admins)
   - **Can initiate chat with**: Anyone
   - **Use case**: Manage team and client communications
 
 - **Staff** 👤:
-  - **Can see**: Only admins
-  - **Can initiate chat with**: Admins only
-  - **Cannot see**: Other staff or clients
-  - **Use case**: Direct communication with admin for task coordination
+  - **Can see**: Admins + Other staff
+  - **Can initiate chat with**: Admins and other staff
+  - **Cannot see**: Clients
+  - **Use case**: Direct communication with admin and team for task coordination
 
 - **Client** 👤:
-  - **Can see**: Other clients + admins (NO staff)
-  - **Can initiate chat with**: Other clients and admins
-  - **Cannot see**: Staff members
-  - **Use case**: Communication with other clients and admin support
+  - **Can see**: ONLY admins (NO staff, NO other clients)
+  - **Can initiate chat with**: Admins only
+  - **Cannot see**: Staff members or other clients
+  - **Use case**: Get support from admin only
 
 **Implementation**: `MessageController::getUserListForChat()`
 ```php
 // Admin: See all users
 WHERE id != current_user_id
 
-// Staff: See only admins
-WHERE id != current_user_id AND role = 'admin'
+// Staff: See admins + other staff (NOT clients)
+WHERE id != current_user_id AND role IN ('admin', 'staff')
 
-// Client: See clients and admins (NOT staff)
-WHERE id != current_user_id AND role IN ('client', 'admin')
+// Client: See ONLY admins (NOT staff, NOT other clients)
+WHERE id != current_user_id AND role = 'admin'
 ```
 
 #### **Chat Visibility Summary Table** 📋
 
-| User Role | Group Chat | Private Chat Allowed With | Visible Users in List |
+| User Role | Group Chat | Can Chat With | User List Shows |
 |-----------|-----------|---------------------------|----------------------|
-| **Admin** | ✅ Visible | Staff & Clients | All staff + all clients |
-| **Staff** | ✅ Visible | Admin only | Only admins |
-| **Client** | ❌ HIDDEN | Clients & Admins | Other clients + admins |
+| **Admin** | ✅ Visible | Anyone (everyone) | All users |
+| **Staff** | ✅ Visible | Admins + Other staff | Admins + Staff |
+| **Client** | ❌ HIDDEN | ONLY admins | Admins only |
 
 #### **Private Chat Creation & Validation**
 Implemented in `MessageController::startChat()` with validation:
@@ -229,12 +237,59 @@ Implemented in `MessageController::startChat()` with validation:
 - ⏳ Frontend can optionally call `/chat-users` endpoint for dynamic filtering
 - ⏳ Frontend could enhance ListUser component to show role-filtered users in real-time
 
-### 7. **Comments System**
+### 7. **Advanced Chat Features** 🆕
+
+#### **Rich Message Types**
+- **Text Messages**: Plain text messages (max 2000 characters)
+- **File Messages**: Upload any file type (documents, PDFs, spreadsheets)
+- **Image Messages**: Send images inline (JPG, PNG, WebP)
+- **Video Messages**: Upload and stream videos (MP4, WebM)
+- **Voice Messages**: Record and send audio (MP3, WAV, WebM)
+- **Emoji Reactions**: React to any message with emojis
+
+#### **Message Model Extensions**
+New columns added to `messages` table:
+- `message_type` - Type: 'text', 'file', 'image', 'video', 'voice'
+- `file_path` - Path to uploaded file (if applicable)
+- `file_name` - Original filename
+- `file_size` - File size in bytes
+- `mime_type` - MIME type (image/jpeg, video/mp4, etc.)
+- `metadata` - JSON field for additional data (duration, dimensions, etc.)
+
+#### **WhatsApp Integration** 📱
+Direct link to open WhatsApp chat from private chat window:
+- **Feature**: WhatsApp button in private chat header
+- **Location**: Private chat header (top right, green button)
+- **Icon**: WhatsApp logo (🟢 WhatsApp icon)
+- **Behavior**:
+  - Click button to open WhatsApp with user's phone number
+  - Opens in new tab/window
+  - Link format: `https://wa.me/{phone_number}`
+  - Only shows if user has phone number in system
+- **Use Case**: Quick escalation from in-app chat to WhatsApp for urgent matters
+
+#### **File Upload Endpoints**
+- `POST /upload-file` - Upload file/image/video/voice
+  - Parameters: `file`, `message_id`, `room_id`
+  - Returns: File path, MIME type, file size
+  - Validation: File type, size limits
+  - Storage: `storage/chat_files/`
+
+#### **Chat Features in Frontend**
+Vue components updated to support:
+- File picker button (attach files/images/videos)
+- Voice recorder button (record audio message)
+- Preview thumbnails for images/videos
+- Download buttons for files
+- Play buttons for audio/video
+- File size and duration indicators
+
+### 8. **Comments System**
 - **Task Comments**: Users can comment on tasks
 - **Comment Files**: Ability to attach files to comments
 - **Models**: Comment, CommentFile
 
-### 8. **Dashboard & Analytics**
+### 9. **Dashboard & Analytics**
 - **Admin Dashboard**: Analytics dashboard at `/` (requires admin role + 2FA)
 - **Admin Overview**: `/admin` route
 - **Total Booking Dashboard**: `/dashboard/total-booking`
@@ -331,10 +386,15 @@ app/
 │   ├── MessagePosted.php
 │   ├── MessageReacted.php
 │   └── BotNotification.php
+├── Notifications/
+│   ├── TaskAssignedNotification.php
+│   ├── TaskStatusChangedNotification.php
+│   └── NewPrivateMessageNotification.php
 └── ...
 routes/
 ├── web.php (main web routes with middleware groups)
-└── api.php (API endpoints)
+├── api.php (API endpoints)
+└── channels.php (broadcast channel authorization)
 database/
 ├── migrations/ (all database schema migrations)
 └── factories/ (model factories for testing)
@@ -366,12 +426,58 @@ database/
 ### Event Broadcasting
 - Uses Laravel Event system for real-time updates
 - Events: `MessagePosted`, `MessageReacted`, `BotNotification`
-- Broadcasting enabled for authenticated users
+- Broadcasting enabled for authenticated users via Pusher
+
+### Notification System 🔔
+
+Real-time in-app notifications persisted in the `notifications` database table and broadcast live via Pusher.
+
+#### Notification Types
+
+| Notification | Trigger | Recipients | Channels |
+|---|---|---|---|
+| `TaskAssignedNotification` | Task created or new assignees added on update | Each newly assigned user (except the actor) | `database`, `broadcast` |
+| `TaskStatusChangedNotification` | Task status changes (pending → in_progress → completed) | All current task assignees (except the actor) | `database`, `broadcast` |
+| `NewPrivateMessageNotification` | A private chat message is sent | The other chat participant | `database`, `broadcast` |
+
+#### Notification Bell (Frontend)
+- **Component**: `resources/js/components/NotificationBell.vue`
+- **Location**: Navbar top-right (present on every page using the main layout)
+- **Badge**: Red counter showing unread count, updates in real-time
+- **Dropdown**: Lists last 20 notifications with icon, message, timestamp
+- **Mark as read**: Click individual notification or "Mark all read" button
+- **Real-time**: Listens on `Echo.private('App.Models.User.{id}')` for instant badge updates
+- **Icons**: Distinct icons per notification type (task 🔵, status 🟡, message 🟢)
+
+#### Notification Routes
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/notifications` | GET | Fetch last 20 notifications |
+| `/notifications/unread-count` | GET | Get unread badge count |
+| `/notifications/mark-all-read` | PATCH | Mark all as read |
+| `/notifications/{id}/read` | PATCH | Mark single notification as read |
+
+#### Broadcast Channel
+- Laravel's standard user notification channel: `private-App.Models.User.{id}`
+- Defined in `routes/channels.php`
+- Authorization: user can only listen on their own channel
+
+#### Where Notifications Fire
+- `TaskController::store()` → `TaskAssignedNotification` to each assignee
+- `TaskController::update()` → `TaskAssignedNotification` to newly added assignees + `TaskStatusChangedNotification` to all assignees when status changes
+- `MessageController::store()` → `NewPrivateMessageNotification` to the other user in a private room
+- `MessageController::uploadFile()` → `NewPrivateMessageNotification` to the other user in a private room
+
+#### Database
+- Table: `notifications` (Laravel standard schema — uuid PK, type, notifiable morph, data JSON, read_at)
+- Migration: `2026_05_21_000002_create_notifications_table.php`
 
 ### API Endpoints (JSON)
-- Staff API: `/api/staff`, `/api/add-staff`, `/api/staff/{id}`
-- Client API: `/api/clients`, `/api/client/{id}`, `/api/add-client`
-- Messages API: `/api/messages`, `/api/reactions`, `/api/start_chat`
+- Staff API: `GET /api/staff`, `POST /api/staff`, `DELETE /api/staff/{id}`
+- Client API: `/api/clients`, `/api/client/{id}`, `/api/add-client`, `/api/edit-client/{id}`
+- Messages API: `/messages`, `/reactions`, `/start_chat`, `/upload-file`, `/chat-users`
+- Notifications API: `/notifications`, `/notifications/unread-count`, `/notifications/mark-all-read`
 
 ### Validation Rules
 - **Email**: Required, valid email format, must be unique
@@ -413,3 +519,165 @@ database/
    - Two-factor authentication support
    - CSRF protection
    - Role-based access control
+
+## Deployment Notes - cPanel & WebSocket Limitations ⚠️
+
+### **Real-Time Chat on cPanel**
+
+**❌ Reverb NOT Supported on cPanel**
+- Reverb requires Node.js and WebSocket servers
+- cPanel does NOT support WebSocket connections (port forwarding issues)
+- Reverb cannot be deployed on shared hosting (cPanel)
+
+### **Current Solution: Pusher** ✅
+
+This project is configured to use **Pusher** for real-time messaging:
+
+**Advantages on cPanel:**
+- ✅ Cloud-based WebSocket service (external)
+- ✅ Works on shared hosting
+- ✅ No server configuration needed
+- ✅ Reliable and scalable
+- ✅ Handles real-time message delivery
+
+**Current Configuration:**
+```
+BROADCAST_DRIVER=pusher
+BROADCAST_CONNECTION=pusher
+PUSHER_APP_ID=2116985
+PUSHER_APP_KEY=6a352fa843c4fe1228fe
+PUSHER_APP_SECRET=f93af26191431d23d740
+PUSHER_APP_CLUSTER=ap1
+```
+
+**Frontend Setup** (`resources/js/echo.js`):
+```javascript
+window.Echo = new Echo({
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true,
+});
+```
+
+### **Deployment Steps for cPanel** 🚀
+
+1. **Install Dependencies**:
+   ```bash
+   composer install --optimize-autoloader --no-dev
+   npm install && npm run build
+   ```
+
+2. **Environment Setup** (`.env`):
+   ```
+   APP_ENV=production
+   APP_DEBUG=false
+   BROADCAST_DRIVER=pusher
+   BROADCAST_CONNECTION=pusher
+   PUSHER_APP_ID=your_app_id
+   PUSHER_APP_KEY=your_app_key
+   PUSHER_APP_SECRET=your_app_secret
+   PUSHER_APP_CLUSTER=ap1
+   ```
+
+3. **Database Setup**:
+   ```bash
+   php artisan migrate --force
+   php artisan db:seed --class=DatabaseSeeder
+   ```
+
+4. **Cache & Config**:
+   ```bash
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   ```
+
+5. **Storage Permissions**:
+   ```bash
+   chmod -R 755 storage
+   chmod -R 755 bootstrap/cache
+   ```
+
+6. **Assets**:
+   - Run `npm run build` before deployment
+   - Ensure `public` folder has compiled assets
+
+### **What Works on cPanel** ✅
+
+- ✅ Basic chat message posting (non-real-time)
+- ✅ Chat history retrieval
+- ✅ Message reactions (via API)
+- ✅ Message storage and retrieval
+- ✅ User authentication
+- ✅ File uploads (staff photos, etc.)
+
+### **What Requires Pusher (Real-Time)** 🔴
+
+- 🔴 Live message delivery (see message instantly)
+- 🔴 User online status updates
+- 🔴 Typing indicators (if implemented)
+- 🔴 Real-time reaction updates
+- 🔴 User join/leave notifications
+
+### **Alternative Solutions**
+
+If Pusher is not available or too expensive:
+
+1. **Polling** (Not Recommended):
+   - JavaScript polls `/messages` endpoint every 2-3 seconds
+   - Poor user experience, high server load
+   - Works on cPanel but not ideal
+
+2. **Ably** (Similar to Pusher):
+   - Alternative real-time service
+   - Update `config/broadcasting.php` to use Ably
+   - Adjust `resources/js/echo.js` configuration
+
+3. **Private Server/VPS**:
+   - Can run Reverb + Node.js
+   - Requires dedicated server (not cPanel shared hosting)
+   - Full control over WebSocket server
+
+### **Monitoring Pusher Integration**
+
+Check if Pusher is working:
+1. Open browser DevTools → Network tab
+2. Look for requests to `wss://ws-ap1.pusher.com`
+3. Should see WebSocket connection established
+4. Check `window.Echo` object in console:
+   ```javascript
+   // In browser console:
+   console.log(window.Echo)
+   // Should show Echo client with pusher broadcaster
+   ```
+
+### **Troubleshooting Real-Time Chat**
+
+If real-time chat is not working:
+
+1. **Check Pusher Credentials**:
+   - Verify `PUSHER_APP_KEY`, `PUSHER_APP_SECRET`, `PUSHER_APP_ID`
+   - Check `PUSHER_APP_CLUSTER` matches account
+
+2. **Check Broadcasting Config**:
+   - Ensure `config/broadcasting.php` has correct Pusher settings
+   - Verify `BROADCAST_DRIVER=pusher` in `.env`
+
+3. **Check Frontend**:
+   - Run `npm run build` to rebuild JavaScript
+   - Check browser console for errors
+   - Verify `echo.js` is correctly configured
+
+4. **Check Network**:
+   - Ensure firewall allows `wss://` connections
+   - Some corporate networks block WebSocket connections
+
+### **Cost Considerations** 💰
+
+**Pusher Pricing** (as of 2026):
+- Free tier: Limited messages
+- Paid tier: Starts around $10-50/month depending on usage
+- Consider message volume for your application
+
+**Alternative**: Use polling with database as fallback (works on cPanel, slower)

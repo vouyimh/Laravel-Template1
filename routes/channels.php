@@ -13,11 +13,27 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-// Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-//     return (int) $user->id === (int) $id;
-// });
+// Personal notification channel — used by Laravel's broadcast notification system
+Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
+    return (int) $user->id === (int) $id;
+});
 
+// Group and private chat room channels
 Broadcast::channel('room.{id}', function ($user, $id) {
-    // $user->new_messages = 0; // init new_messages
-    return $user;
+    return [
+        'id'   => $user->id,
+        'name' => $user->name,
+        'role' => $user->role,
+    ];
+});
+
+// Global presence channel — tracks all online users across the app
+Broadcast::channel('online', function ($user) {
+    return [
+        'id'           => $user->id,
+        'name'         => $user->name,
+        'email'        => $user->email,
+        'role'         => $user->role,
+        'new_messages' => 0,
+    ];
 });

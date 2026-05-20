@@ -2,21 +2,10 @@
 import { computed, inject, ref } from "vue";
 
 const props = defineProps({
-  allUsers: {
-    type: Array,
-    default: () => [],
-  },
   usersOnline: {
     type: Array,
     default: [],
   },
-});
-
-const mergedUsers = computed(() => {
-  return props.allUsers.map(user => ({
-    ...user,
-    online: props.usersOnline.some(o => o.id === user.id)
-  }));
 });
 
 defineEmits(["selectReceiver"]);
@@ -24,33 +13,29 @@ defineEmits(["selectReceiver"]);
 const searchQuery = ref("");
 const myUser = inject("$user");
 
-// const filteredUsersList = computed(() => {
-//   return props.usersOnline.filter((row) =>
-//     row.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-//   );
-// });
-
 const filteredUsersList = computed(() => {
-  return mergedUsers.value.filter((row) =>
+  return props.usersOnline.filter((row) =>
     row.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  );
 })
 
 </script>
 
 <template>
-  <div class="card mb-sm-3 mb-md-0 contacts_card">
+  <div class="card mb-sm-3 mb-md-0 contacts_card h-100">
     <div class="card-header">
-      <h3 class="d-flex text-white">
-        Online<span class="badge text-bg-success ms-2">{{
-          usersOnline.length
-        }}</span>
-      </h3>
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h3 class="d-flex align-items-center text-white mb-0">
+          <i class="fas fa-users me-2" style="font-size: 16px; opacity: 0.9;"></i>
+          Online
+          <span class="badge bg-success ms-2" style="font-size: 11px;">{{ usersOnline.length }}</span>
+        </h3>
+      </div>
       <div class="input-group">
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search..."
+          placeholder="Search users..."
           name=""
           class="form-control search"
         />
@@ -61,14 +46,18 @@ const filteredUsersList = computed(() => {
     </div>
     <div class="card-body contacts_body">
       <div class="contacts">
+        <div v-if="filteredUsersList.length === 0" class="empty-state">
+          <i class="fas fa-user-slash"></i>
+          <p class="mb-0 mt-2">No users found</p>
+        </div>
         <li
           v-for="user in filteredUsersList"
           :key="user.id"
           @click="$emit('selectReceiver', user)"
         >
           <div class="current-user-mark" v-if="user.id === myUser.id" />
-          <div class="d-flex bd-highlight">
-            <div class="img_cont">
+          <div class="d-flex align-items-center">
+            <div class="img_cont me-3">
               <img
                 :src="
                   user.id === myUser.id
@@ -77,21 +66,18 @@ const filteredUsersList = computed(() => {
                 "
                 class="rounded-circle user_img"
               />
-              <!-- <span class="online_icon"></span> -->
-               <span class="online_icon" v-if="user.online"></span>
-                <span class="offline_icon" v-else></span>
+              <span class="online_icon"></span>
             </div>
             <div class="user_info">
-              <span
-                >{{ user.name }}
-                {{ user.id === myUser.id ? "(You)" : "" }}</span
-              >
-              <span
-                class="badge text-bg-danger font-12px"
-                v-if="user.new_messages"
-              >
-                {{ user.new_messages }}
-              </span>
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <span>{{ user.name }}{{ user.id === myUser.id ? " (You)" : "" }}</span>
+                <span
+                  class="badge text-bg-danger font-12px"
+                  v-if="user.new_messages"
+                >
+                  {{ user.new_messages }}
+                </span>
+              </div>
               <p>{{ user.email }}</p>
             </div>
           </div>
@@ -102,162 +88,36 @@ const filteredUsersList = computed(() => {
 </template>
 
 <style lang="scss">
-.app-container {
-  background: #0078d4;
-  background-image: -o-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: -moz-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: -webkit-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: linear-gradient(0deg, #0078d4, #00bcf2);
-
-  .app-header {
-    position: absolute;
-    width: 100%;
-    top: 30px;
-
-    .btn-logout {
-      margin-right: 30px;
-    }
-  }
-}
-
-.chat {
-  margin-top: auto;
-  margin-bottom: auto;
+.contacts_card {
+  background: linear-gradient(180deg, #3d3d62 0%, #25253d 100%) !important;
 
   .contacts_body {
-    padding: 0.75rem 0 !important;
-    overflow-y: auto;
-    white-space: nowrap;
+    background: transparent !important;
+  }
 
-    .contacts {
-      list-style: none;
-      padding: 0;
+  .img_cont {
+    position: relative;
+    flex-shrink: 0;
 
-      li {
-        width: 100% !important;
-        padding: 5px 10px;
-        transition: background-color 0.2s;
-        cursor: pointer;
-        position: relative;
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.3);
-        }
-
-        &.active {
-          background-color: rgba(0, 0, 0, 0.3);
-        }
-
-        .current-user-mark {
-          height: 100%;
-          width: 3px;
-          background: #00ffa4;
-          position: absolute;
-          left: 0;
-          top: 0;
-        }
-
-        .img_cont {
-          position: relative;
-
-          .user_img {
-            height: 45px;
-            width: 45px;
-            border: 2px solid #f5f6fa;
-          }
-        }
-      }
+    .user_img {
+      height: 40px;
+      width: 40px;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.6);
     }
   }
-}
 
-.container {
-  align-content: center;
-}
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: rgba(255, 255, 255, 0.5);
 
-.user_img_msg {
-  height: 40px;
-  width: 40px;
-  border: 2px solid #f5f6fa;
-}
-
-.online_icon {
-  position: absolute;
-  height: 15px;
-  width: 15px;
-  background-color: #4cd137;
-  border-radius: 50%;
-  bottom: 17px;
-  right: 0;
-  border: 2px solid white;
-}
-
-.offline {
-  background-color: #c2c2c2 !important;
-}
-
-.user_info {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 15px;
-}
-
-.user_info span {
-  font-size: 20px;
-  color: white;
-}
-
-.user_info p {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.msg_container {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 10px;
-  border-radius: 25px;
-  background-color: #00a0e5;
-  padding: 10px;
-  position: relative;
-  color: white;
-  word-break: break-word;
-  max-width: 70%;
-}
-
-.msg_container_send {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-right: 10px;
-  border-radius: 25px;
-  background-color: #42e274;
-  padding: 10px;
-  position: relative;
-  color: white;
-  word-break: break-word;
-  max-width: 70%;
-}
-
-@media (max-width: 768px) {
-  .app-container {
-    height: auto !important;
-
-    .app-header {
-      position: initial;
-      padding-top: 30px;
-
-      .btn-logout {
-        margin-right: 0;
-      }
+    i {
+      font-size: 36px;
     }
 
-    .chat {
-      margin-top: 1rem;
-
-      &:last-child,
-      &:first-child {
-        margin-top: 1rem;
-      }
+    p {
+      font-size: 13px;
     }
   }
 }
@@ -265,120 +125,6 @@ const filteredUsersList = computed(() => {
 @media (max-width: 576px) {
   .contacts_card {
     margin-bottom: 15px !important;
-  }
-}
-
-.font-12px {
-  font-size: 12px !important;
-}
-
-.img_cont_msg {
-  width: 40px;
-  height: 40px;
-
-  span {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: initial;
-  }
-
-  30% {
-    transform: translateY(-15px);
-  }
-}
-
-#wave {
-  .dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    margin-right: 1px;
-    background: white;
-    animation: wave 1.3s linear infinite;
-    margin-bottom: 3px;
-
-    &:nth-child(2) {
-      animation-delay: -1.1s;
-    }
-
-    &:nth-child(3) {
-      animation-delay: -0.9s;
-    }
-  }
-}
-
-.blink-anim {
-  animation: blink 2s infinite;
-}
-
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: initial;
-  }
-
-  30% {
-    transform: translateY(-7px);
-  }
-}
-
-@keyframes blink {
-  0%,
-  100% {
-    background: white;
-  }
-
-  50% {
-    background: #2e7fd7;
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter,
-.fade-leave-to
-
-/* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
-}
-
-.slide {
-  &-left,
-  &-right {
-    &-enter,
-    &-leave {
-      &-active {
-        transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
-      }
-    }
-  }
-}
-
-.slide {
-  &-left-enter,
-  &-right-leave-active {
-    opacity: 0;
-    transform: translate(30px, 0);
-  }
-}
-
-.slide {
-  &-left-leave-active,
-  &-right-enter {
-    opacity: 0;
-    transform: translate(-30px, 0);
   }
 }
 </style>

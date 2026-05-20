@@ -15,16 +15,11 @@
         roomId: @json($roomId)
     };
     function showToast(title, message) {
-  toastMsg.value = {
-    title,
-    message,
-  };
-  const toastEl = document.getElementById("bs_toast");
-
-  const toastBootstrap = Toast.getOrCreateInstance(toastEl);
-  toastBootstrap.show();
-}
-</script>
+        toastMsg.value = { title, message };
+        const toastEl = document.getElementById("bs_toast");
+        const toastBootstrap = Toast.getOrCreateInstance(toastEl);
+        toastBootstrap.show();
+    }
 </script>
 
 @section('title', 'Message')
@@ -32,10 +27,9 @@
 @section('content')
     <div class="row">
         <div class="col-md-12">
-            <div style="height:550px" class="card mb-6">
-                    <div class="container mt-5">
-                        <div id="chat-app" data-room-id="{{ $roomId }}"> </div>
-                    </div>
+            <div style="height:550px; overflow:hidden;" class="mb-6">
+                <div id="chat-app" style="height:100%;"></div>
             </div>
         </div>
+    </div>
     @endsection

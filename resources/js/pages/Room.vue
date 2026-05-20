@@ -16,7 +16,7 @@ const route = useRoute();
 const currentRoom = ref({});
 const selectedUser = ref(null);
 const usersOnline = ref([]);
-const allUsers = ref([])
+const filteredUsers = ref([]);
 const privateRoomId = ref(null);
 const rooms = inject("$rooms");
 const user = inject("$user");
@@ -24,49 +24,72 @@ const roomId = inject("$roomId");
 const appName = inject("$appName");
 const showToast = inject("$showToast");
 
-onBeforeMount(() => {
+// Fetch allowed user roles based on current user's role
+const fetchAllowedUsers = async () => {
+  try {
+    const response = await axios.get('/chat-users');
+    filteredUsers.value = response.data;
+  } catch (error) {
+    console.error('Error fetching allowed users:', error);
+  }
+};
+
+// Filter online users by allowed roles
+const getFilteredOnlineUsers = () => {
+  if (filteredUsers.value.length === 0) {
+    return usersOnline.value;
+  }
+
+  // Normalize to numbers — Pusher presence channel may return string IDs
+  const allowedIds = filteredUsers.value.map(u => Number(u.id));
+  return usersOnline.value.filter(onlineUser =>
+    allowedIds.includes(Number(onlineUser.id)) || Number(onlineUser.id) === Number(user.id)
+  );
+};
+
+onBeforeMount(async () => {
+  await fetchAllowedUsers();
+
+  // Global presence channel — tracks ALL online users regardless of which room they're in
+  Echo.join('online')
+    .here((users) => {
+      usersOnline.value = users.map(u => ({ ...u, new_messages: u.new_messages ?? 0 }));
+    })
+    .joining((joinedUser) => {
+      usersOnline.value.push({ ...joinedUser, new_messages: 0 });
+      if (selectedUser.value && Number(joinedUser.id) === Number(selectedUser.value.id)) {
+        selectedUser.value.isOnline = true;
+      }
+    })
+    .leaving((leftUser) => {
+      const idx = usersOnline.value.findIndex(
+        (item) => Number(item.id) === Number(leftUser.id)
+      );
+      if (idx > -1) {
+        usersOnline.value.splice(idx, 1);
+      }
+      if (selectedUser.value && Number(leftUser.id) === Number(selectedUser.value.id)) {
+        selectedUser.value.isOnline = false;
+      }
+    });
+
   const index = rooms.findIndex(
     (item) => item.id === parseInt(roomId)
   );
   if (index > -1) {
     currentRoom.value = rooms[index];
-    Echo
-      .join(`room.${currentRoom.value.id}`) // listen to the shared room
-      .here((users) => {
-        console.log(users)
-        usersOnline.value = users;
-      })
-      .joining((user) => {
-        usersOnline.value.push(user);
 
-        if (selectedUser.value && user.id === selectedUser.value.id) {
-          selectedUser.value.isOnline = true;
-        }
-      })
-      .leaving((user) => {
-        const index = usersOnline.value.findIndex(
-          (item) => item.id === user.id
-        );
-        if (index > -1) {
-          usersOnline.value.splice(index, 1);
-        }
+    // Room-specific channel — only for group chat messages
+    Echo.join(`room.${currentRoom.value.id}`);
 
-        if (selectedUser.value && user.id === selectedUser.value.id) {
-          selectedUser.value.isOnline = false;
-        }
-      });
-Echo.private(`room.${user.id}`)
-    .subscribed(() => {
-        console.log("Joined channel");
-    });
-    // listen to user's own room (in order to receive all private messages from other users)
+    // Listen for private messages sent directly to this user
     Echo.private(`room.${user.id}`).listen("MessagePosted", (e) => {
       if (!selectedUser.value) {
-        const index = usersOnline.value.findIndex(
-          (item) => item.id === e.message.user.id
+        const idx = usersOnline.value.findIndex(
+          (item) => Number(item.id) === Number(e.message.user.id)
         );
-        if (index > -1) {
-          usersOnline.value[index].new_messages++;
+        if (idx > -1) {
+          usersOnline.value[idx].new_messages = (usersOnline.value[idx].new_messages || 0) + 1;
         }
       }
     });
@@ -74,7 +97,7 @@ Echo.private(`room.${user.id}`)
 });
 
 onBeforeUnmount(() => {
-  // Echo.leave(`room.${user.id}`);
+  Echo.leave('online');
   Echo.leave(`room.${currentRoom.value.id}`);
 });
 
@@ -96,14 +119,18 @@ async function selectReceiver(receiver) {
 
     privateRoomId.value = response.data.id
 
+    // Get full user data including phone from filteredUsers
+    const fullUserData = filteredUsers.value.find(u => u.id === receiver.id) || receiver;
+
     selectedUser.value = {
       ...receiver,
+      ...fullUserData, // Merge to include phone and other fields
       isOnline: usersOnline.value.find(item => item.id === receiver.id),
     };
 
-    const user = usersOnline.value.find((item) => item.id === receiver.id);
-    if (user) {
-      user.new_messages = 0;
+    const onlineUser = usersOnline.value.find((item) => item.id === receiver.id);
+    if (onlineUser) {
+      onlineUser.new_messages = 0;
     }
   } catch (error) {
     console.error(error);
@@ -115,9 +142,14 @@ function closeChat() {
   privateRoomId.value = null;
 }
 
+// Computed property: return filtered online users based on role
+const displayUsers = computed(() => {
+  return getFilteredOnlineUsers();
+});
+
 const totalUnreadPrivateMessages = computed(() => {
   let count = 0;
-  usersOnline.value.forEach((item) => {
+  displayUsers.value.forEach((item) => {
     count += item.new_messages;
   });
   return count;
@@ -133,21 +165,17 @@ watch(totalUnreadPrivateMessages, () => {
     document.title = appName;
   }
 });
-
-axios.get('/users').then(res=>{
-  allUsers.value = res.data
-})
 </script>
 
 <template>
-  <div class="flex h-100">
-    <div class="row justify-content-center h-100">
-      <div class="col-md-8 chat">
+  <div class="flex h-100" style="height:100%;">
+    <div class="row h-100 g-3" style="height:100%;">
+      <div class="col-md-8 d-flex flex-column" style="height:100%;">
         <Chat :roomId="currentRoom.id" :roomName="currentRoom.name" :roomDescription="currentRoom.description"
-          @selectReceiver="selectReceiver" />
+          @selectReceiver="selectReceiver" style="height:100%; flex:1;" />
       </div>
-      <div class="col-md-4 chat">
-        <ListUser :usersOnline="usersOnline" :allUsers="allUsers" @selectReceiver="selectReceiver" />
+      <div class="col-md-4 d-flex flex-column" style="height:100%;">
+        <ListUser :usersOnline="displayUsers" @selectReceiver="selectReceiver" style="height:100%; flex:1;" />
       </div>
     </div>
 
@@ -156,3 +184,4 @@ axios.get('/users').then(res=>{
       @closeChat="closeChat" />
   </div>
 </template>
+

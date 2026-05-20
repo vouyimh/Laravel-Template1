@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\dashboard\Analytics;
 use App\Http\Controllers\dashboard\TotalBooking;
 use App\Http\Controllers\layouts\WithoutMenu;
@@ -10,233 +11,110 @@ use App\Http\Controllers\layouts\Fluid;
 use App\Http\Controllers\layouts\Container;
 use App\Http\Controllers\layouts\Blank;
 use App\Http\Controllers\pages\AccountSettingsAccount;
-//use App\Http\Controllers\pages\AccountSettingsNotifications;
-use App\Http\Controllers\pages\AccountSettingsConnections;
-use App\Http\Controllers\pages\MiscError;
-use App\Http\Controllers\pages\MiscUnderMaintenance;
 use App\Http\Controllers\authentications\LoginBasic;
 use App\Http\Controllers\authentications\RegisterBasic;
 use App\Http\Controllers\authentications\ForgotPasswordBasic;
-use App\Http\Controllers\cards\CardBasic;
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\user_interface\Accordion;
-use App\Http\Controllers\user_interface\Alerts;
-use App\Http\Controllers\user_interface\Badges;
-use App\Http\Controllers\user_interface\Buttons;
-use App\Http\Controllers\user_interface\Carousel;
-use App\Http\Controllers\user_interface\Collapse;
-use App\Http\Controllers\user_interface\Dropdowns;
 use App\Http\Controllers\user_interface\Footer;
-use App\Http\Controllers\user_interface\ListGroups;
-use App\Http\Controllers\user_interface\Modals;
-use App\Http\Controllers\user_interface\Navbar;
-use App\Http\Controllers\user_interface\Offcanvas;
-use App\Http\Controllers\user_interface\PaginationBreadcrumbs;
-use App\Http\Controllers\user_interface\Progress;
-use App\Http\Controllers\user_interface\Spinners;
-use App\Http\Controllers\user_interface\TabsPills;
-use App\Http\Controllers\user_interface\Toasts;
-use App\Http\Controllers\user_interface\TooltipsPopovers;
-use App\Http\Controllers\user_interface\Typography;
-use App\Http\Controllers\extended_ui\PerfectScrollbar;
-use App\Http\Controllers\extended_ui\TextDivider;
-use App\Http\Controllers\icons\Boxicons;
-use App\Http\Controllers\form_elements\BasicInput;
-use App\Http\Controllers\form_elements\InputGroups;
-use App\Http\Controllers\form_layouts\VerticalForm;
-use App\Http\Controllers\form_layouts\HorizontalForm;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\StaffController;
-use App\Http\Controllers\pages\StaffList;
-use App\Http\Controllers\pages\StaffAdd;
-use App\Http\Controllers\pages\StaffEdit;
-use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\MessageController;
-use App\Http\Controllers\tables\Basic as TablesBasic;
+use App\Http\Controllers\RoomController;
 use App\Http\Controllers\TwoFactorController;
-
-
+use App\Http\Controllers\NotificationController;
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/2fa-setup', [TwoFactorController::class, 'setup'])->name('2fa.setup');
+    Route::post('/2fa-verify', [TwoFactorController::class, 'verify'])->name('2fa.verify');
 });
 
-/*
-|--------------------------------------------------------------------------
-| 2FA Verification Routes
-|--------------------------------------------------------------------------
-*/
+Route::get('/', function () {
+    if (!Auth::check()) {
+        return redirect()->route('login');
+    }
 
-Route::middleware('auth')->group(function () {
+    return match (Auth::user()->role) {
+        'admin'  => redirect()->route('dashboard-analytics'),
+        'staff'  => redirect()->route('staff.task'),
+        'client' => redirect()->route('client.task'),
+        default  => redirect()->route('login'),
+    };
+})->name('home');
 
-    Route::get('/2fa-setup', [TwoFactorController::class, 'setup'])
-        ->name('2fa.setup');
-
-    Route::post('/2fa-verify', [TwoFactorController::class, 'verify'])
-        ->name('2fa.verify');
-});
-
-
-Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
-    Route::get('/', [Analytics::class, 'index'])->name('dashboard-analytics');
+Route::middleware(['auth', '2fa', 'role:admin'])->group(function () {
+    Route::get('/admin/analytics', [Analytics::class, 'index'])->name('dashboard-analytics');
     Route::get('/admin', fn() => view('admin.dashboard'))->name('admin.dashboard');
+    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
+    Route::get('/dashboard/total-booking', [TotalBooking::class, 'index'])->name('dashboard-total-booking');
 
-    Route::get('/dashboard', function () {
-    return view('dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
-        
-    Route::get('admin/client', [ClientController::class, 'index'])
-        ->name('admin.client.index');
+    Route::get('admin/client', [ClientController::class, 'index'])->name('admin.client.index');
+    Route::get('admin/client/add-client', [ClientController::class, 'addClient'])->name('admin.client.add-client');
 
-    Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
-        ->name('admin.client.add-client');
-
-
-    Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])
-        ->name('admin.staff.pages-staff-list');
-
-    Route::match(['get','post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
-    ->name('admin.staff.pages-staff-add');
-
-    Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
-        ->name('admin.staff.pages-staff-store');
-
-    Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
-        ->name('admin.staff.pages-staff-edit');
-
-    Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
-        ->name('admin.staff.pages-staff-update');
-
-    Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
-        ->name('admin.staff.pages-staff-delete');
-
-    // Route::resource('/tasks', TaskController::class);
-
+    Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])->name('admin.staff.pages-staff-list');
+    Route::match(['get', 'post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])->name('admin.staff.pages-staff-add');
+    Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])->name('admin.staff.pages-staff-store');
+    Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])->name('admin.staff.pages-staff-edit');
+    Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])->name('admin.staff.pages-staff-update');
+    Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])->name('admin.staff.pages-staff-delete');
 });
 
 Route::middleware(['auth', '2fa', 'role:staff'])->group(function () {
-    // Route::get('/staff', fn() => view('staff.dashboard'))->name('staff.dashboard');
-    // Tasks main page
     Route::get('/staff', [TaskController::class, 'index'])->name('staff.task');
 });
 
 Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
-    // Route::get('/client', fn() => view('client.dashboard'))->name('client.dashboard');
-    // Tasks main page
     Route::get('/client', [TaskController::class, 'index'])->name('client.task');
-
 });
 
 Route::middleware(['auth', '2fa'])->group(function () {
     Route::resource('/tasks', TaskController::class);
-    Route::get('/room/{roomId}', [App\Http\Controllers\RoomController::class, 'oneRoom']);
-    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index']);
-    Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
-    Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
-    Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
-    Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
+    Route::get('/room/{roomId}', [RoomController::class, 'oneRoom'])->name('room');
+    Route::get('/rooms', [RoomController::class, 'index']);
+    Route::get('/messages', [MessageController::class, 'index']);
+    Route::post('/messages', [MessageController::class, 'store']);
+    Route::post('/reactions', [MessageController::class, 'react']);
+    Route::post('/start_chat', [MessageController::class, 'startChat']);
+    Route::post('/upload-file', [MessageController::class, 'uploadFile']);
+    Route::get('/chat-by-phone/{phoneNumber}', [MessageController::class, 'chatByPhone']);
+    Route::get('/chat-users', [MessageController::class, 'getUserListForChat']);
+    Route::get('/users', fn() => \App\Models\User::select('id', 'name')->get());
 
+    // Notifications
+    Route::get('/notifications',                [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count',   [NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/mark-all-read',[NotificationController::class, 'markAllAsRead']);
+    Route::patch('/notifications/{id}/read',    [NotificationController::class, 'markAsRead']);
 });
 
-    Route::get('/users', function () {
-    return \App\Models\User::select('id','name')->get();
-  });
+Route::get('/lang/{locale}', function ($locale) {
+    if (!in_array($locale, ['en', 'fr'])) {
+        abort(404);
+    }
+    session(['locale' => $locale]);
+    return back();
+})->name('lang.switch');
 
-// Main Page Route
-
-Route::get('/dashboard/total-booking', [TotalBooking::class, 'index'])->name('dashboard-total-booking');
-
-// layout
+// Layout demo pages
 Route::get('/layouts/without-menu', [WithoutMenu::class, 'index'])->name('layouts-without-menu');
 Route::get('/layouts/without-navbar', [WithoutNavbar::class, 'index'])->name('layouts-without-navbar');
 Route::get('/layouts/fluid', [Fluid::class, 'index'])->name('layouts-fluid');
 Route::get('/layouts/container', [Container::class, 'index'])->name('layouts-container');
 Route::get('/layouts/blank', [Blank::class, 'index'])->name('layouts-blank');
 
-// pages
+// Account settings
 Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'index'])->name('pages-account-settings-account');
 Route::post('/pages/account-settings-account', [AccountSettingsAccount::class, 'update'])->name('pages-account-settings-account.update');
-Route::get('/lang/{locale}', function ($locale) {
-    if (!in_array($locale, ['en', 'fr'])) abort(404);
 
-    session(['locale' => $locale]);
-
-    return back();
-})->name('lang.switch');
-//Route::get('/pages/account-settings-notifications', [AccountSettingsNotifications::class, 'index'])->name('pages-account-settings-notifications');
-//Route::get('/pages/account-settings-connections', [AccountSettingsConnections::class, 'index'])->name('pages-account-settings-connections');
-//Route::get('/pages/misc-error', [MiscError::class, 'index'])->name('pages-misc-error');
-//Route::get('/pages/misc-under-maintenance', [MiscUnderMaintenance::class, 'index'])->name('pages-misc-under-maintenance');
-
-//staff
-
-// Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
-
-
-
-
-
-// });
-// authentication
+// Auth demo pages
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');
 Route::get('/auth/register-basic', [RegisterBasic::class, 'index'])->name('auth-register-basic');
 Route::get('/auth/forgot-password-basic', [ForgotPasswordBasic::class, 'index'])->name('auth-reset-password-basic');
 
-// cards
-//Route::get('/cards/basic', [CardBasic::class, 'index'])->name('cards-basic');
-
-// User Interface
-// Route::get('/ui/accordion', [Accordion::class, 'index'])->name('ui-accordion');
-// Route::get('/ui/alerts', [Alerts::class, 'index'])->name('ui-alerts');
-// Route::get('/ui/badges', [Badges::class, 'index'])->name('ui-badges');
-// Route::get('/ui/buttons', [Buttons::class, 'index'])->name('ui-buttons');
-// Route::get('/ui/carousel', [Carousel::class, 'index'])->name('ui-carousel');
-// Route::get('/ui/collapse', [Collapse::class, 'index'])->name('ui-collapse');
-// Route::get('/ui/dropdowns', [Dropdowns::class, 'index'])->name('ui-dropdowns');
+// UI
 Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
-// Route::get('/ui/list-groups', [ListGroups::class, 'index'])->name('ui-list-groups');
-// Route::get('/ui/modals', [Modals::class, 'index'])->name('ui-modals');
-// Route::get('/ui/navbar', [Navbar::class, 'index'])->name('ui-navbar');
-// Route::get('/ui/offcanvas', [Offcanvas::class, 'index'])->name('ui-offcanvas');
-// Route::get('/ui/pagination-breadcrumbs', [PaginationBreadcrumbs::class, 'index'])->name('ui-pagination-breadcrumbs');
-// Route::get('/ui/progress', [Progress::class, 'index'])->name('ui-progress');
-// Route::get('/ui/spinners', [Spinners::class, 'index'])->name('ui-spinners');
-// Route::get('/ui/tabs-pills', [TabsPills::class, 'index'])->name('ui-tabs-pills');
-// Route::get('/ui/toasts', [Toasts::class, 'index'])->name('ui-toasts');
-// Route::get('/ui/tooltips-popovers', [TooltipsPopovers::class, 'index'])->name('ui-tooltips-popovers');
-//Route::get('/ui/typography', [Typography::class, 'index'])->name('ui-typography');
-
-// extended ui
-//Route::get('/extended/ui-perfect-scrollbar', [PerfectScrollbar::class, 'index'])->name('extended-ui-perfect-scrollbar');
-//Route::get('/extended/ui-text-divider', [TextDivider::class, 'index'])->name('extended-ui-text-divider');
-
-// icons
-//Route::get('/icons/boxicons', [Boxicons::class, 'index'])->name('icons-boxicons');
-
-// form elements
-// Route::get('/forms/basic-inputs', [BasicInput::class, 'index'])->name('forms-basic-inputs');
-// Route::get('/forms/input-groups', [InputGroups::class, 'index'])->name('forms-input-groups');
-
-// form layouts
-// Route::get('/form/layouts-vertical', [VerticalForm::class, 'index'])->name('form-layouts-vertical');
-// Route::get('/form/layouts-horizontal', [HorizontalForm::class, 'index'])->name('form-layouts-horizontal');
-
-// tables
-//Route::get('/tables/basic', [TablesBasic::class, 'index'])->name('tables-basic');
-// Route::middleware('auth')->group(function () {
-  
-//   Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
-// });
- 
-
-Route::middleware(['auth', '2fa'])->group(function () {
-  Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
-  Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
-  Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
-  Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
-  Route::get('/chat-users', [App\Http\Controllers\MessageController::class, 'getUserListForChat']);
-});
 
 require __DIR__ . '/auth.php';

@@ -5,91 +5,79 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use PragmaRX\Google2FA\Google2FA;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 
 class TwoFactorController extends Controller
 {
+    /**
+     * Show the 2FA setup / verify page.
+     * If the user already has a secret, show the verify form (no QR).
+     * If first time, generate a secret and show the QR to scan.
+     */
     public function setup(Request $request)
     {
-        $user = auth()->user();
+        $user      = auth()->user();
         $google2fa = new Google2FA();
 
-        // ✅ If user already enabled 2FA
         if (!empty($user->two_factor_secret)) {
+            // Already set up — just ask for a token
+            $request->session()->put('2fa_secret', $user->two_factor_secret);
 
-            // Use existing secret from database
-            $secret = $user->two_factor_secret;
-
-            // Store it in session temporarily for verification
-            $request->session()->put('2fa_secret', $secret);
-
-            // Do NOT generate QR
-            return view('auth.2fa-verify', [
-                'qrCode' => null,   // No QR
-            ]);
+            return view('auth.2fa-verify', ['qrCode' => null]);
         }
 
-        // ✅ First time setup → generate new secret
+        // First-time setup — generate a new secret
         $secret = $google2fa->generateSecretKey();
         $request->session()->put('2fa_secret', $secret);
 
         $otpAuthUrl = $google2fa->getQRCodeUrl(
-            'Bionett Tours',
+            config('app.name'),
             $user->email,
             $secret
         );
 
         $qrCode = QrCode::size(200)->generate($otpAuthUrl);
 
-        return view('auth.2fa-verify', [
-            'qrCode' => $qrCode,
-        ]);
+        return view('auth.2fa-verify', ['qrCode' => $qrCode]);
     }
 
+    /**
+     * Verify the submitted 2FA token.
+     * Window of 1 allows one 30-second slot of drift on either side.
+     */
     public function verify(Request $request)
     {
         $request->validate([
-            'token' => 'required|digits:6'
+            'token' => 'required|digits:6',
         ]);
 
         $google2fa = new Google2FA();
-        $secret = $request->session()->get('2fa_secret');
+        $secret    = $request->session()->get('2fa_secret');
 
-         $window = 1000; 
+        $valid = $google2fa->verifyKey($secret, $request->token, 1);
 
-        $valid = $google2fa->verifyKey($secret, $request->token, $window);
-
-        if ($valid) {
-            $user = auth()->user();
-
-            // Store the 2FA secret in the database if not already set
-            if (empty($user->two_factor_secret)) {
-                $user->two_factor_secret = $secret;
-                $user->save();
-            }
-            
-            $request->session()->put('2fa_verified', true);
-            return redirect($this->redirectByRole($user));
+        if (!$valid) {
+            return back()->withErrors(['token' => 'Invalid or expired verification code. Please try again.']);
         }
 
-        return back()->withErrors(['Invalid verification code']);
+        $user = auth()->user();
+
+        if (empty($user->two_factor_secret)) {
+            $user->two_factor_secret = $secret;
+            $user->save();
+        }
+
+        $request->session()->put('2fa_verified', true);
+
+        return redirect($this->redirectByRole($user));
     }
 
-    private function redirectByRole($user)
+    private function redirectByRole($user): string
     {
-        if ($user->role === 'admin') {
-            return route('dashboard-analytics');
-        }
-
-        if ($user->role === 'staff') {
-            return route('staff.task');
-        }
-
-        if ($user->role === 'client') {
-            return route('client.task');
-        }
-
-        return '/';
+        return match ($user->role) {
+            'admin'  => route('dashboard-analytics'),
+            'staff'  => route('staff.task'),
+            'client' => route('client.task'),
+            default  => '/',
+        };
     }
 }

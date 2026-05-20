@@ -216,7 +216,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-8tJ_1HyI.js",
+    "file": "assets/app-BJeHGRp6.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -226,7 +226,7 @@
       "_jquery-1IlBtRgn.js"
     ],
     "css": [
-      "assets/app-BWyWf7vL.css"
+      "assets/app-ClJ3ULun.css"
     ]
   },
   "resources/sass/_variables.scss": {
@@ -236,7 +236,7 @@
     "isEntry": true
   },
   "resources/sass/app.scss": {
-    "file": "assets/app-CMRBmAlL.css",
+    "file": "assets/app-BOxewmzE.css",
     "src": "resources/sass/app.scss",
     "isEntry": true
   }

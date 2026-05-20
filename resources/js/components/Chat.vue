@@ -55,6 +55,11 @@ const selectedMessage = ref(null);
 const user = inject("$user");
 const showToast = inject("$showToast");
 const isSavingMessage = ref(false);
+const fileInput = ref(null);
+const imageInput = ref(null);
+const videoInput = ref(null);
+const isRecording = ref(false);
+const mediaRecorder = ref(null);
 
 // metadata for pagination, not related to rendering so we just make it primitive JS vars
 let currentPage = 0;
@@ -65,16 +70,12 @@ const seenAtFormatted = computed(() => {
   return d.toLocaleString();
 });
 
-// for private chat only
 onBeforeMount(() => {
   const msgColorStorage = localStorage.getItem("msgColor");
-
   if (msgColorStorage) {
     msgColor.value = msgColorStorage;
   }
-});
 
-onBeforeMount(() => {
   initChat();
 });
 
@@ -120,13 +121,11 @@ function initChat() {
   isSeen.value = false;
 
   getMessages(props.roomId);
-  console.log("test"+props.isPrivate)
 
   if (props.isPrivate) {
     Echo
-      .private(`room.${props.roomId}`) // this room to receive whisper events
+      .private(`room.${props.roomId}`)
       .listenForWhisper("typing", (e) => {
-         console.log("listenForWhisper"+ e.isTyping)
         isTyping.value = e.isTyping;
         scrollToBottom(messageContainer.value, true);
       })
@@ -139,7 +138,6 @@ function initChat() {
         }
       })
       .listen("MessagePosted", (e) => {
-        console.log("hfetmessage")
         messages.value.push(e.message);
         privateHasNewMessage.value = true;
         isSeen.value = false;
@@ -225,7 +223,7 @@ async function selectEmoji(emoji) {
     }
     hideEmoji();
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     if (error instanceof AxiosError) {
       showToast("Error", error.response.data.message);
@@ -282,13 +280,117 @@ async function saveMessage() {
     isSeen.value = false;
     scrollToBottom(messageContainer.value, true);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     if (error instanceof AxiosError) {
       showToast("Error", error.response.data.message);
     }
   } finally {
     isSavingMessage.value = false;
   }
+}
+
+// File upload handler
+async function uploadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  await sendFile(file);
+  fileInput.value.value = '';
+}
+
+// Image upload handler
+async function uploadImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  await sendFile(file);
+  imageInput.value.value = '';
+}
+
+// Video upload handler
+async function uploadVideo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  await sendFile(file);
+  videoInput.value.value = '';
+}
+
+// Send file to server
+async function sendFile(file) {
+  try {
+    isSavingMessage.value = true;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('room_id', props.roomId);
+
+    const response = await axios.post('/upload-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'X-Socket-ID': Echo.socketId(),
+      }
+    });
+
+    messages.value.push(response.data.message);
+    scrollToBottom(messageContainer.value, true);
+    showToast("Success", "File uploaded successfully");
+  } catch (error) {
+    console.error(error);
+    if (error instanceof AxiosError) {
+      showToast("Error", error.response?.data?.message || "Failed to upload file");
+    }
+  } finally {
+    isSavingMessage.value = false;
+  }
+}
+
+// Voice recording toggle
+async function toggleVoiceRecording() {
+  if (isRecording.value) {
+    stopVoiceRecording();
+  } else {
+    startVoiceRecording();
+  }
+}
+
+// Start voice recording
+async function startVoiceRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder.value = new MediaRecorder(stream);
+    const chunks = [];
+
+    mediaRecorder.value.ondataavailable = (e) => chunks.push(e.data);
+    mediaRecorder.value.onstop = async () => {
+      const blob = new Blob(chunks, { type: 'audio/webm' });
+      const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
+      await sendFile(file);
+    };
+
+    mediaRecorder.value.start();
+    isRecording.value = true;
+  } catch (error) {
+    showToast("Error", "Cannot access microphone");
+    console.error(error);
+  }
+}
+
+// Stop voice recording
+function stopVoiceRecording() {
+  if (mediaRecorder.value) {
+    mediaRecorder.value.stop();
+    isRecording.value = false;
+    mediaRecorder.value.stream.getTracks().forEach(track => track.stop());
+  }
+}
+
+// Format phone number for WhatsApp (remove non-digits except leading +)
+function formatPhoneNumber(phone) {
+  if (!phone) return "";
+  // Remove all non-digit characters except the first + if present
+  let formatted = phone.replace(/[^\d+]/g, '');
+  // If it doesn't start with +, remove any leading + and add it
+  if (!formatted.startsWith('+')) {
+    formatted = formatted.replace(/^\+/, '');
+  }
+  return formatted;
 }
 
 async function getMessages(room, page = 1, loadMore = false) {
@@ -315,7 +417,7 @@ async function getMessages(room, page = 1, loadMore = false) {
       scrollToBottom(messageContainer.value, false);
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     if (error instanceof AxiosError) {
       showToast("Error", error.response.data.message);
     }
@@ -399,17 +501,34 @@ const onInputPrivateChange = throttle(function () {
         <i data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Message Color" class="fas fa-circle"
           @click.stop="toggleColorPicker" style="cursor: pointer" :style="{ color: msgColor }"></i>
       </div>
+      <!-- WhatsApp Button -->
+      <a
+        v-if="receiver.phone"
+        :href="`https://wa.me/${formatPhoneNumber(receiver.phone)}`"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-sm btn-success ms-2"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        data-bs-title="Open WhatsApp Chat">
+        <i class="fab fa-whatsapp"></i>
+      </a>
       <button class="btn-close" @click="$emit('closeChat')">
         <i class="fal fa-times"></i>
       </button>
     </div>
     <div v-else class="card-header msg_head">
-      <div class="bd-highlight">
-        <div class="user_info">
-          <span>{{ roomName }}</span>
+      <div class="d-flex align-items-center">
+        <div class="room-avatar me-3">
+          <i class="fas fa-hashtag"></i>
         </div>
-        <div class="text-white ms-3">
-          {{ roomDescription }}
+        <div class="flex-1">
+          <div class="user_info">
+            <span>{{ roomName }}</span>
+          </div>
+          <div class="room-desc" v-if="roomDescription">
+            {{ roomDescription }}
+          </div>
         </div>
       </div>
     </div>
@@ -447,27 +566,145 @@ const onInputPrivateChange = throttle(function () {
       </div>
     </div>
     <div class="text-input" v-if="isPrivate">
-      <input v-model="inputMessage" v-if="isChatExpanded" id="private_input" type="text" class="w-100"
+      <!-- Media buttons for private chat -->
+      <div class="media-buttons-private" v-if="isChatExpanded">
+        <!-- File Upload -->
+        <input
+          type="file"
+          ref="fileInput"
+          @change="uploadFile"
+          style="display: none;"
+          accept="*/*"
+        />
+        <button
+          @click="$refs.fileInput.click()"
+          class="btn"
+          title="Upload file">
+          <i class="fas fa-paperclip"></i>
+        </button>
+
+        <!-- Image Upload -->
+        <input
+          type="file"
+          ref="imageInput"
+          @change="uploadImage"
+          style="display: none;"
+          accept="image/*"
+        />
+        <button
+          @click="$refs.imageInput.click()"
+          class="btn"
+          title="Upload image">
+          <i class="fas fa-image"></i>
+        </button>
+
+        <!-- Video Upload -->
+        <input
+          type="file"
+          ref="videoInput"
+          @change="uploadVideo"
+          style="display: none;"
+          accept="video/*"
+        />
+        <button
+          @click="$refs.videoInput.click()"
+          class="btn"
+          title="Upload video">
+          <i class="fas fa-video"></i>
+        </button>
+
+        <!-- Voice Record -->
+        <button
+          @click="toggleVoiceRecording"
+          class="btn"
+          :class="{ 'recording': isRecording }"
+          title="Record voice">
+          <i class="fas fa-microphone"></i>
+        </button>
+      </div>
+
+      <!-- Text input -->
+      <input v-model="inputMessage" v-if="isChatExpanded" id="private_input" type="text"
         placeholder="Type a message..." @keyup.enter="saveMessage" @input="onInputPrivateChange" ref="privateInputEl"
-        maxlength="1000" />
-      <small class="float-end mt-1 me-1">{{ inputMessage.length }}/1000</small>
+        maxlength="2000" style="width: 100%; height: 36px;" />
+      <small style="text-align: right; color: #999;">{{ inputMessage.length }}/2000</small>
     </div>
     <div class="card-footer" v-else>
-      <div class="input-group">
+      <div class="input-group" v-if="isChatExpanded">
+        <!-- File Upload Button -->
+        <input
+          type="file"
+          ref="fileInput"
+          @change="uploadFile"
+          style="display: none;"
+          accept="*/*"
+        />
+        <button
+          @click="$refs.fileInput.click()"
+          class="btn"
+          title="Upload file"
+          type="button">
+          <i class="fas fa-paperclip"></i>
+        </button>
+
+        <!-- Image Upload Button -->
+        <input
+          type="file"
+          ref="imageInput"
+          @change="uploadImage"
+          style="display: none;"
+          accept="image/*"
+        />
+        <button
+          @click="$refs.imageInput.click()"
+          class="btn"
+          title="Upload image"
+          type="button">
+          <i class="fas fa-image"></i>
+        </button>
+
+        <!-- Video Upload Button -->
+        <input
+          type="file"
+          ref="videoInput"
+          @change="uploadVideo"
+          style="display: none;"
+          accept="video/*"
+        />
+        <button
+          @click="$refs.videoInput.click()"
+          class="btn"
+          title="Upload video"
+          type="button">
+          <i class="fas fa-video"></i>
+        </button>
+
+        <!-- Voice Record Button -->
+        <button
+          @click="toggleVoiceRecording"
+          class="btn"
+          :class="{ 'recording': isRecording }"
+          title="Record voice"
+          type="button">
+          <i class="fas fa-microphone"></i>
+        </button>
+
+        <!-- Message Input -->
         <textarea v-model="inputMessage" name="" class="form-control type_msg" placeholder="Type your message..."
-          @keyup.enter="saveMessage" autofocus maxlength="1000" />
-        <span @click="saveMessage" class="input-group-text send_btn">
-          <div style="width: 20px; height: 20px;">
+          @keyup.enter="saveMessage" autofocus maxlength="2000" />
+
+        <!-- Send Button -->
+        <span @click="saveMessage" class="send_btn">
+          <div style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
             <div class="spinner-border text-white" role="status" v-if="isSavingMessage"
               style="width: inherit; height: inherit;">
               <span class="sr-only">Loading...</span>
             </div>
-            <i class="fas fa-location-arrow" v-else>
-            </i>
+            <i class="fas fa-location-arrow" v-else style="color: white; font-size: 16px;"></i>
           </div>
         </span>
       </div>
-      <small class="float-end text-white mt-1">{{ inputMessage.length }}/1000</small>
+      <small class="float-end mt-1" style="color: #666;">{{ inputMessage.length }}/2000</small>
     </div>
     <Emoji :emojiCoordinates="emojiCoordinates" :isShow="isShowEmoji" :selectedMessage="selectedMessage"
       @hideEmoji="hideEmoji" @selectEmoji="selectEmoji" />
@@ -480,179 +717,489 @@ const onInputPrivateChange = throttle(function () {
 </template>
 
 <style lang="scss">
-#chat-app, #room-app{
-.card {
-  z-index: 1;
-  height: 500px;
-  border-radius: 15px !important;
-  background-color: rgba(0, 0, 0, 0.4) !important;
+#chat-app, #room-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
-  &.bg-white {
-    background-color: white !important;
+  > .flex {
+    flex: 1;
+    min-height: 0;
   }
 
-  .card-header {
-    border-radius: 15px 15px 0 0 !important;
+  .card {
+    z-index: 1;
+    height: 100%;
+    border-radius: 12px !important;
+    background-color: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
 
-    .search_btn {
-      border-radius: 0 15px 15px 0 !important;
-      background-color: rgba(0, 0, 0, 0.3) !important;
-      border: 0 !important;
-      color: white !important;
-      cursor: pointer;
+    &.contacts_card {
+      background: linear-gradient(180deg, #3d3d62 0%, #25253d 100%) !important;
+      border: none !important;
     }
 
-    .search {
-      border-radius: 15px 0 0 15px !important;
-      background-color: rgba(0, 0, 0, 0.3) !important;
-      border: 0 !important;
-      color: white !important;
-
-      &:focus {
-        box-shadow: none !important;
-        outline: 0px !important;
-      }
-    }
-  }
-
-  .msg_head {
-    position: relative;
-  }
-
-  .msg_card_body {
-    overflow-y: auto;
-  }
-
-  .card-footer {
-    border-radius: 0 0 15px 15px !important;
-    border-top: 0 !important;
-
-    .type_msg {
-      background-color: rgba(0, 0, 0, 0.3) !important;
-      border: 0 !important;
-      color: white !important;
-      height: 60px !important;
-      overflow-y: auto;
-      border-radius: 15px 0 0 15px !important;
-
-      &:focus {
-        box-shadow: none !important;
-        outline: 0px !important;
-      }
+    &.bg-white {
+      background-color: #ffffff !important;
     }
 
-    .send_btn {
-      border-radius: 0 15px 15px 0 !important;
-      background-color: rgba(0, 0, 0, 0.3) !important;
-      border: 0 !important;
-      color: white !important;
-      cursor: pointer;
-    }
-  }
-}
+    .card-header {
+      border-radius: 12px 12px 0 0 !important;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none !important;
+      padding: 1.5rem !important;
+      color: white;
 
-.private-message-container {
-  border-radius: 15px 15px 0 0 !important;
-  background-color: white;
-  position: absolute;
-  bottom: 0;
-  right: 10px;
-  width: 350px;
-  height: 54px;
-  z-index: 2;
-
-  &.expand {
-    height: 400px;
-  }
-
-  .chat-header {
-    border-top-left-radius: 15px;
-    border-top-right-radius: 15px;
-    transition: background-color 0.2s;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #e6e5e5;
-    }
-
-    .img_cont {
-      position: relative;
-    }
-
-    .btn-close {
-      position: absolute;
-      right: 15px;
-      top: 15px;
-      outline: none;
-      border: none;
-      background: none;
-
-      i {
-        font-size: 18px;
-        transition: transform 0.2s;
+      .search_btn {
+        border-radius: 0 8px 8px 0 !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        border: 0 !important;
+        color: white !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
 
         &:hover {
-          transform: scale(1.2);
+          background-color: rgba(255, 255, 255, 0.3) !important;
+        }
+      }
+
+      .search {
+        border-radius: 8px 0 0 8px !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        border: 0 !important;
+        color: white !important;
+
+        &:focus {
+          box-shadow: none !important;
+          outline: 0px !important;
+          background-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        &::placeholder {
+          color: rgba(255, 255, 255, 0.7);
+        }
+      }
+    }
+
+    .msg_head {
+      position: relative;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none !important;
+      padding: 1rem 1.5rem !important;
+      color: white;
+
+      .room-avatar {
+        width: 42px;
+        height: 42px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+          font-size: 18px;
+          color: white;
+        }
+      }
+
+      .user_info {
+        margin: 0;
+
+        span {
+          font-size: 17px;
+          font-weight: 700;
+          color: #ffffff;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          letter-spacing: 0.2px;
+        }
+      }
+
+      .room-desc {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-top: 2px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .flex-1 {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+
+    .msg_card_body {
+      overflow-y: auto;
+      flex: 1;
+      background-color: #f8f9fa;
+      padding: 1.5rem;
+      color: #333;
+
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+
+        &:hover {
+          background: #999;
+        }
+      }
+
+      .font-12px {
+        color: #999;
+        font-size: 12px !important;
+      }
+
+      #wave .dot {
+        background: white;
+      }
+    }
+
+    .card-footer {
+      border-radius: 0 0 12px 12px !important;
+      border-top: 1px solid #e0e0e0 !important;
+      background-color: white;
+      padding: 1rem !important;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      .input-group {
+        display: flex;
+        gap: 0;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #ddd;
+        background-color: white;
+
+        .btn {
+          padding: 0.6rem 0.75rem;
+          border: none;
+          border-right: 1px solid #ddd;
+          background-color: white;
+          color: #667eea;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-size: 14px;
+          flex-shrink: 0;
+
+          &:last-of-type:not(.form-control) {
+            border-right: none;
+          }
+
+          &:hover {
+            background-color: #f8f9fa;
+            color: #5568d3;
+          }
+
+          &.recording {
+            background-color: #f56565;
+            color: white;
+            animation: pulse 1s infinite;
+          }
+
+          i {
+            font-size: 16px;
+          }
+        }
+
+        .type_msg {
+          background-color: white !important;
+          border: none !important;
+          color: #333 !important;
+          height: 60px !important;
+          overflow-y: auto;
+          padding: 0.75rem !important;
+          font-size: 14px;
+          resize: none;
+          flex: 1;
+          border-right: 1px solid #ddd;
+
+          &:focus {
+            box-shadow: none !important;
+            outline: 0px !important;
+            background-color: white !important;
+          }
+
+          &::placeholder {
+            color: #999;
+          }
+        }
+
+        .send_btn {
+          border-radius: 0 !important;
+          background-color: #667eea !important;
+          border: 0 !important;
+          color: white !important;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          padding: 0.75rem 1rem !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          border-left: none;
+
+          &:hover {
+            background-color: #5568d3 !important;
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
         }
       }
     }
   }
 
-  .private-chat-body {
-    height: calc(100% - 65px - 40px);
-    overflow-y: scroll;
+  .private-message-container {
+    border-radius: 12px !important;
+    background-color: white;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    height: 60px;
+    z-index: 2;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
 
-    .msg_container_send {
-      padding: 5px 10px 5px 10px !important;
-      border-radius: 15px !important;
-      max-width: 165px;
+    &.expand {
+      height: 500px;
     }
 
-    .msg_container {
-      padding: 5px 10px 5px 10px !important;
-      border-radius: 15px !important;
-      max-width: 165px;
+    .chat-header {
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.2s;
+      cursor: pointer;
+      padding: 1rem;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+
+      &:hover {
+        box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .img_cont {
+        position: relative;
+        flex-shrink: 0;
+
+        .user_img {
+          border: 2px solid white !important;
+        }
+      }
+
+      .user_info {
+        margin-left: 12px;
+        flex: 1;
+        min-width: 0;
+
+        span {
+          display: block;
+          font-size: 14px;
+          font-weight: 600;
+          color: #ffffff;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-bottom: 2px;
+          text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        p {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.9);
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+      }
+
+      .color-picker {
+        position: relative;
+        margin-left: auto;
+        margin-right: 12px;
+
+        i {
+          font-size: 18px;
+          cursor: pointer;
+          transition: transform 0.2s;
+
+          &:hover {
+            transform: scale(1.15);
+          }
+        }
+      }
+
+      .btn-success {
+        padding: 0.4rem 0.6rem !important;
+        font-size: 16px !important;
+        margin: 0 8px 0 0 !important;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: #128c7e !important;
+          transform: scale(1.1);
+        }
+      }
+
+      .btn-close {
+        outline: none;
+        border: none;
+        background: none;
+        color: white;
+        flex-shrink: 0;
+
+        i {
+          font-size: 18px;
+          transition: transform 0.2s;
+
+          &:hover {
+            transform: scale(1.2);
+          }
+        }
+      }
+    }
+
+    .msg_card_body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background-color: #f8f9fa;
+
+      &::-webkit-scrollbar {
+        width: 5px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+      }
+    }
+
+    .text-input {
+      padding: 0.75rem;
+      border-top: 1px solid #e0e0e0;
+      background-color: white;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      input {
+        height: 36px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        outline: none;
+        padding: 0.5rem 0.75rem;
+        font-size: 13px;
+        background-color: white;
+        color: #333;
+
+        &:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+
+      small {
+        color: #999;
+        font-size: 11px;
+        text-align: right;
+      }
+    }
+
+    .media-buttons-private {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      background-color: #f8f9fa;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+
+      .btn {
+        padding: 0.4rem 0.6rem;
+        border: 1px solid #ddd;
+        background-color: white;
+        color: #667eea;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 12px;
+        border-radius: 4px;
+        flex-shrink: 0;
+
+        &:hover {
+          background-color: #f0f0f0;
+          border-color: #667eea;
+          color: #5568d3;
+          transform: scale(1.05);
+        }
+
+        &.recording {
+          background-color: #f56565;
+          color: white;
+          border-color: #f56565;
+          animation: pulse 1s infinite;
+        }
+
+        i {
+          font-size: 13px;
+        }
+      }
     }
   }
-
-  .text-input {
-    input {
-      height: 40px;
-      border: none;
-      border-top: solid 1px #ddd;
-      outline: none;
-      padding: 7px;
-    }
-  }
-
-  .color-picker {
-    position: absolute;
-    right: 45px;
-    top: 17px;
-
-    i {
-      font-size: 22px;
-    }
-  }
-}}
+}
 </style>
 
 
 <style lang="scss">
 .app-container {
-  background: #0078d4;
-  background-image: -o-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: -moz-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: -webkit-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: linear-gradient(0deg, #0078d4, #00bcf2);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
 
   .app-header {
     position: absolute;
     width: 100%;
     top: 30px;
+    z-index: 10;
 
     .btn-logout {
       margin-right: 30px;
+      padding: 0.5rem 1rem;
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
     }
   }
 }
@@ -660,11 +1207,29 @@ const onInputPrivateChange = throttle(function () {
 .chat {
   margin-top: auto;
   margin-bottom: auto;
+  min-height: 600px;
 
   .contacts_body {
     padding: 0.75rem 0 !important;
     overflow-y: auto;
     white-space: nowrap;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.5);
+      }
+    }
 
     .contacts {
       list-style: none;
@@ -672,17 +1237,23 @@ const onInputPrivateChange = throttle(function () {
 
       li {
         width: 100% !important;
-        padding: 5px 10px;
-        transition: background-color 0.2s;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
         cursor: pointer;
         position: relative;
+        display: flex;
+        align-items: center;
+        border-radius: 8px;
+        margin: 0.25rem 0.5rem;
 
         &:hover {
-          background-color: rgba(0, 0, 0, 0.3);
+          background-color: rgba(255, 255, 255, 0.15);
+          transform: translateX(4px);
         }
 
         &.active {
-          background-color: rgba(0, 0, 0, 0.3);
+          background-color: rgba(255, 255, 255, 0.25);
+          box-shadow: inset 3px 0 0 #00ffa4;
         }
 
         .current-user-mark {
@@ -692,15 +1263,17 @@ const onInputPrivateChange = throttle(function () {
           position: absolute;
           left: 0;
           top: 0;
+          display: none;
         }
 
         .img_cont {
           position: relative;
+          flex-shrink: 0;
 
           .user_img {
             height: 45px;
             width: 45px;
-            border: 2px solid #f5f6fa;
+            border: 2px solid white;
           }
         }
       }
@@ -720,62 +1293,83 @@ const onInputPrivateChange = throttle(function () {
 
 .online_icon {
   position: absolute;
-  height: 15px;
-  width: 15px;
+  height: 12px;
+  width: 12px;
   background-color: #4cd137;
   border-radius: 50%;
-  bottom: 17px;
+  bottom: 0;
   right: 0;
-  border: 2px solid white;
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px #667eea;
+  animation: pulse-online 2s infinite;
 }
 
 .offline {
-  background-color: #c2c2c2 !important;
+  background-color: #e0e0e0 !important;
+  animation: none !important;
 }
 
-.user_info {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 15px;
+@keyframes pulse-online {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #667eea, 0 0 0 6px rgba(76, 209, 55, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 2px #667eea, 0 0 0 8px rgba(76, 209, 55, 0.1);
+  }
 }
 
-.user_info span {
-  font-size: 20px;
-  color: white;
-}
-
-.user_info p {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.6);
-}
 
 .msg_container {
   margin-top: auto;
   margin-bottom: auto;
   margin-left: 10px;
-  border-radius: 25px;
-  background-color: #00a0e5;
-  padding: 10px;
+  border-radius: 18px 18px 18px 4px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 12px 16px;
   position: relative;
   color: white;
   word-break: break-word;
   max-width: 70%;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 .msg_container_send {
   margin-top: auto;
   margin-bottom: auto;
   margin-right: 10px;
-  border-radius: 25px;
-  background-color: #42e274;
-  padding: 10px;
+  border-radius: 18px 18px 4px 18px;
+  background: linear-gradient(135deg, #42e274 0%, #38c76b 100%);
+  padding: 12px 16px;
   position: relative;
   color: white;
   word-break: break-word;
   max-width: 70%;
+  box-shadow: 0 2px 6px rgba(66, 226, 116, 0.2);
+  font-size: 14px;
+  line-height: 1.4;
 }
 
 @media (max-width: 768px) {
+  #chat-app, #room-app {
+    .card {
+      height: 100%;
+      min-height: 400px;
+    }
+
+    .private-message-container {
+      width: calc(100vw - 40px);
+      max-width: 400px;
+
+      &.expand {
+        height: 80vh;
+        bottom: 10px;
+        right: 10px;
+      }
+    }
+  }
+
   .app-container {
     height: auto !important;
 
@@ -790,6 +1384,7 @@ const onInputPrivateChange = throttle(function () {
 
     .chat {
       margin-top: 1rem;
+      min-height: 400px;
 
       &:last-child,
       &:first-child {
@@ -800,6 +1395,18 @@ const onInputPrivateChange = throttle(function () {
 }
 
 @media (max-width: 576px) {
+  #chat-app, #room-app {
+    .card {
+      height: 100%;
+      min-height: 300px;
+    }
+
+    .private-message-container {
+      width: calc(100vw - 20px);
+      right: 10px;
+    }
+  }
+
   .contacts_card {
     margin-bottom: 15px !important;
   }
@@ -916,6 +1523,95 @@ const onInputPrivateChange = throttle(function () {
   &-right-enter {
     opacity: 0;
     transform: translate(-30px, 0);
+  }
+}
+
+/* Media buttons styling for group chat */
+.input-group {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #ddd;
+  background-color: white;
+  display: flex;
+  gap: 0;
+
+  .btn {
+    padding: 0.6rem 0.75rem;
+    border: none;
+    border-right: 1px solid #ddd;
+    background-color: white;
+    color: #667eea;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+
+    &:last-of-type:not(.form-control) {
+      border-right: none;
+    }
+
+    &:hover {
+      background-color: #f8f9fa;
+      color: #5568d3;
+    }
+
+    &.recording {
+      background-color: #f56565;
+      color: white;
+      animation: pulse 1s infinite;
+    }
+
+    i {
+      font-size: 16px;
+    }
+  }
+
+  .form-control {
+    border: none !important;
+    padding: 0.75rem;
+    font-size: 14px;
+
+    &:focus {
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+}
+
+/* WhatsApp button styling */
+.btn-success {
+  background-color: #25D366 !important;
+  border-color: #25D366 !important;
+
+  &:hover {
+    background-color: #20ba58 !important;
+    border-color: #20ba58 !important;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.95);
+  }
+}
+
+/* Loading spinner animation */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+
+  svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
   }
 }
 </style>
