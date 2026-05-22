@@ -8,32 +8,30 @@ use App\Models\TaskFile;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
-class TaskController extends Controller
+class StaffTaskController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
+        $query = Task::with(['files', 'activities.user', 'assignees']);
+
         if ($user && $user->role === 'staff') {
-            $tasks = Task::with(['files', 'activities.user', 'assignees'])
-                ->whereHas('assignees', fn($q) => $q->where('users.id', $user->id))
-                ->latest()
-                ->get();
-        } else {
-            $tasks = Task::with(['files', 'activities.user', 'assignees'])->latest()->get();
+            $query->whereHas('assignees', fn($q) => $q->where('users.id', $user->id));
         }
 
-        return view('tasks.index', compact('tasks'));
+        $tasks = $query->latest()->get();
+
+        return view('stafftask.board', compact('tasks'));
     }
 
     public function create()
     {
-        $users = User::orderBy('name')->get();
-        return view('tasks.create', compact('users'));
+        $users = User::where('role', 'staff')->orderBy('name')->get();
+        return view('stafftask.create', compact('users'));
     }
 
     public function store(Request $request)
@@ -41,7 +39,6 @@ class TaskController extends Controller
         $data = $request->validate([
             'title'       => 'required|max:255',
             'description' => 'nullable|string',
-            'status'      => ['required', Rule::in(['pending', 'in_progress', 'completed'])],
             'priority'    => ['nullable', Rule::in(['low', 'medium', 'high'])],
             'due_date'    => 'nullable|date',
             'assignees'   => 'nullable|array',
@@ -51,7 +48,7 @@ class TaskController extends Controller
         $task = Task::create([
             'title'       => $data['title'],
             'description' => $data['description'] ?? null,
-            'status'      => $data['status'],
+            'status'      => 'pending',
             'priority'    => $data['priority'] ?? 'medium',
             'due_date'    => $data['due_date'] ?? null,
         ]);
@@ -60,27 +57,31 @@ class TaskController extends Controller
             $task->assignees()->sync($data['assignees']);
         }
 
-        $this->logActivity($task->id, 'Created', ['by' => Auth::user()?->name]);
+        $this->logActivity($task->id, 'Created on StaffTask Board');
 
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task created successfully.');
+        return redirect()
+            ->route('stafftask.board')
+            ->with('success', 'Task created on StaffTask Board.');
     }
 
     public function show(Task $task)
     {
         $task->load(['files', 'activities.user', 'assignees']);
-        return view('tasks.show', compact('task'));
+        return view('stafftask.show', compact('task'));
     }
 
     public function edit(Task $task)
     {
-        $task->load('assignees');
-        $users = User::all();
-        return view('tasks.edit', compact('task', 'users'));
+        $this->ensureAdmin();
+        $task->load(['assignees', 'files']);
+        $users = User::where('role', 'staff')->orderBy('name')->get();
+        return view('stafftask.edit', compact('task', 'users'));
     }
 
     public function update(Request $request, Task $task)
     {
+        $this->ensureAdmin();
+
         $data = $request->validate([
             'title'       => 'required|max:255',
             'description' => 'nullable|string',
@@ -101,32 +102,68 @@ class TaskController extends Controller
 
         $task->assignees()->sync($data['assignees'] ?? []);
 
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task updated successfully.');
+        $this->logActivity($task->id, 'Updated on StaffTask Board');
+
+        return redirect()
+            ->route('stafftask.board')
+            ->with('success', 'Task updated.');
     }
 
     public function destroy(Task $task)
     {
+        $this->ensureAdmin();
+
         foreach ($task->files as $file) {
             Storage::disk('public')->delete($file->path);
         }
         $task->delete();
 
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task deleted successfully.');
+        return redirect()
+            ->route('stafftask.board')
+            ->with('success', 'Task deleted.');
     }
 
     /* ============================================================
-     |  STAFF WORKFLOW
-     | ============================================================
-     */
+     | DRAG & DROP — move between Kanban columns
+     | ============================================================ */
+    public function move(Request $request, Task $task)
+    {
+        $this->ensureAdmin();
 
+        $data = $request->validate([
+            'status' => ['required', Rule::in(['pending', 'in_progress', 'completed'])],
+        ]);
+
+        $update = ['status' => $data['status']];
+
+        if ($data['status'] === 'in_progress' && !$task->started_at) {
+            $update['started_at'] = now();
+        }
+        if ($data['status'] === 'completed' && !$task->completed_at) {
+            $update['completed_at'] = now();
+        }
+        if ($data['status'] === 'pending') {
+            $update['started_at']   = null;
+            $update['completed_at'] = null;
+        }
+
+        $task->update($update);
+        $this->logActivity($task->id, 'Moved to ' . $data['status']);
+
+        return $request->wantsJson()
+            ? response()->json(['ok' => true, 'status' => $task->status])
+            : back()->with('success', 'Task moved.');
+    }
+
+    /* ============================================================
+     | STAFF WORKFLOW (mirrors TaskController but isolated)
+     | ============================================================ */
     public function startTask(Request $request, Task $task)
     {
         $this->ensureAssignedStaff($task);
 
         if ($task->status === 'completed') {
-            return back()->with('error', 'Task is already completed.');
+            return $this->respond($request, false, 'Task is already completed.', 422);
         }
 
         $data = $request->validate([
@@ -152,11 +189,7 @@ class TaskController extends Controller
 
         $this->logActivity($task->id, 'Task started', $location ? ['location' => $location] : null);
 
-        if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'task' => $task->fresh(['files', 'activities'])]);
-        }
-
-        return back()->with('success', 'Task started.');
+        return $this->respond($request, true, 'Task started.');
     }
 
     public function uploadProof(Request $request, Task $task)
@@ -165,9 +198,7 @@ class TaskController extends Controller
 
         $request->validate([
             'file' => [
-                'required',
-                'file',
-                'max:204800', // 200 MB in KB
+                'required', 'file', 'max:204800',
                 'mimes:jpg,jpeg,png,gif,webp,mp4,webm,mov,mkv,avi,m4v,ogg,wmv,flv',
             ],
         ]);
@@ -175,7 +206,6 @@ class TaskController extends Controller
         $uploaded = $request->file('file');
         $mime = $uploaded->getMimeType();
         $type = str_starts_with($mime, 'video/') ? 'video' : 'image';
-
         $path = $uploaded->store("task-proof/{$task->id}", 'public');
 
         $file = TaskFile::create([
@@ -190,11 +220,36 @@ class TaskController extends Controller
 
         $this->logActivity($task->id, "Uploaded {$file->original_name}", ['file_id' => $file->id]);
 
-        if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'file' => $file->fresh()->append('url')]);
+        return $this->respond($request, true, 'Proof uploaded.');
+    }
+
+    public function serveFile(Request $request, Task $task, TaskFile $file)
+    {
+        // Only users who can see the task may stream its files.
+        $user = Auth::user();
+        if (!$user) abort(401);
+        if ($user->role === 'staff' && !$task->isAssignedTo($user->id)) {
+            abort(403, 'You are not assigned to this task.');
+        }
+        if ($file->task_id !== $task->id) abort(404);
+
+        $disk = Storage::disk('public');
+        if (!$disk->exists($file->path)) abort(404, 'File missing on disk.');
+
+        $absolutePath = $disk->path($file->path);
+        $name         = $file->original_name ?: basename($file->path);
+
+        if ($request->boolean('download')) {
+            return response()->download($absolutePath, $name, [
+                'Content-Type' => $file->mime_type ?: 'application/octet-stream',
+            ]);
         }
 
-        return back()->with('success', 'Proof uploaded.');
+        // Inline streaming so <img>/<video> and the preview modal can load it.
+        return response()->file($absolutePath, [
+            'Content-Type'        => $file->mime_type ?: 'application/octet-stream',
+            'Content-Disposition' => 'inline; filename="' . addslashes($name) . '"',
+        ]);
     }
 
     public function removeProof(Request $request, Task $task, TaskFile $file)
@@ -211,11 +266,7 @@ class TaskController extends Controller
 
         $this->logActivity($task->id, "Removed {$name}");
 
-        if ($request->wantsJson()) {
-            return response()->json(['ok' => true]);
-        }
-
-        return back()->with('success', 'File removed.');
+        return $this->respond($request, true, 'File removed.');
     }
 
     public function completeTask(Request $request, Task $task)
@@ -223,10 +274,7 @@ class TaskController extends Controller
         $this->ensureAssignedStaff($task);
 
         if ($task->files()->count() === 0) {
-            $msg = 'At least one proof file is required before completing.';
-            return $request->wantsJson()
-                ? response()->json(['ok' => false, 'error' => $msg], 422)
-                : back()->with('error', $msg);
+            return $this->respond($request, false, 'Upload at least one proof file before completing.', 422);
         }
 
         $task->update([
@@ -236,30 +284,25 @@ class TaskController extends Controller
 
         $this->logActivity($task->id, 'Task completed');
 
-        if ($request->wantsJson()) {
-            return response()->json(['ok' => true, 'task' => $task->fresh(['files', 'activities'])]);
-        }
-
-        return back()->with('success', 'Task completed.');
+        return $this->respond($request, true, 'Task completed.');
     }
 
     /* ============================================================
-     |  Helpers
-     | ============================================================
-     */
+     | Helpers
+     | ============================================================ */
+    protected function ensureAdmin(): void
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'admin') {
+            abort(403, 'Only admins can perform this action.');
+        }
+    }
 
     protected function ensureAssignedStaff(Task $task): void
     {
         $user = Auth::user();
-
-        if (!$user) {
-            abort(401);
-        }
-
-        if ($user->role === 'admin') {
-            return;
-        }
-
+        if (!$user) abort(401);
+        if ($user->role === 'admin') return;
         if ($user->role !== 'staff' || !$task->isAssignedTo($user->id)) {
             abort(403, 'You are not assigned to this task.');
         }
@@ -273,5 +316,16 @@ class TaskController extends Controller
             'action'  => $action,
             'meta'    => $meta,
         ]);
+    }
+
+    protected function respond(Request $request, bool $ok, string $message, int $statusCode = 200)
+    {
+        if ($request->wantsJson()) {
+            return response()->json(
+                ['ok' => $ok, 'message' => $message],
+                $ok ? $statusCode : ($statusCode === 200 ? 400 : $statusCode)
+            );
+        }
+        return back()->with($ok ? 'success' : 'error', $message);
     }
 }

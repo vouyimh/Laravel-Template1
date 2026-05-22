@@ -12,21 +12,45 @@ class Task extends Model
     protected $fillable = [
         'title',
         'description',
-        'status'
+        'status',
+        'priority',
+        'due_date',
+        'started_at',
+        'completed_at',
+        'start_location',
     ];
 
     protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
+        'created_at'     => 'datetime',
+        'updated_at'     => 'datetime',
+        'started_at'     => 'datetime',
+        'completed_at'   => 'datetime',
+        'due_date'       => 'date',
+        'start_location' => 'array',
     ];
 
     public function assignees()
-{
-    return $this->belongsToMany(User::class, 'assigned_users');
-}
+    {
+        return $this->belongsToMany(User::class, 'assigned_users');
+    }
 
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function files()
+    {
+        return $this->hasMany(TaskFile::class)->latest();
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(TaskActivity::class)->latest();
+    }
+
+    public function isAssignedTo($userId): bool
+    {
+        return $this->assignees()->where('users.id', $userId)->exists();
     }
 }

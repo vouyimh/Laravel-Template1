@@ -1,117 +1,55 @@
 @extends('layouts/contentNavbarLayout')
 
 @php
-    $role = auth()->user()->role;
-    $routePrefix = $role . '.tasks.';
+    $role = auth()->user()->role ?? null;
 @endphp
 
-
-@section('title', 'Client')
+@section('title', $role === 'staff' ? __('My Tasks') : __('Daily Tasks Manager'))
 
 @section('content')
     <div class="row">
         <div class="col-md-12">
             <div class="card mb-6">
-                    <div class="container mt-5">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <h1 class="text-center mb-4">{{ __('Daily Tasks Manager') }}</h1>
-                                <p class="text-center">
-                                    {{ __('Here you can view, create, edit, and delete your daily tasks.') }}</p>
-                            </div>
+                <div class="container mt-5">
+                    @if (session('success'))
+                        <div class="alert alert-success alert-dismissible" role="alert">
+                            {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="card">
-                                    <div class="card-header d-flex justify-content-between align-items-center">
-                                        <h4>{{ __('Tasks List') }}</h4>
-                                        <!-- <a href="{{ route('tasks.create') }}" class="btn btn-primary">Add New Task</a> -->
-                                            @if(auth()->check() && auth()->user()->role === 'admin')
-                                                <a href="{{ route('tasks.create') }}" class="btn btn-primary">
-                                                    {{ __('Add New Task') }}
-                                                </a>
-                                            @endif
-                                    </div>
-                                    <div class="card-body">
-                                        @if ($tasks->count() > 0)
-                                            <div class="table-responsive">
-                                                <table class="table table-striped">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>{{ __('ID') }}</th>
-                                                            <th>{{ __('Title') }}</th>
-                                                            <th>{{ __('Description') }}</th>
-                                                            <th>{{ __('Status') }}</th>
-                                                            <th>{{ __('Created At') }}</th>
-                                                            <th>{{ __('Actions') }}</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($tasks as $task)
-                                                            <tr>
-                                                                <td>{{ $task->id }}</td>
-                                                                <td>{{ $task->title ?? 'N/A' }}</td>
-                                                                <td>{{ Str::limit($task->description ?? 'No description', 50) }}
-                                                                </td>
-                                                                <td>
-                                                                    <span
-                                                                        class="badge 
-                                                                        @if ($task->status == 'completed') bg-success
-                                                                        @elseif($task->status == 'in_progress') 
-                                                                            bg-warning
-                                                                        @else 
-                                                                            bg-secondary @endif
-                                                                    ">
-                                                                        {{ ucfirst(str_replace('_', ' ', $task->status ?? 'pending')) }}
-                                                                    </span>
-                                                                </td>
-                                                                <td>{{ $task->created_at ? $task->created_at->format('M d, Y') : 'N/A' }}
-                                                                </td>
-                                                                <td>
-                                                                    <div class="btn-group" role="group">
-                                                                        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff', 'client']))
-                                                                            <a href="{{ route('tasks.show', $task->id) }}"
-                                                                                class="btn btn-info btn-sm">{{ __('View') }}</a>
-                                                                        
-                                                                        @endif
+                    @endif
+                    @if (session('error'))
+                        <div class="alert alert-danger alert-dismissible" role="alert">
+                            {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endif
 
-                                                                        @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'staff']))
-                                                                            <a href="{{ route('tasks.edit', $task->id) }}"
-                                                                                class="btn btn-warning btn-sm">{{ __('Edit') }}</a>
-                                                                        @endif
-
-                                                                        @if(auth()->check() && auth()->user()->role === 'admin')
-                                                                            <form
-                                                                                action="{{ route('tasks.destroy', $task->id) }}"
-                                                                                method="POST" style="display: inline;">
-                                                                                @csrf
-                                                                                @method('DELETE')
-                                                                                <button type="submit"
-                                                                                    class="btn btn-danger btn-sm"
-                                                                                    onclick="return confirm('Are you sure you want to delete this task?')">
-                                                                                    {{ __('Delete') }}
-                                                                                </button>
-                                                                            </form>
-                                                                        @endif
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        @else
-                                            <div class="alert alert-info text-center">
-                                                <h5>{{ __('No tasks found') }}</h5>
-                                                <p>{{ __('You have not created any tasks yet.') }}<a
-                                                        href="{{ route('tasks.create') }}">{{ __('Create your first task') }}</a></p>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h1 class="text-center mb-4">
+                                @if ($role === 'staff')
+                                    {{ __('My Assigned Tasks') }}
+                                @else
+                                    {{ __('Daily Tasks Manager') }}
+                                @endif
+                            </h1>
+                            <p class="text-center">
+                                @if ($role === 'staff')
+                                    {{ __('Start a task to capture your location, upload proof, and mark it complete.') }}
+                                @else
+                                    {{ __('Here you can view, create, edit, and delete your daily tasks.') }}
+                                @endif
+                            </p>
                         </div>
                     </div>
+
+                    @if ($role === 'staff')
+                        @include('tasks._staff_board', ['tasks' => $tasks])
+                    @else
+                        @include('tasks._admin_table', ['tasks' => $tasks])
+                    @endif
+                </div>
             </div>
         </div>
-    @endsection
+    </div>
+@endsection

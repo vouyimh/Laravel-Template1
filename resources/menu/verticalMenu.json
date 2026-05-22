@@ -84,10 +84,18 @@
       "roles": ["admin", "client", "staff"]
     },
     {
+      "url": "/tasks",
       "name": "Manage Staff Work",
       "icon": "menu-icon icon-base bx bx-grid",
-      "slug": "app-kanban",
+      "slug": "tasks.index",
       "roles": ["admin", "client", "staff"]
+    },
+    {
+      "url": "/stafftask",
+      "name": "StaffTask Board",
+      "icon": "menu-icon icon-base bx bx-task",
+      "slug": "stafftask.board",
+      "roles": ["admin", "staff"]
     },
     {
       "name": "Account",
