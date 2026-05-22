@@ -33,12 +33,11 @@
       ]
     },
     {
-      "url": "https://demos.themeselection.com/sneat-bootstrap-html-laravel-admin-template/demo-1/app/calendar",
+      "url": "/calendar",
       "name": "Calendar",
       "icon": "menu-icon icon-base bx bx-calendar",
-      "slug": "app-calendar",
-      "roles": ["admin", "staff"],
-      "target": "_blank"
+      "slug": "calendar.index",
+      "roles": ["admin", "staff", "client"]
     },
     {
       "name": "Client",

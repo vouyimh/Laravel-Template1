@@ -52,6 +52,7 @@ use App\Http\Controllers\pages\StaffEdit;
 use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\StaffTaskController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 use App\Http\Controllers\TwoFactorController;
 
@@ -154,6 +155,13 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::get('/stafftask/{task}/files/{file}',   [StaffTaskController::class, 'serveFile'])->name('stafftask.files.show');
     Route::delete('/stafftask/{task}/files/{file}',[StaffTaskController::class, 'removeProof'])->name('stafftask.files.destroy');
     Route::post('/stafftask/{task}/complete',      [StaffTaskController::class, 'completeTask'])->name('stafftask.complete');
+
+    // Calendar (per-user events)
+    Route::get('/calendar',                  [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/events',           [CalendarController::class, 'events'])->name('calendar.events');
+    Route::post('/calendar/events',          [CalendarController::class, 'store'])->name('calendar.store');
+    Route::put('/calendar/events/{event}',   [CalendarController::class, 'update'])->name('calendar.update');
+    Route::delete('/calendar/events/{event}',[CalendarController::class, 'destroy'])->name('calendar.destroy');
 });
 
 // Main Page Route
