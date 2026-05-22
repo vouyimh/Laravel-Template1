@@ -51,7 +51,7 @@ use App\Http\Controllers\pages\StaffAdd;
 use App\Http\Controllers\pages\StaffEdit;
 use App\Http\Controllers\pages\StaffDelete;
 use App\Http\Controllers\TaskController;
-use App\Http\Controllers\MessageController;
+use App\Http\Controllers\StaffTaskController;
 use App\Http\Controllers\tables\Basic as TablesBasic;
 use App\Http\Controllers\TwoFactorController;
 
@@ -85,7 +85,7 @@ Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
 
     Route::get('/dashboard', function () {
     return view('dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
         
     Route::get('admin/client', [ClientController::class, 'index'])
         ->name('admin.client.index');
@@ -131,18 +131,30 @@ Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
 
 Route::middleware(['auth', '2fa'])->group(function () {
     Route::resource('/tasks', TaskController::class);
-    Route::get('/room/{roomId}', [App\Http\Controllers\RoomController::class, 'oneRoom']);
-    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index']);
-    Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
-    Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
-    Route::post('/reactions', [App\Http\Controllers\MessageController::class, 'react']);
-    Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
 
+    // Staff workflow actions (admin can also call these)
+    Route::post('/tasks/{task}/start',           [TaskController::class, 'startTask'])->name('tasks.start');
+    Route::post('/tasks/{task}/upload',          [TaskController::class, 'uploadProof'])->name('tasks.upload');
+    Route::delete('/tasks/{task}/files/{file}',  [TaskController::class, 'removeProof'])->name('tasks.files.destroy');
+    Route::post('/tasks/{task}/complete',        [TaskController::class, 'completeTask'])->name('tasks.complete');
+
+    // New StaffTask Kanban board (separate from /tasks)
+    Route::get('/stafftask',                       [StaffTaskController::class, 'index'])->name('stafftask.board');
+    Route::get('/stafftask/create',                [StaffTaskController::class, 'create'])->name('stafftask.create');
+    Route::post('/stafftask',                      [StaffTaskController::class, 'store'])->name('stafftask.store');
+    Route::get('/stafftask/{task}',                [StaffTaskController::class, 'show'])->name('stafftask.show');
+    Route::get('/stafftask/{task}/edit',           [StaffTaskController::class, 'edit'])->name('stafftask.edit');
+    Route::put('/stafftask/{task}',                [StaffTaskController::class, 'update'])->name('stafftask.update');
+    Route::delete('/stafftask/{task}',             [StaffTaskController::class, 'destroy'])->name('stafftask.destroy');
+
+    // StaffTask workflow (drag-drop + staff actions, isolated from /tasks)
+    Route::post('/stafftask/{task}/move',          [StaffTaskController::class, 'move'])->name('stafftask.move');
+    Route::post('/stafftask/{task}/start',         [StaffTaskController::class, 'startTask'])->name('stafftask.start');
+    Route::post('/stafftask/{task}/upload',        [StaffTaskController::class, 'uploadProof'])->name('stafftask.upload');
+    Route::get('/stafftask/{task}/files/{file}',   [StaffTaskController::class, 'serveFile'])->name('stafftask.files.show');
+    Route::delete('/stafftask/{task}/files/{file}',[StaffTaskController::class, 'removeProof'])->name('stafftask.files.destroy');
+    Route::post('/stafftask/{task}/complete',      [StaffTaskController::class, 'completeTask'])->name('stafftask.complete');
 });
-
-    Route::get('/users', function () {
-    return \App\Models\User::select('id','name')->get();
-  });
 
 // Main Page Route
 
@@ -225,10 +237,6 @@ Route::get('/ui/footer', [Footer::class, 'index'])->name('ui-footer');
 
 // tables
 //Route::get('/tables/basic', [TablesBasic::class, 'index'])->name('tables-basic');
-// Route::middleware('auth')->group(function () {
-  
-//   Route::post('/start_chat', [App\Http\Controllers\MessageController::class, 'startChat']);
-// });
 
 
 require __DIR__ . '/auth.php';
