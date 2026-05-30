@@ -1,4 +1,5 @@
 {
+  "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
       "Bash(Get-ChildItem -Path \"C:\\\\Project\\\\Laravel-Template1\" -Force)",

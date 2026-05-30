@@ -481,9 +481,8 @@ const onInputPrivateChange = throttle(function () {
     <!-- @click="EXPANDDDD" -->
     <div v-if="isPrivate" class="chat-header d-flex" :class="{
       'blink-anim': privateHasNewMessage && isBeingFocused,
-      'p-2 border-bottom': isChatExpanded,
-      'pt-2 ps-2': !isChatExpanded,
-    }" @click="isChatExpanded = !isChatExpanded">
+      'p-2 border-bottom': true,
+    }">
       <div class="img_cont">
         <img :src="receiver.id === user.id
           ? '/images/current_user.jpg'
@@ -623,11 +622,19 @@ const onInputPrivateChange = throttle(function () {
         </button>
       </div>
 
-      <!-- Text input -->
-      <input v-model="inputMessage" v-if="isChatExpanded" id="private_input" type="text"
-        placeholder="Type a message..." @keyup.enter="saveMessage" @input="onInputPrivateChange" ref="privateInputEl"
-        maxlength="2000" style="width: 100%; height: 36px;" />
-      <small style="text-align: right; color: #999;">{{ inputMessage.length }}/2000</small>
+      <!-- Text input + Send button -->
+      <div class="private-input-row" v-if="isChatExpanded">
+        <input v-model="inputMessage" id="private_input" type="text"
+          placeholder="Type a message..." @keyup.enter="saveMessage" @input="onInputPrivateChange" ref="privateInputEl"
+          maxlength="2000" />
+        <button type="button" @click.stop="saveMessage" class="private-send-btn">
+          <div v-if="isSavingMessage" class="spinner-border text-white" role="status" style="width:18px;height:18px;">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <i v-else class="fas fa-location-arrow"></i>
+        </button>
+      </div>
+      <small style="text-align: right; color: #999; font-size:11px;">{{ inputMessage.length }}/2000</small>
     </div>
     <div class="card-footer" v-else>
       <div class="input-group" v-if="isChatExpanded">
@@ -694,7 +701,7 @@ const onInputPrivateChange = throttle(function () {
           @keyup.enter="saveMessage" autofocus maxlength="2000" />
 
         <!-- Send Button -->
-        <span @click="saveMessage" class="send_btn">
+        <button type="button" @click.stop="saveMessage" class="send_btn">
           <div style="width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
             <div class="spinner-border text-white" role="status" v-if="isSavingMessage"
               style="width: inherit; height: inherit;">
@@ -702,7 +709,7 @@ const onInputPrivateChange = throttle(function () {
             </div>
             <i class="fas fa-location-arrow" v-else style="color: white; font-size: 16px;"></i>
           </div>
-        </span>
+        </button>
       </div>
       <small class="float-end mt-1" style="color: #666;">{{ inputMessage.length }}/2000</small>
     </div>
@@ -966,21 +973,13 @@ const onInputPrivateChange = throttle(function () {
   .private-message-container {
     border-radius: 12px !important;
     background-color: white;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 380px;
-    height: 60px;
-    z-index: 2;
+    position: relative;
+    width: 100%;
+    height: 100%;
     border: 1px solid #e0e0e0;
     box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
-
-    &.expand {
-      height: 500px;
-    }
 
     .chat-header {
       border-top-left-radius: 12px;
@@ -1107,23 +1106,60 @@ const onInputPrivateChange = throttle(function () {
       flex-direction: column;
       gap: 0.5rem;
 
-      input {
-        height: 36px;
+      .private-input-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
         border: 1px solid #ddd;
         border-radius: 6px;
-        outline: none;
-        padding: 0.5rem 0.75rem;
-        font-size: 13px;
-        background-color: white;
-        color: #333;
+        overflow: hidden;
 
-        &:focus {
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        input {
+          flex: 1;
+          height: 40px;
+          border: none;
+          outline: none;
+          padding: 0.5rem 0.75rem;
+          font-size: 13px;
+          background-color: white;
+          color: #333;
+
+          &:focus {
+            box-shadow: none;
+          }
+
+          &::placeholder {
+            color: #999;
+          }
         }
 
-        &::placeholder {
-          color: #999;
+        .private-send-btn {
+          height: 40px;
+          width: 44px;
+          background-color: #667eea;
+          border: none;
+          outline: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: background-color 0.2s;
+          -webkit-tap-highlight-color: transparent;
+
+          &:hover {
+            background-color: #5568d3;
+          }
+
+          &:active {
+            background-color: #4456c7;
+            transform: scale(0.96);
+          }
+
+          i {
+            color: white;
+            font-size: 15px;
+          }
         }
       }
 
@@ -1359,14 +1395,8 @@ const onInputPrivateChange = throttle(function () {
     }
 
     .private-message-container {
-      width: calc(100vw - 40px);
-      max-width: 400px;
-
-      &.expand {
-        height: 80vh;
-        bottom: 10px;
-        right: 10px;
-      }
+      width: 100%;
+      height: 100%;
     }
   }
 
@@ -1402,8 +1432,7 @@ const onInputPrivateChange = throttle(function () {
     }
 
     .private-message-container {
-      width: calc(100vw - 20px);
-      right: 10px;
+      width: 100%;
     }
   }
 

@@ -9,14 +9,21 @@ class EnsureTwoFactorIsVerified
 {
     public function handle(Request $request, Closure $next)
     {
-        // If user is not logged in, let auth middleware handle
         if (!auth()->check()) {
             return $next($request);
         }
 
-        // If 2FA is not verified in session, redirect to 2FA setup page
+        // Auto-verify if user hasn't configured 2FA yet
         if (!session('2fa_verified')) {
-            return redirect('/2fa-setup');
+            $user = auth()->user();
+            if (empty($user->two_factor_secret)) {
+                session(['2fa_verified' => true]);
+            } else {
+                if ($request->expectsJson()) {
+                    return response()->json(['error' => '2FA verification required'], 403);
+                }
+                return redirect('/2fa-setup');
+            }
         }
 
         return $next($request);

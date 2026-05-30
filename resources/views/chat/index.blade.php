@@ -24,10 +24,25 @@
 
 @section('title', 'Message')
 
+@push('scripts')
+<style>
+.chat-main-container {
+    height: 550px;
+    overflow: hidden;
+}
+@media (max-width: 991px) {
+    /* On mobile/tablet: fill the visible viewport minus navbar (~60px) and page padding (~70px) */
+    .chat-main-container {
+        height: calc(100dvh - 140px);
+    }
+}
+</style>
+@endpush
+
 @section('content')
     <div class="row">
         <div class="col-md-12">
-            <div style="height:550px; overflow:hidden;" class="mb-6">
+            <div class="chat-main-container">
                 <div id="chat-app" style="height:100%;"></div>
             </div>
         </div>

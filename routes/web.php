@@ -83,6 +83,11 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::get('/chat-users', [MessageController::class, 'getUserListForChat']);
     Route::get('/users', fn() => \App\Models\User::select('id', 'name')->get());
 
+    // Web Push
+    Route::get('/push/public-key', [\App\Http\Controllers\PushSubscriptionController::class, 'publicKey']);
+    Route::post('/push/subscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'store']);
+    Route::post('/push/unsubscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'destroy']);
+
     // Notifications
     Route::get('/notifications',                [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count',   [NotificationController::class, 'unreadCount']);

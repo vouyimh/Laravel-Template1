@@ -15,6 +15,7 @@
     "laravel/reverb": "^1.8",
     "laravel/tinker": "^2.10.1",
     "livewire/livewire": "^4.0",
+    "minishlink/web-push": "^10.1",
     "pragmarx/google2fa": "^9.0",
     "simplesoftwareio/simple-qrcode": "^4.2"
   },

@@ -13,6 +13,9 @@ use App\Events\MessageReacted;
 use App\Notifications\NewPrivateMessageNotification;
 use Illuminate\Support\Facades\Log;
 use App\Models\Emoji;
+use App\Models\PushSubscription;
+use Minishlink\WebPush\WebPush;
+use Minishlink\WebPush\Subscription;
 
 class MessageController extends Controller
 {
@@ -40,12 +43,16 @@ class MessageController extends Controller
         $message->save();
 
         $message->load(['user', 'reactions', 'chatroom']);
-        broadcast(new MessagePosted($message))->toOthers();
 
-        // Notify the other participant in a private chat
-        $this->notifyPrivateMessageRecipient($message);
+        $response = response()->json(['message' => $message]);
 
-        return response()->json(['message' => $message]);
+        // Broadcast and notify after response is sent — prevents Pusher latency blocking the user
+        dispatch(function () use ($message) {
+            broadcast(new MessagePosted($message))->toOthers();
+            $this->notifyPrivateMessageRecipient($message);
+        })->afterResponse();
+
+        return $response;
     }
 
     public function react(Request $request)
@@ -131,7 +138,7 @@ class MessageController extends Controller
 
         return match ($userRole) {
             'admin'  => $query->get($fields),
-            'staff'  => $query->whereIn('role', ['admin', 'staff'])->get($fields),
+            'staff'  => $query->where('role', 'admin')->get($fields),
             'client' => $query->where('role', 'admin')->get($fields),
             default  => collect(),
         };
@@ -170,15 +177,16 @@ class MessageController extends Controller
         $message->save();
 
         $message->load(['user', 'reactions', 'chatroom']);
-        broadcast(new MessagePosted($message))->toOthers();
 
-        // Notify the other participant in a private chat
-        $this->notifyPrivateMessageRecipient($message);
+        $fileUrl  = asset('storage/' . $filePath);
+        $response = response()->json(['message' => $message, 'file_url' => $fileUrl]);
 
-        return response()->json([
-            'message'  => $message,
-            'file_url' => asset('storage/' . $filePath),
-        ]);
+        dispatch(function () use ($message) {
+            broadcast(new MessagePosted($message))->toOthers();
+            $this->notifyPrivateMessageRecipient($message);
+        })->afterResponse();
+
+        return $response;
     }
 
     public function chatByPhone($phoneNumber)
@@ -218,7 +226,7 @@ class MessageController extends Controller
     {
         $chatroom = $message->chatroom;
         if (!$chatroom || !$chatroom->private_room_id) {
-            return; // group room — no individual notification needed
+            return;
         }
 
         [$id1, $id2] = explode('-', $chatroom->private_room_id);
@@ -227,6 +235,57 @@ class MessageController extends Controller
         $receiver = User::find($receiverId);
         if ($receiver) {
             $receiver->notify(new NewPrivateMessageNotification($message));
+            $this->sendWebPush($receiverId, $message);
+        }
+    }
+
+    private function sendWebPush(int $receiverId, Message $message): void
+    {
+        $subscriptions = PushSubscription::where('user_id', $receiverId)->get();
+        if ($subscriptions->isEmpty()) {
+            return;
+        }
+
+        try {
+            $webPush = new WebPush([
+                'VAPID' => [
+                    'subject'    => config('app.vapid_subject'),
+                    'publicKey'  => config('app.vapid_public_key'),
+                    'privateKey' => config('app.vapid_private_key'),
+                ],
+            ]);
+
+            $senderName = $message->user->name ?? 'Someone';
+            $preview    = $message->message_type === 'text'
+                ? mb_strimwidth($message->content, 0, 80, '...')
+                : ucfirst($message->message_type) . ' message';
+
+            $payload = json_encode([
+                'title' => $senderName,
+                'body'  => $preview,
+                'url'   => url('/chat'),
+            ]);
+
+            foreach ($subscriptions as $sub) {
+                $webPush->queueNotification(
+                    Subscription::create([
+                        'endpoint'        => $sub->endpoint,
+                        'keys' => [
+                            'p256dh' => $sub->p256dh_key,
+                            'auth'   => $sub->auth_token,
+                        ],
+                    ]),
+                    $payload
+                );
+            }
+
+            foreach ($webPush->flush() as $report) {
+                if ($report->isSubscriptionExpired()) {
+                    PushSubscription::where('endpoint', $report->getRequest()->getUri()->__toString())->delete();
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Web push failed: ' . $e->getMessage());
         }
     }
 
@@ -245,7 +304,7 @@ class MessageController extends Controller
 
         return match ($currentRole) {
             'admin'  => true,
-            'staff'  => in_array($receiverRole, ['admin', 'staff']),
+            'staff'  => $receiverRole === 'admin',
             'client' => $receiverRole === 'admin',
             default  => true,
         };
