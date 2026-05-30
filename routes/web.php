@@ -20,6 +20,8 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\StaffTaskController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\NotificationController;
 
@@ -72,6 +74,36 @@ Route::middleware(['auth', '2fa', 'role:client'])->group(function () {
 
 Route::middleware(['auth', '2fa'])->group(function () {
     Route::resource('/tasks', TaskController::class);
+
+    // Staff workflow actions (admin can also call these)
+    Route::post('/tasks/{task}/start',           [TaskController::class, 'startTask'])->name('tasks.start');
+    Route::post('/tasks/{task}/upload',          [TaskController::class, 'uploadProof'])->name('tasks.upload');
+    Route::delete('/tasks/{task}/files/{file}',  [TaskController::class, 'removeProof'])->name('tasks.files.destroy');
+    Route::post('/tasks/{task}/complete',        [TaskController::class, 'completeTask'])->name('tasks.complete');
+
+    // StaffTask Kanban board
+    Route::get('/stafftask',                        [StaffTaskController::class, 'index'])->name('stafftask.board');
+    Route::get('/stafftask/create',                 [StaffTaskController::class, 'create'])->name('stafftask.create');
+    Route::post('/stafftask',                       [StaffTaskController::class, 'store'])->name('stafftask.store');
+    Route::get('/stafftask/{task}',                 [StaffTaskController::class, 'show'])->name('stafftask.show');
+    Route::get('/stafftask/{task}/edit',            [StaffTaskController::class, 'edit'])->name('stafftask.edit');
+    Route::put('/stafftask/{task}',                 [StaffTaskController::class, 'update'])->name('stafftask.update');
+    Route::delete('/stafftask/{task}',              [StaffTaskController::class, 'destroy'])->name('stafftask.destroy');
+    Route::post('/stafftask/{task}/move',           [StaffTaskController::class, 'move'])->name('stafftask.move');
+    Route::post('/stafftask/{task}/start',          [StaffTaskController::class, 'startTask'])->name('stafftask.start');
+    Route::post('/stafftask/{task}/upload',         [StaffTaskController::class, 'uploadProof'])->name('stafftask.upload');
+    Route::get('/stafftask/{task}/files/{file}',    [StaffTaskController::class, 'serveFile'])->name('stafftask.files.show');
+    Route::delete('/stafftask/{task}/files/{file}', [StaffTaskController::class, 'removeProof'])->name('stafftask.files.destroy');
+    Route::post('/stafftask/{task}/complete',       [StaffTaskController::class, 'completeTask'])->name('stafftask.complete');
+
+    // Calendar
+    Route::get('/calendar',                   [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/events',            [CalendarController::class, 'events'])->name('calendar.events');
+    Route::post('/calendar/events',           [CalendarController::class, 'store'])->name('calendar.store');
+    Route::put('/calendar/events/{event}',    [CalendarController::class, 'update'])->name('calendar.update');
+    Route::delete('/calendar/events/{event}', [CalendarController::class, 'destroy'])->name('calendar.destroy');
+
+    // Chat
     Route::get('/room/{roomId}', [RoomController::class, 'oneRoom'])->name('room');
     Route::get('/rooms', [RoomController::class, 'index']);
     Route::get('/messages', [MessageController::class, 'index']);
@@ -89,10 +121,10 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::post('/push/unsubscribe', [\App\Http\Controllers\PushSubscriptionController::class, 'destroy']);
 
     // Notifications
-    Route::get('/notifications',                [NotificationController::class, 'index']);
-    Route::get('/notifications/unread-count',   [NotificationController::class, 'unreadCount']);
-    Route::patch('/notifications/mark-all-read',[NotificationController::class, 'markAllAsRead']);
-    Route::patch('/notifications/{id}/read',    [NotificationController::class, 'markAsRead']);
+    Route::get('/notifications',                 [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count',    [NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+    Route::patch('/notifications/{id}/read',     [NotificationController::class, 'markAsRead']);
 });
 
 Route::get('/lang/{locale}', function ($locale) {
