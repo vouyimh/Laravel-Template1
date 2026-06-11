@@ -2,13 +2,14 @@
 
 @section('title', __('Account settings - Account'))
 
-@section('page-script')
-  @vite(['resources/assets/js/pages-account-settings-account.js'])
-@endsection
-
 @section('content')
 @php
   $u = Auth::user();
+  $cancelUrl = match ($u?->role) {
+    'staff'  => url('/staff'),
+    'client' => url('/client'),
+    default  => url('/'),
+  };
 @endphp
 
 <style>
@@ -53,6 +54,7 @@
           src="{{ $u && $u->avatar_path ? Storage::url($u->avatar_path) : asset('assets/img/avatars/1.png') }}"
           alt="user-avatar"
           class="d-block w-px-100 h-px-100 rounded"
+          style="object-fit: cover;"
           id="uploadedAvatar"
         />
 
@@ -76,7 +78,7 @@
               <span class="d-none d-sm-block">{{ __('Reset') }}</span>
             </button>
 
-            <div>{{ __('Allowed JPG, GIF or PNG. Max size of 800K') }}</div>
+            <div>{{ __('Allowed JPG, GIF or PNG. Max size of 5 MB') }}</div>
           </div>
 
         </div>
@@ -238,7 +240,7 @@
 
           <div class="mt-6">
             <button type="submit" class="btn btn-primary me-3">{{ __('Save changes') }}</button>
-            <a href="{{ url('/') }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
+            <a href="{{ $cancelUrl }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>
           </div>
 
         </form>
@@ -279,9 +281,27 @@
     const fallbackAvatar = document.getElementById('fallbackAvatar')?.value || '';
     const removeAvatar   = document.getElementById('removeAvatar');
 
+    const MAX_AVATAR_SIZE = 5 * 1024 * 1024; // 5 MB
+    const ALLOWED_AVATAR_MIME = ['image/png', 'image/jpeg', 'image/gif'];
+
     uploadInput?.addEventListener('change', function () {
       const file = this.files && this.files[0];
       if (!file) return;
+
+      // Reject bad files BEFORE submit so the form never reloads (which is what
+      // made it look like the text fields "reset").
+      if (!ALLOWED_AVATAR_MIME.includes(file.type)) {
+        alert('{{ __('Allowed JPG, GIF or PNG. Max size of 5 MB') }}');
+        this.value = '';
+        return;
+      }
+      if (file.size > MAX_AVATAR_SIZE) {
+        const mb = (file.size / 1024 / 1024).toFixed(2);
+        alert('{{ __('Image is too large') }} (' + mb + ' MB). {{ __('Maximum 5 MB.') }}');
+        this.value = '';
+        return;
+      }
+
       if (removeAvatar) removeAvatar.value = '0';
       avatarImg.src = URL.createObjectURL(file);
     });

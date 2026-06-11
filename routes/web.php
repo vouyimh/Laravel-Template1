@@ -50,18 +50,41 @@ Route::get('/', function () {
 Route::middleware(['auth', '2fa', 'role:admin'])->group(function () {
     Route::get('/admin/analytics', [Analytics::class, 'index'])->name('dashboard-analytics');
     Route::get('/admin', fn() => view('admin.dashboard'))->name('admin.dashboard');
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
-    Route::get('/dashboard/total-booking', [TotalBooking::class, 'index'])->name('dashboard-total-booking');
 
-    Route::get('admin/client', [ClientController::class, 'index'])->name('admin.client.index');
-    Route::get('admin/client/add-client', [ClientController::class, 'addClient'])->name('admin.client.add-client');
+    Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+        
+    Route::get('admin/client', [ClientController::class, 'index'])
+        ->name('admin.client.index');
 
-    Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])->name('admin.staff.pages-staff-list');
-    Route::match(['get', 'post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])->name('admin.staff.pages-staff-add');
-    Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])->name('admin.staff.pages-staff-store');
-    Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])->name('admin.staff.pages-staff-edit');
-    Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])->name('admin.staff.pages-staff-update');
-    Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])->name('admin.staff.pages-staff-delete');
+    Route::get('admin/client/add-client', [ClientController::class, 'addClient'])
+        ->name('admin.client.add-client');
+
+
+    Route::get('admin/staff/pages-staff-list', [StaffController::class, 'staffList'])
+        ->name('admin.staff.pages-staff-list');
+
+    Route::match(['get','post'], 'admin/staff/pages-staff-add', [StaffController::class, 'addStaff'])
+    ->name('admin.staff.pages-staff-add');
+
+    Route::post('admin/staff/pages-staff-add', [StaffController::class, 'storeStaff'])
+        ->name('admin.staff.pages-staff-store');
+
+    Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
+        ->name('admin.staff.pages-staff-edit');
+
+    Route::get('admin/staff/{id}/photo', [StaffController::class, 'showPhoto'])
+        ->name('admin.staff.photo');
+
+    Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
+        ->name('admin.staff.pages-staff-update');
+
+    Route::delete('admin/staff/pages-staff-delete/{id}', [StaffController::class, 'deleteStaff'])
+        ->name('admin.staff.pages-staff-delete');
+
+    // Route::resource('/tasks', TaskController::class);
+
 });
 
 Route::middleware(['auth', '2fa', 'role:staff'])->group(function () {
@@ -145,6 +168,10 @@ Route::get('/layouts/blank', [Blank::class, 'index'])->name('layouts-blank');
 // Account settings
 Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'index'])->name('pages-account-settings-account');
 Route::post('/pages/account-settings-account', [AccountSettingsAccount::class, 'update'])->name('pages-account-settings-account.update');
+Route::get('/lang/{locale}', function ($locale) {
+    if (!in_array($locale, ['en', 'fr', 'km', 'zh', 'es', 'de', 'it'])) abort(404);
+
+    session(['locale' => $locale]);
 
 // Auth demo pages
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');
