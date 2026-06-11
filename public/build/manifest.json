@@ -3,25 +3,29 @@
     "file": "assets/_commonjsHelpers-Cpj98o6Y.js",
     "name": "_commonjsHelpers"
   },
-  "_bootstrap.esm-C7NzToQM.js": {
-    "file": "assets/bootstrap.esm-C7NzToQM.js",
+  "_bootstrap.esm-BvEkkFB8.js": {
+    "file": "assets/bootstrap.esm-BvEkkFB8.js",
     "name": "bootstrap.esm"
   },
   "_index.html": {
     "file": "index.html",
     "src": "_index.html"
   },
-  "_jquery-1IlBtRgn.js": {
-    "file": "assets/jquery-1IlBtRgn.js",
+  "_jquery-By3CIqnl.js": {
+    "file": "assets/jquery-By3CIqnl.js",
     "name": "jquery",
     "imports": [
       "__commonjsHelpers-Cpj98o6Y.js"
     ]
   },
   "resources/assets/css/demo.css": {
-    "file": "assets/demo-kASxDmGZ.css",
+    "file": "assets/demo-CAYvyIAs.css",
     "src": "resources/assets/css/demo.css",
-    "isEntry": true
+    "isEntry": true,
+    "name": "demo",
+    "names": [
+      "demo.css"
+    ]
   },
   "resources/assets/js/config.js": {
     "file": "assets/config-DvyemKWy.js",
@@ -78,28 +82,36 @@
     "isEntry": true
   },
   "resources/assets/vendor/fonts/iconify/all.min.css": {
-    "file": "assets/all-DEhCnInO.css",
+    "file": "assets/all-CKy-F9FM.css",
     "src": "resources/assets/vendor/fonts/iconify/all.min.css",
-    "isEntry": true
+    "isEntry": true,
+    "name": "all.min",
+    "names": [
+      "all.css"
+    ]
   },
   "resources/assets/vendor/fonts/iconify/iconify.css": {
     "file": "assets/iconify-DDZnTNbY.css",
     "src": "resources/assets/vendor/fonts/iconify/iconify.css",
-    "isEntry": true
+    "isEntry": true,
+    "name": "iconify",
+    "names": [
+      "iconify.css"
+    ]
   },
   "resources/assets/vendor/fonts/iconify/iconify.js": {
-    "file": "assets/iconify-C8wdrYoI.js",
+    "file": "assets/iconify-BHhVjQx4.js",
     "name": "iconify",
     "src": "resources/assets/vendor/fonts/iconify/iconify.js",
     "isEntry": true
   },
   "resources/assets/vendor/js/bootstrap.js": {
-    "file": "assets/bootstrap-Br-dh34X.js",
+    "file": "assets/bootstrap-D_s_U1Jh.js",
     "name": "bootstrap",
     "src": "resources/assets/vendor/js/bootstrap.js",
     "isEntry": true,
     "imports": [
-      "_bootstrap.esm-C7NzToQM.js"
+      "_bootstrap.esm-BvEkkFB8.js"
     ]
   },
   "resources/assets/vendor/js/helpers.js": {
@@ -115,12 +127,16 @@
     "isEntry": true
   },
   "resources/assets/vendor/libs/apex-charts/apex-charts.scss": {
-    "file": "assets/apex-charts-D6Wlpyrq.css",
+    "file": "assets/apex-charts-K5w2NJVx.css",
     "src": "resources/assets/vendor/libs/apex-charts/apex-charts.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "apex-charts",
+    "names": [
+      "apex-charts.css"
+    ]
   },
   "resources/assets/vendor/libs/apex-charts/apexcharts.js": {
-    "file": "assets/apexcharts-DD5SbFow.js",
+    "file": "assets/apexcharts-BD-1Gc6C.js",
     "name": "apexcharts",
     "src": "resources/assets/vendor/libs/apex-charts/apexcharts.js",
     "isEntry": true,
@@ -129,9 +145,13 @@
     ]
   },
   "resources/assets/vendor/libs/highlight/highlight-github.scss": {
-    "file": "assets/highlight-github-BfC0goYb.css",
+    "file": "assets/highlight-github-CDab0zVI.css",
     "src": "resources/assets/vendor/libs/highlight/highlight-github.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "highlight-github",
+    "names": [
+      "highlight-github.css"
+    ]
   },
   "resources/assets/vendor/libs/highlight/highlight.js": {
     "file": "assets/highlight-Bzwjs2T-.js",
@@ -145,20 +165,24 @@
   "resources/assets/vendor/libs/highlight/highlight.scss": {
     "file": "assets/highlight-DGVygr29.css",
     "src": "resources/assets/vendor/libs/highlight/highlight.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "highlight",
+    "names": [
+      "highlight.css"
+    ]
   },
   "resources/assets/vendor/libs/jquery/jquery.js": {
-    "file": "assets/jquery-4yA1g0ck.js",
+    "file": "assets/jquery-DFIuQy1L.js",
     "name": "jquery",
     "src": "resources/assets/vendor/libs/jquery/jquery.js",
     "isEntry": true,
     "imports": [
-      "_jquery-1IlBtRgn.js",
+      "_jquery-By3CIqnl.js",
       "__commonjsHelpers-Cpj98o6Y.js"
     ]
   },
   "resources/assets/vendor/libs/masonry/masonry.js": {
-    "file": "assets/masonry-C0WB6QSm.js",
+    "file": "assets/masonry-Hzo93q5D.js",
     "name": "masonry",
     "src": "resources/assets/vendor/libs/masonry/masonry.js",
     "isEntry": true,
@@ -167,7 +191,7 @@
     ]
   },
   "resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js": {
-    "file": "assets/perfect-scrollbar-BulP9m2A.js",
+    "file": "assets/perfect-scrollbar-BPWyZo71.js",
     "name": "perfect-scrollbar",
     "src": "resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js",
     "isEntry": true,
@@ -176,12 +200,16 @@
     ]
   },
   "resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.scss": {
-    "file": "assets/perfect-scrollbar-CfyPsj0y.css",
+    "file": "assets/perfect-scrollbar-D1VS3Q33.css",
     "src": "resources/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "perfect-scrollbar",
+    "names": [
+      "perfect-scrollbar.css"
+    ]
   },
   "resources/assets/vendor/libs/popper/popper.js": {
-    "file": "assets/popper-CgDBDevV.js",
+    "file": "assets/popper-DH7wS8as.js",
     "name": "popper",
     "src": "resources/assets/vendor/libs/popper/popper.js",
     "isEntry": true,
@@ -190,54 +218,82 @@
     ]
   },
   "resources/assets/vendor/scss/core.scss": {
-    "file": "assets/core-rKMY9oyj.css",
+    "file": "assets/core-BTvc0oTq.css",
     "src": "resources/assets/vendor/scss/core.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "core",
+    "names": [
+      "core.css"
+    ]
   },
   "resources/assets/vendor/scss/pages/page-auth.scss": {
-    "file": "assets/page-auth-BET8THlp.css",
+    "file": "assets/page-auth-DbKWCM6b.css",
     "src": "resources/assets/vendor/scss/pages/page-auth.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "page-auth",
+    "names": [
+      "page-auth.css"
+    ]
   },
   "resources/assets/vendor/scss/pages/page-icons.scss": {
-    "file": "assets/page-icons-Sjj5Avtp.css",
+    "file": "assets/page-icons-D2pxsqXk.css",
     "src": "resources/assets/vendor/scss/pages/page-icons.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "page-icons",
+    "names": [
+      "page-icons.css"
+    ]
   },
   "resources/assets/vendor/scss/pages/page-misc.scss": {
     "file": "assets/page-misc-B3sUmsW1.css",
     "src": "resources/assets/vendor/scss/pages/page-misc.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "page-misc",
+    "names": [
+      "page-misc.css"
+    ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-l0sNRNKZ.js",
-    "name": "app",
+    "file": "assets/app-tn0RQdqM.css",
     "src": "resources/css/app.css",
-    "isEntry": true
+    "isEntry": true,
+    "name": "_variables",
+    "names": [
+      "app.css",
+      "_variables.css"
+    ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-8tJ_1HyI.js",
+    "file": "assets/app-BViPRocD.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
       "__commonjsHelpers-Cpj98o6Y.js",
-      "_bootstrap.esm-C7NzToQM.js",
-      "_jquery-1IlBtRgn.js"
+      "_bootstrap.esm-BvEkkFB8.js",
+      "_jquery-By3CIqnl.js"
     ],
     "css": [
-      "assets/app-BWyWf7vL.css"
+      "assets/app-EwAMUnb4.css"
     ]
   },
   "resources/sass/_variables.scss": {
-    "file": "assets/_variables-l0sNRNKZ.js",
+    "file": "assets/app-tn0RQdqM.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
     "name": "_variables",
-    "src": "resources/sass/_variables.scss",
-    "isEntry": true
+    "names": [
+      "app.css",
+      "_variables.css"
+    ]
   },
   "resources/sass/app.scss": {
-    "file": "assets/app-CMRBmAlL.css",
+    "file": "assets/app-BofF1QnG.css",
     "src": "resources/sass/app.scss",
-    "isEntry": true
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
   }
 }
