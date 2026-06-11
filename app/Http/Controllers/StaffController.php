@@ -34,8 +34,12 @@ class StaffController extends Controller
             'Username'  => ['required','string','max:50','unique:Staff,Username'],
             'Password'  => ['required','string','min:6'],
             'PhoneNumber' => ['nullable','string','max:20'],
-            'ProfilePicture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
-            'Address' => ['nullable','string','max:255'],
+            'ProfilePicture' => ['nullable','image','mimes:jpg,jpeg,png,webp,gif,bmp','max:5120'],
+            'Address'   => ['required','string','max:255'],
+        ], [
+            'ProfilePicture.mimes' => 'Profile photo must be a JPG, PNG, WebP, GIF or BMP image.',
+            'ProfilePicture.max'   => 'Profile photo must be 5 MB or smaller.',
+            'ProfilePicture.image' => 'Profile photo must be a valid image file.',
         ]);
 
         DB::beginTransaction();
@@ -59,7 +63,7 @@ class StaffController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('admin.staff.pages-staff-list')->with('success', 'Staff added successfully');
+            return redirect()->route('admin.staff.pages-staff-list')->with('success', __('Staff added successfully'));
         } catch (\Throwable $e) {
             DB::rollBack();
             if (isset($profilePath)) Storage::disk('public')->delete($profilePath);
@@ -88,9 +92,13 @@ class StaffController extends Controller
             'Username'  => ["required","string","max:50","unique:Staff,Username,$id,StaffID"],
             'PhoneNumber' => ['nullable','string','max:20'],
             'Password'  => ['nullable','string','min:6'],
-            'ProfilePicture' => ['nullable','image','mimes:jpg,jpeg,png,webp','max:2048'],
+            'ProfilePicture' => ['nullable','image','mimes:jpg,jpeg,png,webp,gif,bmp','max:5120'],
             'RemoveProfilePicture' => ['nullable','in:0,1'],
-             'Address' => ['nullable','string','max:255'],
+            'Address'   => ['required','string','max:255'],
+        ], [
+            'ProfilePicture.mimes' => 'Profile photo must be a JPG, PNG, WebP, GIF or BMP image.',
+            'ProfilePicture.max'   => 'Profile photo must be 5 MB or smaller.',
+            'ProfilePicture.image' => 'Profile photo must be a valid image file.',
         ]);
 
         // Remove profile picture
@@ -123,7 +131,24 @@ class StaffController extends Controller
 
         $staff->save();
 
-        return redirect()->route('admin.staff.pages-staff-list')->with('success', 'Staff updated successfully!');
+        return redirect()->route('admin.staff.pages-staff-list')->with('success', __('Staff updated successfully!'));
+    }
+
+    // ✅ STREAM PROFILE PHOTO (works even when storage:link is broken)
+    public function showPhoto($id)
+    {
+        $staff = Staff::findOrFail($id);
+        $disk = Storage::disk('public');
+
+        if (!$staff->ProfilePicture || !$disk->exists($staff->ProfilePicture)) {
+            abort(404);
+        }
+
+        return response()->file($disk->path($staff->ProfilePicture), [
+            'Content-Type'        => $disk->mimeType($staff->ProfilePicture) ?: 'image/jpeg',
+            'Content-Disposition' => 'inline',
+            'Cache-Control'       => 'public, max-age=3600',
+        ]);
     }
 
     // ✅ DELETE STAFF
@@ -137,7 +162,7 @@ class StaffController extends Controller
 
         $staff->delete();
 
-       return response()->json(['success' => 'Staff deleted successfully!']);
+       return response()->json(['success' => true, 'message' => __('Staff deleted successfully!')]);
     }
 }
 

@@ -58,18 +58,30 @@
 
           {{-- LEFT PROFILE --}}
           <div class="col-md-4 text-center">
-            <input id="ProfilePicture" name="ProfilePicture" type="file" class="d-none" accept="image/*">
+            <input id="ProfilePicture" name="ProfilePicture" type="file" class="d-none"
+                   accept="image/jpeg,image/png,image/webp,image/gif,image/bmp">
             <div class="position-relative d-inline-block">
               <label for="ProfilePicture" style="cursor:pointer;">
                 <div class="rounded-circle border overflow-hidden" style="width:160px;height:160px;">
                   <img id="profilePreview" src="{{ $defaultAvatar }}" class="w-100 h-100" style="object-fit:cover;">
                 </div>
               </label>
+              <label for="ProfilePicture"
+                     class="position-absolute bottom-0 end-0 translate-middle p-2 bg-primary border border-light rounded-circle shadow"
+                     style="cursor:pointer;" title="{{ __('Upload photo') }}">
+                <i class="bx bx-camera text-white"></i>
+              </label>
             </div>
-            <div class="d-flex justify-content-center gap-2 mt-3">
-              <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0"><i class="bx bx-upload me-1"></i>{{ __('Change') }}</label>
-              <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;"><i class="bx bx-trash me-1"></i>{{ __('Remove') }}</button>
+            <div class="mt-2 text-muted small">{{ __('JPG / PNG / WebP / GIF — Max 5 MB') }}</div>
+            <div class="d-flex justify-content-center gap-2 mt-2">
+              <label for="ProfilePicture" class="btn btn-sm btn-primary mb-0">
+                <i class="bx bx-upload me-1"></i>{{ __('Change') }}
+              </label>
+              <button type="button" class="btn btn-sm btn-outline-secondary" id="removeBtn" style="display:none;">
+                <i class="bx bx-trash me-1"></i>{{ __('Remove') }}
+              </button>
             </div>
+            <div id="photoError" class="text-danger small mt-2" style="display:none;"></div>
           </div>
 
           {{-- RIGHT FORM --}}
@@ -154,21 +166,48 @@
 
 <script>
 (function(){
-  // ===== IMAGE PREVIEW =====
-  const input = document.getElementById('ProfilePicture');
-  const preview = document.getElementById('profilePreview');
-  const removeBtn = document.getElementById('removeBtn');
-  const defaultAvatar = "{{ $defaultAvatar }}";
+  // ===== IMAGE PREVIEW + CLIENT-SIDE VALIDATION =====
+  const input        = document.getElementById('ProfilePicture');
+  const preview      = document.getElementById('profilePreview');
+  const removeBtn    = document.getElementById('removeBtn');
+  const photoError   = document.getElementById('photoError');
+  const defaultAvatar= "{{ $defaultAvatar }}";
+  const MAX_SIZE     = 5 * 1024 * 1024; // 5 MB
+  const ALLOWED_MIME = ['image/jpeg','image/png','image/webp','image/gif','image/bmp'];
+
+  function showPhotoError(msg) {
+    photoError.textContent = msg;
+    photoError.style.display = 'block';
+    input.value = '';
+    preview.src = defaultAvatar;
+    removeBtn.style.display = 'none';
+  }
+  function clearPhotoError() {
+    photoError.textContent = '';
+    photoError.style.display = 'none';
+  }
 
   input.addEventListener('change', e=>{
     const file = e.target.files[0];
     if(!file) return;
+    clearPhotoError();
+
+    if(!ALLOWED_MIME.includes(file.type)) {
+      showPhotoError('{{ __("Unsupported format. Use JPG, PNG, WebP, GIF or BMP.") }}');
+      return;
+    }
+    if(file.size > MAX_SIZE) {
+      const mb = (file.size/1024/1024).toFixed(2);
+      showPhotoError('{{ __("Image is too large") }} (' + mb + ' MB). {{ __("Maximum 5 MB.") }}');
+      return;
+    }
     preview.src = URL.createObjectURL(file);
     removeBtn.style.display = 'inline-flex';
   });
 
   removeBtn.addEventListener('click', ()=>{
     input.value=''; preview.src = defaultAvatar; removeBtn.style.display='none';
+    clearPhotoError();
   });
 
   // ===== ROLE → WORK TYPE =====
@@ -185,7 +224,7 @@
     const roleKey = (roleSelect.value || '').toLowerCase();
     const list = map[roleKey] || [];
     workSelect.innerHTML = '';
-    workSelect.add(new Option('-- Select Work Type --',''));
+    workSelect.add(new Option(@json(__('-- Select Work Type --')),''));
     list.forEach(v=>workSelect.add(new Option(v,v)));
   }
 

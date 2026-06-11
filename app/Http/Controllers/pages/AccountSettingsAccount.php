@@ -45,7 +45,7 @@ class AccountSettingsAccount extends Controller
             'language'     => 'nullable|string|max:10',
             'timezone'     => 'nullable|string|max:50',
             'currency'     => 'nullable|string|max:10',
-            'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:800',
+            'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120',
             'current_password' => 'nullable|string',
             'password'         => 'nullable|string|min:8|confirmed',
         ]);
@@ -60,17 +60,25 @@ class AccountSettingsAccount extends Controller
             unset($data['password']);
         }
 
+        unset($data['avatar'], $data['current_password']);
+
+        // Strip nulls so fields that weren't submitted don't wipe existing values.
+        $data = array_filter($data, fn($v) => $v !== null);
+
+        // Avatar handling runs AFTER array_filter so a removal (null) survives it.
         if ($request->hasFile('avatar')) {
             if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
                 Storage::disk('public')->delete($user->avatar_path);
             }
 
             $data['avatar_path'] = $request->file('avatar')->store('', 'public');
+        } elseif ($request->input('remove_avatar') === '1') {
+            if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
+                Storage::disk('public')->delete($user->avatar_path);
+            }
+
+            $data['avatar_path'] = null;
         }
-
-        unset($data['avatar'], $data['current_password']);
-
-        $data = array_filter($data, fn($v) => $v !== null);
 
         $user->update($data);
 

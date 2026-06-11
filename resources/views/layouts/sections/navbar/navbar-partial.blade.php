@@ -2,22 +2,56 @@
 use Illuminate\Support\Facades\Auth;
 
 $user = Auth::user();
-$locale = app()->getLocale();          // 'en' | 'ko'
-$langLabel = $locale === 'fr' ? 'FR' : 'EN';
+$locale = app()->getLocale();          // 'en' | 'fr' | 'km' | 'zh' | 'es' | 'de' | 'it'
+
+// Each locale maps to an ISO 3166-1 alpha-2 country code for the flag-icons library.
+$languages = [
+    'en' => ['cc' => 'us', 'label' => 'English',  'short' => 'EN'],
+    'fr' => ['cc' => 'fr', 'label' => 'Français', 'short' => 'FR'],
+    'km' => ['cc' => 'kh', 'label' => 'ខ្មែរ',     'short' => 'KH'],
+    'zh' => ['cc' => 'cn', 'label' => '中文',      'short' => 'ZH'],
+    'es' => ['cc' => 'es', 'label' => 'Español',  'short' => 'ES'],
+    'de' => ['cc' => 'de', 'label' => 'Deutsch',  'short' => 'DE'],
+    'it' => ['cc' => 'it', 'label' => 'Italiano', 'short' => 'IT'],
+];
+$currentLang = $languages[$locale] ?? $languages['en'];
+$langLabel = $currentLang['short'];
 @endphp
+
+{{-- flag-icons (SVG-based, ~30KB CSS, ~250 country flags) --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css">
+
 <style>
 /* Language collapse list inside dropdown */
-.lang-submenu { display: none; padding-left: 0; margin: 0; }
+.lang-submenu { display: none; padding-left: 0; margin: 0; list-style: none; }
 .lang-submenu.show { display: block; }
 
 .lang-submenu .dropdown-item {
   padding-left: 3rem; /* indent under Language */
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+/* Circular flag chip — overrides flag-icons' default rectangular .fi */
+.lang-flag {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  background-size: cover !important;
+  background-position: center !important;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.08);
+}
+.lang-flag.lang-flag-lg {
+  width: 24px;
+  height: 24px;
 }
 
 .lang-toggle .lang-arrow {
   transition: transform .15s ease-in-out;
 }
-
 .lang-toggle.open .lang-arrow {
   transform: rotate(90deg);
 }
@@ -59,7 +93,7 @@ $langLabel = $locale === 'fr' ? 'FR' : 'EN';
                       ? asset('storage/'.$user->avatar_path)
                       : asset('assets/img/avatars/1.png') }}"
               alt="avatar"
-              class="w-px-40 h-auto rounded-circle">
+              class="w-px-40 h-px-40 rounded-circle" style="object-fit: cover;">
           </div>
         </a>
 
@@ -77,7 +111,7 @@ $langLabel = $locale === 'fr' ? 'FR' : 'EN';
                               ? asset('storage/'.$user->avatar_path)
                               : asset('assets/img/avatars/1.png') }}"
                       alt="avatar"
-                      class="w-px-40 h-auto rounded-circle">
+                      class="w-px-40 h-px-40 rounded-circle" style="object-fit: cover;">
                   </div>
                 </div>
 
@@ -113,26 +147,25 @@ $langLabel = $locale === 'fr' ? 'FR' : 'EN';
           <li>
             <a class="dropdown-item d-flex justify-content-between align-items-center lang-toggle"
               href="javascript:void(0);">
-              <span>
-                <i class="icon-base bx bx-world icon-md me-3"></i>
+              <span class="d-flex align-items-center">
+                <span class="lang-flag lang-flag-lg fi fi-{{ $currentLang['cc'] }} me-3"></span>
                 {{ __('Language') }}
+                <small class="text-muted ms-2">{{ $currentLang['short'] }}</small>
               </span>
               <i class="bx bx-chevron-right small lang-arrow"></i>
             </a>
 
-            <ul class="lang-submenu {{ in_array($locale, ['en','fr']) ? '' : '' }}">
-              <li>
-                <a class="dropdown-item {{ $locale === 'en' ? 'active' : '' }}"
-                  href="{{ route('lang.switch', 'en') }}">
-                  English (EN)
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item {{ $locale === 'fr' ? 'active' : '' }}"
-                  href="{{ route('lang.switch', 'fr') }}">
-                  Français (FR)
-                </a>
-              </li>
+            <ul class="lang-submenu">
+              @foreach ($languages as $code => $lang)
+                <li>
+                  <a class="dropdown-item {{ $locale === $code ? 'active' : '' }}"
+                     href="{{ route('lang.switch', $code) }}">
+                    <span class="lang-flag fi fi-{{ $lang['cc'] }}"></span>
+                    <span>{{ $lang['label'] }}</span>
+                    <small class="text-muted ms-auto">{{ $lang['short'] }}</small>
+                  </a>
+                </li>
+              @endforeach
             </ul>
           </li>
 

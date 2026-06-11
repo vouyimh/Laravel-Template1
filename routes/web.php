@@ -107,6 +107,9 @@ Route::middleware(['auth', '2fa',  'role:admin'])->group(function () {
     Route::get('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'editStaff'])
         ->name('admin.staff.pages-staff-edit');
 
+    Route::get('admin/staff/{id}/photo', [StaffController::class, 'showPhoto'])
+        ->name('admin.staff.photo');
+
     Route::put('admin/staff/pages-staff-edit/{id}', [StaffController::class, 'updateStaff'])
         ->name('admin.staff.pages-staff-update');
 
@@ -179,7 +182,7 @@ Route::get('/layouts/blank', [Blank::class, 'index'])->name('layouts-blank');
 Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'index'])->name('pages-account-settings-account');
 Route::post('/pages/account-settings-account', [AccountSettingsAccount::class, 'update'])->name('pages-account-settings-account.update');
 Route::get('/lang/{locale}', function ($locale) {
-    if (!in_array($locale, ['en', 'fr'])) abort(404);
+    if (!in_array($locale, ['en', 'fr', 'km', 'zh', 'es', 'de', 'it'])) abort(404);
 
     session(['locale' => $locale]);
 
