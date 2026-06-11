@@ -81,6 +81,19 @@ $langLabel = $currentLang['short'];
   <ul class="navbar-nav flex-row align-items-center ms-auto">
 
     @if($user)
+      {{-- Notification Bell (Vue component) --}}
+      @php
+        // Expose current user to the bell component via window.__app__
+        // (pages that mount Room/Chat already set this; for other pages set it here)
+      @endphp
+      <script>
+        window.__app__ = window.__app__ || {};
+        window.__app__.user = window.__app__.user || @json(['id' => $user->id, 'name' => $user->name, 'role' => $user->role]);
+      </script>
+      <li class="nav-item me-2">
+        <div id="notification-app"></div>
+      </li>
+
       <!-- USER DROPDOWN -->
       <li class="nav-item navbar-dropdown dropdown-user dropdown">
         <a class="nav-link dropdown-toggle hide-arrow p-0"

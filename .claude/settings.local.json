@@ -1,0 +1,15 @@
+{
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"C:\\\\Project\\\\Laravel-Template1\" -Force)",
+      "Bash(Select-Object Name, FullName)",
+      "Bash(Format-Table -AutoSize)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Project\\\\Laravel-Template1\" -Force | Select-Object Name, @{N=\"Size\";E={if\\($_.PSIsContainer\\){\"<DIR>\"}else{$_.Length}}} | Format-Table -AutoSize)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Project\\\\Laravel-Template1\\\\app\\\\Http\\\\Controllers\" -Recurse -File -Name)",
+      "Bash(Measure-Object -Line)",
+      "Bash(Select-Object -ExpandProperty Lines)",
+      "Bash(php artisan *)"
+    ]
+  }
+}

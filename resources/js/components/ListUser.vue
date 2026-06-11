@@ -2,21 +2,13 @@
 import { computed, inject, ref } from "vue";
 
 const props = defineProps({
-  allUsers: {
+  users: {
     type: Array,
     default: () => [],
   },
-  usersOnline: {
-    type: Array,
-    default: [],
+  openingChatForId: {
+    default: null,
   },
-});
-
-const mergedUsers = computed(() => {
-  return props.allUsers.map(user => ({
-    ...user,
-    online: props.usersOnline.some(o => o.id === user.id)
-  }));
 });
 
 defineEmits(["selectReceiver"]);
@@ -24,75 +16,70 @@ defineEmits(["selectReceiver"]);
 const searchQuery = ref("");
 const myUser = inject("$user");
 
-// const filteredUsersList = computed(() => {
-//   return props.usersOnline.filter((row) =>
-//     row.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-//   );
-// });
-
 const filteredUsersList = computed(() => {
-  return mergedUsers.value.filter((row) =>
+  return props.users.filter((row) =>
     row.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
+  );
+});
 
+const onlineCount = computed(() => props.users.filter(u => u.isOnline).length);
 </script>
 
 <template>
-  <div class="card mb-sm-3 mb-md-0 contacts_card">
+  <div class="card mb-sm-3 mb-md-0 contacts_card h-100">
     <div class="card-header">
-      <h3 class="d-flex text-white">
-        Online<span class="badge text-bg-success ms-2">{{
-          usersOnline.length
-        }}</span>
-      </h3>
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <h3 class="d-flex align-items-center text-white mb-0">
+          <i class="fas fa-users me-2" style="font-size: 16px; opacity: 0.9;"></i>
+          Users
+          <span class="badge bg-success ms-2" style="font-size: 11px;" title="Online">{{ onlineCount }} online</span>
+        </h3>
+      </div>
       <div class="input-group">
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search..."
-          name=""
+          placeholder="Search users..."
           class="form-control search"
         />
-        <span class="input-group-text search_btn"
-          ><i class="fas fa-search"></i
-        ></span>
+        <span class="input-group-text search_btn"><i class="fas fa-search"></i></span>
       </div>
     </div>
     <div class="card-body contacts_body">
       <div class="contacts">
+        <div v-if="filteredUsersList.length === 0" class="empty-state">
+          <i class="fas fa-user-slash"></i>
+          <p class="mb-0 mt-2">No users found</p>
+        </div>
         <li
           v-for="user in filteredUsersList"
           :key="user.id"
           @click="$emit('selectReceiver', user)"
+          :class="{ 'offline-user': !user.isOnline, 'opening': openingChatForId === user.id }"
         >
-          <div class="current-user-mark" v-if="user.id === myUser.id" />
-          <div class="d-flex bd-highlight">
-            <div class="img_cont">
+          <div class="d-flex align-items-center w-100">
+            <div class="img_cont me-3">
               <img
-                :src="
-                  user.id === myUser.id
-                    ? '/images/current_user.jpg'
-                    : '/images/other_user.jpg'
-                "
+                :src="user.id === myUser.id ? '/images/current_user.jpg' : '/images/other_user.jpg'"
                 class="rounded-circle user_img"
               />
-              <!-- <span class="online_icon"></span> -->
-               <span class="online_icon" v-if="user.online"></span>
-                <span class="offline_icon" v-else></span>
+              <span class="status_icon" :class="user.isOnline ? 'online_icon' : 'offline_icon'"></span>
             </div>
-            <div class="user_info">
-              <span
-                >{{ user.name }}
-                {{ user.id === myUser.id ? "(You)" : "" }}</span
-              >
-              <span
-                class="badge text-bg-danger font-12px"
-                v-if="user.new_messages"
-              >
-                {{ user.new_messages }}
-              </span>
-              <p>{{ user.email }}</p>
+            <div class="user_info flex-1">
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <span>{{ user.name }}{{ user.id === myUser.id ? " (You)" : "" }}</span>
+                <span class="badge text-bg-danger font-12px" v-if="user.new_messages">
+                  {{ user.new_messages }}
+                </span>
+              </div>
+              <p class="mb-0">
+                <span v-if="openingChatForId === user.id" class="status-text text-online">
+                  Opening...
+                </span>
+                <span v-else class="status-text" :class="user.isOnline ? 'text-online' : 'text-offline'">
+                  {{ user.isOnline ? 'Online' : 'Offline' }}
+                </span>
+              </p>
             </div>
           </div>
         </li>
@@ -102,283 +89,120 @@ const filteredUsersList = computed(() => {
 </template>
 
 <style lang="scss">
-.app-container {
-  background: #0078d4;
-  background-image: -o-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: -moz-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: -webkit-linear-gradient(0deg, #0078d4, #00bcf2);
-  background-image: linear-gradient(0deg, #0078d4, #00bcf2);
-
-  .app-header {
-    position: absolute;
-    width: 100%;
-    top: 30px;
-
-    .btn-logout {
-      margin-right: 30px;
-    }
-  }
-}
-
-.chat {
-  margin-top: auto;
-  margin-bottom: auto;
+.contacts_card {
+  background: linear-gradient(180deg, #3d3d62 0%, #25253d 100%) !important;
 
   .contacts_body {
+    background: transparent !important;
     padding: 0.75rem 0 !important;
     overflow-y: auto;
-    white-space: nowrap;
+  }
 
-    .contacts {
-      list-style: none;
-      padding: 0;
+  .contacts {
+    list-style: none;
+    padding: 0;
 
-      li {
-        width: 100% !important;
-        padding: 5px 10px;
-        transition: background-color 0.2s;
-        cursor: pointer;
-        position: relative;
+    li {
+      width: 100%;
+      padding: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      margin: 0.25rem 0.5rem;
+      width: calc(100% - 1rem);
+      transition: background-color 0.15s ease, transform 0.15s ease;
 
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.3);
-        }
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+        transform: translateX(4px);
+      }
 
-        &.active {
-          background-color: rgba(0, 0, 0, 0.3);
-        }
-
-        .current-user-mark {
-          height: 100%;
-          width: 3px;
-          background: #00ffa4;
-          position: absolute;
-          left: 0;
-          top: 0;
-        }
-
-        .img_cont {
-          position: relative;
-
-          .user_img {
-            height: 45px;
-            width: 45px;
-            border: 2px solid #f5f6fa;
-          }
-        }
+      &:active {
+        background-color: rgba(255, 255, 255, 0.25);
+        transform: translateX(2px);
       }
     }
   }
-}
 
-.container {
-  align-content: center;
-}
+  .img_cont {
+    position: relative;
+    flex-shrink: 0;
 
-.user_img_msg {
-  height: 40px;
-  width: 40px;
-  border: 2px solid #f5f6fa;
-}
-
-.online_icon {
-  position: absolute;
-  height: 15px;
-  width: 15px;
-  background-color: #4cd137;
-  border-radius: 50%;
-  bottom: 17px;
-  right: 0;
-  border: 2px solid white;
-}
-
-.offline {
-  background-color: #c2c2c2 !important;
-}
-
-.user_info {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 15px;
-}
-
-.user_info span {
-  font-size: 20px;
-  color: white;
-}
-
-.user_info p {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.msg_container {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-left: 10px;
-  border-radius: 25px;
-  background-color: #00a0e5;
-  padding: 10px;
-  position: relative;
-  color: white;
-  word-break: break-word;
-  max-width: 70%;
-}
-
-.msg_container_send {
-  margin-top: auto;
-  margin-bottom: auto;
-  margin-right: 10px;
-  border-radius: 25px;
-  background-color: #42e274;
-  padding: 10px;
-  position: relative;
-  color: white;
-  word-break: break-word;
-  max-width: 70%;
-}
-
-@media (max-width: 768px) {
-  .app-container {
-    height: auto !important;
-
-    .app-header {
-      position: initial;
-      padding-top: 30px;
-
-      .btn-logout {
-        margin-right: 0;
-      }
+    .user_img {
+      height: 40px;
+      width: 40px;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, 0.6);
     }
 
-    .chat {
-      margin-top: 1rem;
-
-      &:last-child,
-      &:first-child {
-        margin-top: 1rem;
-      }
-    }
-  }
-}
-
-@media (max-width: 576px) {
-  .contacts_card {
-    margin-bottom: 15px !important;
-  }
-}
-
-.font-12px {
-  font-size: 12px !important;
-}
-
-.img_cont_msg {
-  width: 40px;
-  height: 40px;
-
-  span {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: initial;
-  }
-
-  30% {
-    transform: translateY(-15px);
-  }
-}
-
-#wave {
-  .dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    margin-right: 1px;
-    background: white;
-    animation: wave 1.3s linear infinite;
-    margin-bottom: 3px;
-
-    &:nth-child(2) {
-      animation-delay: -1.1s;
+    .status_icon {
+      position: absolute;
+      height: 12px;
+      width: 12px;
+      border-radius: 50%;
+      bottom: 0;
+      right: 0;
+      border: 2px solid #3d3d62;
     }
 
-    &:nth-child(3) {
-      animation-delay: -0.9s;
+    .online_icon {
+      background-color: #4cd137;
+      box-shadow: 0 0 0 2px rgba(76, 209, 55, 0.3);
+      animation: pulse-online 2s infinite;
+    }
+
+    .offline_icon {
+      background-color: #888;
     }
   }
-}
 
-.blink-anim {
-  animation: blink 2s infinite;
-}
+  .user_info {
+    min-width: 0;
 
-@keyframes wave {
-  0%,
-  60%,
-  100% {
-    transform: initial;
-  }
+    span {
+      font-size: 14px;
+      color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-  30% {
-    transform: translateY(-7px);
-  }
-}
+    .status-text {
+      font-size: 11px;
+    }
 
-@keyframes blink {
-  0%,
-  100% {
-    background: white;
-  }
+    .text-online {
+      color: #4cd137;
+    }
 
-  50% {
-    background: #2e7fd7;
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s;
-}
-
-.fade-enter,
-.fade-leave-to
-
-/* .fade-leave-active below version 2.1.8 */ {
-  opacity: 0;
-}
-
-.slide {
-  &-left,
-  &-right {
-    &-enter,
-    &-leave {
-      &-active {
-        transition: all 0.5s cubic-bezier(0.55, 0, 0.1, 1);
-      }
+    .text-offline {
+      color: rgba(255, 255, 255, 0.4);
     }
   }
-}
 
-.slide {
-  &-left-enter,
-  &-right-leave-active {
-    opacity: 0;
-    transform: translate(30px, 0);
+  .offline-user {
+    opacity: 0.65;
+  }
+
+  .opening {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    pointer-events: none;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: rgba(255, 255, 255, 0.5);
+
+    i { font-size: 36px; }
+    p { font-size: 13px; }
   }
 }
 
-.slide {
-  &-left-leave-active,
-  &-right-enter {
-    opacity: 0;
-    transform: translate(-30px, 0);
-  }
+@keyframes pulse-online {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(76, 209, 55, 0.3); }
+  50%       { box-shadow: 0 0 0 4px rgba(76, 209, 55, 0.1); }
 }
 </style>

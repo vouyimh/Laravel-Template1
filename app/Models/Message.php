@@ -8,7 +8,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Message extends Model
 {
-    protected $fillable = ['content'];
+    protected $fillable = ['content', 'message_type', 'file_path', 'file_name', 'file_size', 'mime_type', 'metadata', 'room_id', 'user_id'];
+
+    protected $casts = [
+        'metadata' => 'json',
+        'file_size' => 'integer',
+    ];
 
     public function user(): BelongsTo
     {

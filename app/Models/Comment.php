@@ -3,27 +3,29 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Comment extends Model
 {
     protected $fillable = [
         'task_id',
         'user_id',
-        'comment_text'
+        'comment_text',
     ];
 
-    public function task()
+    public function task(): BelongsTo
     {
         return $this->belongsTo(Task::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function files()
+    public function files(): HasMany
     {
-        return $this->hasMany(File::class);
+        return $this->hasMany(CommentFile::class, 'comment_id');
     }
 }
