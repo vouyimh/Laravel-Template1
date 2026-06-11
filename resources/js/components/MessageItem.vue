@@ -60,6 +60,11 @@ const isMyUser = computed(() => {
   return props.message.user && props.message.user.id === user.id;
 });
 
+const fileUrl = computed(() => {
+  if (!props.message.file_path) return null;
+  return `/storage/${props.message.file_path}`;
+});
+
 function celebrate(event) {
   const highlightItem = $(event.currentTarget).find(".highlightText");
   if (highlightItem.length) {
@@ -94,7 +99,24 @@ function celebrate(event) {
         ? `background-color: ${isMyUser ? msgColor : ''}`
         : ''
         ">
-        <div :class="{ 'hide-content': hideContent }" v-html="highlight" @click="celebrate"></div>
+        <div v-if="message.message_type === 'image'" class="chat-attachment chat-image-attachment">
+          <a :href="fileUrl" target="_blank" rel="noopener">
+            <img :src="fileUrl" :alt="message.file_name || message.content" class="chat-image" />
+          </a>
+        </div>
+        <div v-else-if="message.message_type === 'video'" class="chat-attachment chat-video-attachment">
+          <video :src="fileUrl" controls class="chat-video"></video>
+        </div>
+        <div v-else-if="message.message_type === 'voice'" class="chat-attachment chat-voice-attachment">
+          <audio :src="fileUrl" controls class="chat-audio"></audio>
+        </div>
+        <div v-else-if="message.message_type === 'file'" class="chat-attachment chat-file-attachment">
+          <a :href="fileUrl" target="_blank" rel="noopener" download>
+            <i class="fal fa-file"></i> {{ message.file_name || message.content }}
+          </a>
+        </div>
+        <div v-if="message.message_type !== 'image' && message.message_type !== 'video' && message.message_type !== 'voice' && message.message_type !== 'file'"
+          :class="{ 'hide-content': hideContent }" v-html="highlight" @click="celebrate"></div>
         <button v-if="message.content.length > MAX_CONTENT_LENGTH" type="button"
           class="btn btn-link text-decoration-none" @click="hideContent = !hideContent">
           View {{ hideContent ? 'More' : 'Less' }}
@@ -179,6 +201,35 @@ function celebrate(event) {
 
 .img_cont_msg {
   cursor: pointer;
+}
+
+.chat-attachment {
+  max-width: 250px;
+
+  .chat-image {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+  }
+
+  .chat-video {
+    max-width: 100%;
+    max-height: 250px;
+    border-radius: 8px;
+  }
+
+  .chat-audio {
+    width: 100%;
+  }
+
+  &.chat-file-attachment a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    word-break: break-all;
+  }
 }
 }
 </style>

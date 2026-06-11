@@ -168,10 +168,6 @@ Route::get('/layouts/blank', [Blank::class, 'index'])->name('layouts-blank');
 // Account settings
 Route::get('/pages/account-settings-account', [AccountSettingsAccount::class, 'index'])->name('pages-account-settings-account');
 Route::post('/pages/account-settings-account', [AccountSettingsAccount::class, 'update'])->name('pages-account-settings-account.update');
-Route::get('/lang/{locale}', function ($locale) {
-    if (!in_array($locale, ['en', 'fr', 'km', 'zh', 'es', 'de', 'it'])) abort(404);
-
-    session(['locale' => $locale]);
 
 // Auth demo pages
 Route::get('/auth/login-basic', [LoginBasic::class, 'index'])->name('auth-login-basic');
