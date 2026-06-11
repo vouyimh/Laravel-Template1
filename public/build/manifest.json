@@ -264,7 +264,11 @@
     ]
   },
   "resources/js/app.js": {
+<<<<<<< HEAD
     "file": "assets/app-BViPRocD.js",
+=======
+    "file": "assets/app-DauQi-rw.js",
+>>>>>>> b756652f042c4ce5845a07cb96ea4e06f801689f
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -274,7 +278,11 @@
       "_jquery-By3CIqnl.js"
     ],
     "css": [
+<<<<<<< HEAD
       "assets/app-EwAMUnb4.css"
+=======
+      "assets/app-DX_heMiH.css"
+>>>>>>> b756652f042c4ce5845a07cb96ea4e06f801689f
     ]
   },
   "resources/sass/_variables.scss": {
@@ -288,7 +296,11 @@
     ]
   },
   "resources/sass/app.scss": {
+<<<<<<< HEAD
     "file": "assets/app-BofF1QnG.css",
+=======
+    "file": "assets/app-BOxewmzE.css",
+>>>>>>> b756652f042c4ce5845a07cb96ea4e06f801689f
     "src": "resources/sass/app.scss",
     "isEntry": true,
     "name": "app",

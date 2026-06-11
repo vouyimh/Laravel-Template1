@@ -6,9 +6,10 @@ use App\Models\Task;
 use App\Models\TaskActivity;
 use App\Models\TaskFile;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskStatusChangedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -56,8 +57,17 @@ class TaskController extends Controller
             'due_date'    => $data['due_date'] ?? null,
         ]);
 
-        if (!empty($data['assignees'])) {
-            $task->assignees()->sync($data['assignees']);
+        $assignees = $data['assignees'] ?? [];
+        if (!empty($assignees)) {
+            $task->assignees()->sync($assignees);
+
+            // Notify each newly assigned user (except the person creating)
+            $users = User::whereIn('id', $assignees)
+                         ->where('id', '!=', Auth::id())
+                         ->get();
+            foreach ($users as $user) {
+                $user->notify(new TaskAssignedNotification($task, Auth::user()));
+            }
         }
 
         $this->logActivity($task->id, 'Created', ['by' => Auth::user()?->name]);
@@ -75,7 +85,7 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         $task->load('assignees');
-        $users = User::all();
+        $users = User::orderBy('name')->get();
         return view('tasks.edit', compact('task', 'users'));
     }
 
@@ -91,6 +101,10 @@ class TaskController extends Controller
             'assignees.*' => 'integer|exists:users,id',
         ]);
 
+        $oldStatus      = $task->status;
+        $oldAssigneeIds = $task->assignees->pluck('id')->toArray();
+        $newAssigneeIds = $data['assignees'] ?? [];
+
         $task->update([
             'title'       => $data['title'],
             'description' => $data['description'] ?? null,
@@ -98,8 +112,28 @@ class TaskController extends Controller
             'priority'    => $data['priority'] ?? $task->priority,
             'due_date'    => $data['due_date'] ?? $task->due_date,
         ]);
+        $task->assignees()->sync($newAssigneeIds);
 
-        $task->assignees()->sync($data['assignees'] ?? []);
+        // Notify newly added assignees
+        $addedIds = array_diff($newAssigneeIds, $oldAssigneeIds);
+        if (!empty($addedIds)) {
+            $newUsers = User::whereIn('id', $addedIds)
+                            ->where('id', '!=', Auth::id())
+                            ->get();
+            foreach ($newUsers as $user) {
+                $user->notify(new TaskAssignedNotification($task, Auth::user()));
+            }
+        }
+
+        // Notify all current assignees if status changed
+        if ($oldStatus !== $data['status']) {
+            $allAssignees = User::whereIn('id', $newAssigneeIds)
+                                ->where('id', '!=', Auth::id())
+                                ->get();
+            foreach ($allAssignees as $user) {
+                $user->notify(new TaskStatusChangedNotification($task, $oldStatus, Auth::user()));
+            }
+        }
 
         return redirect()->route('tasks.index')
             ->with('success', 'Task updated successfully.');

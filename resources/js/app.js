@@ -36,6 +36,7 @@ import 'select2/dist/css/select2.min.css';
 import { createApp } from 'vue'
 import Room from './pages/Room.vue'
 import ListRoom from './pages/ListRoom.vue'
+import NotificationBell from './components/NotificationBell.vue'
 
 const chatEl = document.getElementById('room-app')
 const chatE2 = document.getElementById('chat-app')
@@ -85,3 +86,9 @@ if (chatE2) {
  */
 
 // app.mount("#app");
+
+// Notification bell — mounted on every page that uses the main layout
+const bellEl = document.getElementById('notification-app')
+if (bellEl && window.__app__?.user) {
+  createApp(NotificationBell).mount(bellEl)
+}

@@ -9,6 +9,7 @@
 
 .env
 .env.*
+.mcp.json
 .env.backup
 .env.production
 .phpunit.result.cache
