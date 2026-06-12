@@ -62,7 +62,7 @@ const isMyUser = computed(() => {
 
 const fileUrl = computed(() => {
   if (!props.message.file_path) return null;
-  return `/storage/${props.message.file_path}`;
+  return `/uploads/${props.message.file_path}`;
 });
 
 function celebrate(event) {

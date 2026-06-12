@@ -153,7 +153,7 @@ class MessageController extends Controller
 
         $file     = $request->file('file');
         $mimeType = $file->getMimeType();
-        $filePath = $file->store('chat_files', 'public');
+        $filePath = $file->store('chat_files', 'uploads');
 
         $messageType = 'file';
         if (str_starts_with($mimeType, 'image/')) {
