@@ -131,7 +131,7 @@ function celebrate(event) {
           ? undefined
           : `Click to chat with ${message.user.name} (${message.user.email})`
           " @click="!isPrivate && $emit('selectReceiver', message.user)">
-        <img src="/images/current_user.jpg" class="rounded-circle user_img_msg" v-if="isMyUser" />
+        <img :src="user.avatar_path ? `/storage/${user.avatar_path}` : '/images/current_user.jpg'" class="rounded-circle user_img_msg" v-if="isMyUser" />
         <span v-else class="rounded-circle d-flex justify-content-center align-items-center"
           :style="`background-color: ${message.user.color}`">{{ message.user.name[0].toUpperCase() }}</span>
       </div>

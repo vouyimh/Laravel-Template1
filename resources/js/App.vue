@@ -46,6 +46,8 @@ function showToast(title, message) {
   const toastBootstrap = Toast.getOrCreateInstance(toastEl);
   toastBootstrap.show();
 }
+
+window.showToast = showToast;
 </script>
 
 <template>

@@ -14,12 +14,6 @@
         confettiWords: @json($data['confettiWords']),
         roomId: @json($roomId)
     };
-    function showToast(title, message) {
-        toastMsg.value = { title, message };
-        const toastEl = document.getElementById("bs_toast");
-        const toastBootstrap = Toast.getOrCreateInstance(toastEl);
-        toastBootstrap.show();
-    }
 </script>
 
 @section('title', 'Message')
