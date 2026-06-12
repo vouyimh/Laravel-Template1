@@ -114,7 +114,7 @@ class StaffTaskController extends Controller
         $this->ensureAdmin();
 
         foreach ($task->files as $file) {
-            Storage::disk('public')->delete($file->path);
+            Storage::disk('uploads')->delete($file->path);
         }
         $task->delete();
 
@@ -206,7 +206,7 @@ class StaffTaskController extends Controller
         $uploaded = $request->file('file');
         $mime = $uploaded->getMimeType();
         $type = str_starts_with($mime, 'video/') ? 'video' : 'image';
-        $path = $uploaded->store("task-proof/{$task->id}", 'public');
+        $path = $uploaded->store("task-proof/{$task->id}", 'uploads');
 
         $file = TaskFile::create([
             'task_id'       => $task->id,
@@ -233,7 +233,7 @@ class StaffTaskController extends Controller
         }
         if ($file->task_id !== $task->id) abort(404);
 
-        $disk = Storage::disk('public');
+        $disk = Storage::disk('uploads');
         if (!$disk->exists($file->path)) abort(404, 'File missing on disk.');
 
         $absolutePath = $disk->path($file->path);
@@ -260,7 +260,7 @@ class StaffTaskController extends Controller
             abort(404);
         }
 
-        Storage::disk('public')->delete($file->path);
+        Storage::disk('uploads')->delete($file->path);
         $name = $file->original_name;
         $file->delete();
 

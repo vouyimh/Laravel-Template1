@@ -142,7 +142,7 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         foreach ($task->files as $file) {
-            Storage::disk('public')->delete($file->path);
+            Storage::disk('uploads')->delete($file->path);
         }
         $task->delete();
 
@@ -210,7 +210,7 @@ class TaskController extends Controller
         $mime = $uploaded->getMimeType();
         $type = str_starts_with($mime, 'video/') ? 'video' : 'image';
 
-        $path = $uploaded->store("task-proof/{$task->id}", 'public');
+        $path = $uploaded->store("task-proof/{$task->id}", 'uploads');
 
         $file = TaskFile::create([
             'task_id'       => $task->id,
@@ -239,7 +239,7 @@ class TaskController extends Controller
             abort(404);
         }
 
-        Storage::disk('public')->delete($file->path);
+        Storage::disk('uploads')->delete($file->path);
         $name = $file->original_name;
         $file->delete();
 
