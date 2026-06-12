@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class TaskFile extends Model
 {
@@ -26,15 +27,13 @@ class TaskFile extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Inline-view URL (streamed via Laravel route — works on Windows without storage:link)
     public function getUrlAttribute(): string
     {
-        return route('stafftask.files.show', [$this->task_id, $this->id]);
+        return Storage::disk('uploads')->url($this->path);
     }
 
-    // Force-download URL
     public function getDownloadUrlAttribute(): string
     {
-        return route('stafftask.files.show', [$this->task_id, $this->id, 'download' => 1]);
+        return Storage::disk('uploads')->url($this->path);
     }
 }
