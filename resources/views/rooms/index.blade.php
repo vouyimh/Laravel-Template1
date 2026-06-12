@@ -13,17 +13,6 @@
         appName: @json($data['appName']),
         confettiWords: @json($data['confettiWords']),
     };
-    function showToast(title, message) {
-    toastMsg.value = {
-    title,
-    message,
-  };
-  const toastEl = document.getElementById("bs_toast");
-
-  const toastBootstrap = Toast.getOrCreateInstance(toastEl);
-  toastBootstrap.show();
-}
-</script>
 </script>
 
 @section('title', 'Room')
@@ -37,4 +26,15 @@
                     </div>
             </div>
         </div>
-    @endsection
+    </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="bs_toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto"></strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body"></div>
+        </div>
+    </div>
+@endsection

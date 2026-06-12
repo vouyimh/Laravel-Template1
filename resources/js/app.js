@@ -34,9 +34,20 @@ import 'select2/dist/css/select2.min.css';
  */
 
 import { createApp } from 'vue'
+import { Toast } from 'bootstrap'
 import Room from './pages/Room.vue'
 import ListRoom from './pages/ListRoom.vue'
 import NotificationBell from './components/NotificationBell.vue'
+
+function showToast(title, message) {
+  const toastEl = document.getElementById('bs_toast');
+  if (!toastEl) return;
+  toastEl.querySelector('.toast-header strong').textContent = title;
+  toastEl.querySelector('.toast-body').textContent = message;
+  Toast.getOrCreateInstance(toastEl).show();
+}
+
+window.showToast = showToast;
 
 const chatEl = document.getElementById('room-app')
 const chatE2 = document.getElementById('chat-app')
