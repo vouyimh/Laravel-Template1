@@ -256,7 +256,7 @@ class StaffTaskController extends Controller
     {
         $this->ensureAssignedStaff($task);
 
-        if ($file->task_id !== $task->id) {
+        if ((int) $file->task_id !== (int) $task->id) {
             abort(404);
         }
 
