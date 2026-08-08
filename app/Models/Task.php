@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -12,11 +13,13 @@ class Task extends Model
     use HasFactory;
 
     protected $fillable = [
+        'client_house_id',
         'title',
         'description',
         'status',
         'priority',
         'due_date',
+        'end_date',
         'started_at',
         'completed_at',
         'start_location',
@@ -28,8 +31,14 @@ class Task extends Model
         'started_at'     => 'datetime',
         'completed_at'   => 'datetime',
         'due_date'       => 'date',
+        'end_date'       => 'date',
         'start_location' => 'array',
     ];
+
+    public function clientHouse(): BelongsTo
+    {
+        return $this->belongsTo(ClientHouse::class);
+    }
 
     public function assignees(): BelongsToMany
     {

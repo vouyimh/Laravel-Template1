@@ -18,6 +18,7 @@ use App\Http\Controllers\user_interface\Footer;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\CleaningCalendarController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\StaffTaskController;
@@ -84,6 +85,21 @@ Route::middleware(['auth', '2fa', 'role:admin'])->group(function () {
         ->name('admin.staff.pages-staff-delete');
 
     // Route::resource('/tasks', TaskController::class);
+
+    Route::get('admin/cleaning-calendar', [CleaningCalendarController::class, 'index'])
+        ->name('admin.cleaning-calendar.index');
+
+    Route::get('admin/cleaning-calendar/events', [CleaningCalendarController::class, 'events'])
+        ->name('admin.cleaning-calendar.events');
+
+    Route::post('admin/cleaning-calendar/tasks', [CleaningCalendarController::class, 'store'])
+        ->name('admin.cleaning-calendar.store');
+
+    Route::put('admin/cleaning-calendar/tasks/{task}', [CleaningCalendarController::class, 'update'])
+        ->name('admin.cleaning-calendar.update');
+
+    Route::delete('admin/cleaning-calendar/tasks/{task}', [CleaningCalendarController::class, 'destroy'])
+        ->name('admin.cleaning-calendar.destroy');
 
 });
 

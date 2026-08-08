@@ -48,7 +48,11 @@ class AccountSettingsAccount extends Controller
             'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,gif|max:5120',
             'current_password' => 'nullable|string',
             'password'         => 'nullable|string|min:8|confirmed',
+            'skip_2fa'         => 'nullable|boolean',
         ]);
+
+        // Checkbox: absent from the request means unchecked, not "leave unchanged".
+        $data['skip_2fa'] = $request->boolean('skip_2fa');
 
         if (!empty($data['password'] ?? null)) {
             if (empty($data['current_password'] ?? null) || !Hash::check($data['current_password'], $user->password)) {

@@ -32,6 +32,9 @@ class TaskStatusChangedNotification extends Notification implements ShouldBroadc
             'completed'   => 'Completed',
         ];
 
+        $oldLabel = $label[$this->oldStatus] ?? $this->oldStatus;
+        $newLabel = $label[$this->task->status] ?? $this->task->status;
+
         return [
             'type'         => 'task_status_changed',
             'task_id'      => $this->task->id,
@@ -40,7 +43,7 @@ class TaskStatusChangedNotification extends Notification implements ShouldBroadc
             'new_status'   => $this->task->status,
             'changer_id'   => $this->changer->id,
             'changer_name' => $this->changer->name,
-            'message'      => "{$this->changer->name} changed task \"{$this->task->title}\" from {$label[$this->oldStatus] ?? $this->oldStatus} to {$label[$this->task->status] ?? $this->task->status}",
+            'message'      => "{$this->changer->name} changed task \"{$this->task->title}\" from {$oldLabel} to {$newLabel}",
             'url'          => route('tasks.show', $this->task->id),
         ];
     }

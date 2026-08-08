@@ -13,10 +13,10 @@ class EnsureTwoFactorIsVerified
             return $next($request);
         }
 
-        // Auto-verify if user hasn't configured 2FA yet
+        // Auto-verify if user hasn't configured 2FA yet, or has opted to skip it
         if (!session('2fa_verified')) {
             $user = auth()->user();
-            if (empty($user->two_factor_secret)) {
+            if ($user->skip_2fa || empty($user->two_factor_secret)) {
                 session(['2fa_verified' => true]);
             } else {
                 if ($request->expectsJson()) {

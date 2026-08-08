@@ -23,4 +23,9 @@ class ClientHouse extends Model
     {
         return $this->belongsTo(Client::class, 'client_id', 'client_id');
     }
+
+    public function cleaningTasks()
+    {
+        return $this->hasMany(Task::class);
+    }
 }

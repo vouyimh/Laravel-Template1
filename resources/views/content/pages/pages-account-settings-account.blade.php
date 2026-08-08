@@ -238,6 +238,16 @@
 
           </div>
 
+          <div class="mt-6 pt-4 border-top">
+            <h6 class="mb-2">{{ __('Security') }}</h6>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="skip2fa" name="skip_2fa" value="1"
+                     {{ old('skip_2fa', $u?->skip_2fa) ? 'checked' : '' }} />
+              <label class="form-check-label" for="skip2fa">{{ __('Skip two-factor verification') }}</label>
+            </div>
+            <div class="form-text">{{ __('If enabled, you will not be asked for a 2FA code when logging in.') }}</div>
+          </div>
+
           <div class="mt-6">
             <button type="submit" class="btn btn-primary me-3">{{ __('Save changes') }}</button>
             <a href="{{ $cancelUrl }}" class="btn btn-outline-secondary">{{ __('Cancel') }}</a>

@@ -97,6 +97,13 @@
       "roles": ["admin", "staff"]
     },
     {
+      "url": "/admin/cleaning-calendar",
+      "name": "Cleaning Calendar",
+      "icon": "menu-icon icon-base bx bx-calendar-check",
+      "slug": "admin.cleaning-calendar.index",
+      "roles": ["admin"]
+    },
+    {
       "name": "Account",
       "icon": "menu-icon icon-base bx bx-dock-top",
       "slug": "pages-account-settings-account",
